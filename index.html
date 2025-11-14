@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Ambient Soundscape Studio — v1.5.0</title>
 <style>
-  /* iOS Performance Optimizations */
+  /* Ultra iOS Performance */
   * {
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
@@ -18,10 +18,25 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
   }
-  .slider, input[type="range"] { touch-action: pan-y; }
-  button, .btn, .tab { touch-action: manipulation; }
-  canvas { touch-action: none; }
+  canvas {
+    will-change: auto;
+    touch-action: none;
+  }
+  .key {
+    will-change: transform, box-shadow;
+    contain: layout style paint;
+  }
+  .slider, input[type="range"] { 
+    touch-action: pan-y;
+  }
+  button, .btn, .tab { 
+    touch-action: manipulation;
+  }
+  .keys {
+    contain: layout;
+  }
 
   :root{
     --fs-base: 16px;
@@ -114,7 +129,7 @@
   #pet{ position:absolute; width:64px; height:64px; pointer-events:none; z-index:5; transition: left 0.3s ease, top 0.3s ease; font-size:48px; }
   #pet.hidden{ display:none; }
 </style>
-<script type="text/javascript" nonce="09fd1780df474b76a314de602cb" src="//local.adguard.org?ts=1763079747102&amp;type=content-script&amp;dmn=ppl-ai-code-interpreter-files.s3.amazonaws.com&amp;url=https%3A%2F%2Fppl-ai-code-interpreter-files.s3.amazonaws.com%2Fweb%2Fdirect-files%2F45e9956efd573c03eccacb6896cf4ce7%2Fc828fe40-32c5-4d7a-bc97-3af615ccd954%2F4e478687.html%3Fresponse-content-disposition%3Dattachment%253B%2520filename%253Dambient-synth-v2.0.1-ios-optimized.html%253B%2520filename%252A%253DUTF-8%2527%2527ambient-synth-v2.0.1-ios-optimized.html%26AWSAccessKeyId%3DASIA2F3EMEYE2XBQFQ4H%26Signature%3Deyo1rXOobAmnU6rDNcAiP6FHdSU%253D%26x-amz-security-token%3DIQoJb3JpZ2luX2VjEJH%252F%252F%252F%252F%252F%252F%252F%252F%252F%252FwEaCXVzLWVhc3QtMSJGMEQCIG5aCRkiEVjvf2ztRYy5QscgIE4erDLsyZV93mVwk1dOAiBpE5KMlcJRCi%252Bf%252BQLy4NSQERChHsUQbrKdkpwj0zqicyrzBAhZEAEaDDY5OTc1MzMwOTcwNSIMMuUYyiiiTX10VShmKtAE0BDlT7j%252FooRQ9ye5QWEqo%252BiP5oFeHOucmIy%252FLdmRJTaH%252BNXr4dqn3i86ub5lA%252B7dhds0rP7r5PQNnGXlVjKd79QzJLHGYxXyDUYzH5UVzYEKUXieHVJGge%252Bg5kwVCapTYmVdn52a68dGsic00Unc9R%252Fjkq0sfWToPS1LthQh7vAnxReDDihSWL2PCInKl6xrqKt3ZwJz9V2isuUaesKcjnGdQClMFfXPr%252BTgTiL3IY%252Bk9f64Ks9Q0t5yK%252B%252FLtJW8eWg2OGMX3dPmf4YiJcDx%252Fil1B6G1VniTQBwTeJwEDuPQOSOVcZqFyL9brdjpXFyGjSvNcYTe05uTlmGZEl5h18FrXOnL9QrLBYQ%252F4kKynkYgzh1iXyR95Q6pls5XONTUh5uhKTK2dPTFCYs7zRaIj4jMIUBaeQLqjrXBoFgO1vKswW2f7KY%252BA%252FZxsIVHqtXBxYHRNjEkat%252FxeNHcSU6Rk1PH575ViPKsyTupqc7onEg7QDvlJIWecqoi3Tu7Ec%252BtMvWAFvV%252F9vn1pbhX7E2Ob16tHC%252FdkteQTxsgGViFxgQnGYMIWiXrLRf01gWdZlLfrVvotUiFmMwWSvOguDBxSMHptGcHT6LdRp5TI%252F6oUaVDXsd9dPtxs2ekghLPw9H0C0QausOImzFGETwVTBqAS9Eb1t8BGg3Ju905bTXUWtk89RK3K%252Ff5dDtSub4pAF8ddqVRsLk2VIdI48eYImJg3KRzmkZFUa3sieSB0w%252Bs8S9WvbC6YbxHZfwZxI13JyWvQDi0reBKeYk2UCOQeMHsPzCL6tnIBjqZAY5FxA183kip4exv9OEAP4YWXE8bkaTD4ubK8oih%252BI8pGJ3pcOGsHpnhnj%252FQTgbq%252BuVb61WSRD6hiArc4QoZA9IWqWnhyT20DEY2cmmq0tPWtAHb79dCeoCQBD8nIlwPkttjW6WIBV5XirjHe4zPLYXPV7E1X5qEYDMEiPfkHefoD9VQJXy3x8pd%252BqLIfNj7t1at%252Fn87GPFbdQ%253D%253D%26Expires%3D1763080511&amp;app=chrome.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="09fd1780df474b76a314de602cb" src="//local.adguard.org?ts=1763079747102&amp;name=AdGuard%20Assistant&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;name=Web%20of%20Trust&amp;type=user-script"></script></head>
+<script type="text/javascript" nonce="09fd1780df474b76a314de602cb" src="//local.adguard.org?ts=1763079747102&amp;type=content-script&amp;dmn=ppl-ai-code-interpreter-files.s3.amazonaws.com&amp;url=https%3A%2F%2Fppl-ai-code-interpreter-files.s3.amazonaws.com%2Fweb%2Fdirect-files%2F61b6b639f0c01e76b7cc65f0b5e6aefe%2Fda3720f9-4112-48e2-8a28-1df6fb214316%2F527deaf0.html%3Fresponse-content-disposition%3Dattachment%253B%2520filename%253Dambient-synth-v2.0.3-final.html%253B%2520filename%252A%253DUTF-8%2527%2527ambient-synth-v2.0.3-final.html%26AWSAccessKeyId%3DASIA2F3EMEYEQ442ARXG%26Signature%3DbKKIQ8jWfHk5JuJZAYqBrD47nEQ%253D%26x-amz-security-token%3DIQoJb3JpZ2luX2VjEJH%252F%252F%252F%252F%252F%252F%252F%252F%252F%252FwEaCXVzLWVhc3QtMSJHMEUCIEd5mCv0kToii0DHjl4ZFdL3IoFhd4%252BfVCzKVu3QwLXAAiEA6MXWMicQ93i0jO%252BqqXLN093GT1rMCMi5FxurYcIfWXIq8wQIWRABGgw2OTk3NTMzMDk3MDUiDM8bTEkq0kgd8dBcPirQBPzjVMPCIKfEfy%252FBT%252FfBGAMIEyUeF7lF9JhIxkDXevHjAAFXk9owKbVKJ8XTnbDxe29ALczALGKcJ4bCd56oNa0yzUpR1EEJifWzhnruOVeUtCTJeNLPHXdaN%252F6xzUAVi5jWEH7c%252F85b03My1PY5REynT88CPSfP%252F67JPEc4WNc6yazh8si%252Fy8aOAMxgS7CJPSMrAjus0iYVJ2Cgm9Zw1Z3Uj9L3RfhEPeXGUxzd0UsfFjY7VqSGK8rxRPQqOPw%252BytMueqyN6c%252F%252B1gosY13rYrA53yYa7NehmO41WaZ0dB1FscbLHuw1CshFMMzL8PAhTiPrkjNtzkp9NWGWwNB4NWEDi3GSCAtMd7efYswqyIkPPwZK%252F%252FMyuWTQnaovkLvgYhHuks0WMm%252B4sbKBh9nW9lkzYrY4JzYVIjEi4CY0tBEJQgtTeXj8yMDKPcuuU2sjbQ%252BvfFGBsRqRpjMCWP6SgjrWW%252FeoweR5BhaUadT%252BM3WqEKmR1wTk3PgzN%252BI5QHjaocsbeDO8Qajx%252FV%252FTMx2Vkn0tF2BJgYvDPAdTbLsuTMe51qwRtenIbIzC6i2sb5ODuq6uHg3D6jaThWYvLV4MhEmIDHK7zO8R3rATIv%252B0%252FmRWS%252Fc0CumglD3%252FAiFTyKQvjJRoKx5aJ8DKYKOsaKfdRfrlaZaGP2xFpIqdUjJiekbMnjH%252FENZYXkyR0inSl%252FADguhoVaKuqC%252BQFni60ztykLybJAUqAPNQJRZ912bR6UTU5kZS71dnaUnD6QVmZtqVmvbCPg6ONakM0tMpdZNmJ0gw2%252BnZyAY6mAF17cAP%252Bb2HtxTHeSEcvPbqrBjU%252Ff33T4oi1FmZDrVwzexfFI5y7sZEs69vZLyi%252BSvPwl4ek5InFQoo1ek0a8qC39YzutM%252BAQbWUN%252BQphsUQuIBccMSrbVNvXkgu2Ypx3ZxogHAlrf2mdQkBEGZGc1Oq4x3G6u3MRgph54tfM9b6LPjyYx%252BlxLMja0Gso3MVzFiCc4tpv7SYw%253D%253D%26Expires%3D1763081958&amp;app=chrome.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="09fd1780df474b76a314de602cb" src="//local.adguard.org?ts=1763079747102&amp;name=AdGuard%20Assistant&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;name=Web%20of%20Trust&amp;type=user-script"></script></head>
 <body class="theme-darcula layout-desktop layout-v">
 <div class="container" id="mainContainer">
   <div class="title">
@@ -302,8 +317,46 @@
   };
   const synthOrder=['hydra-pad','moog-one-pad','ambient-pad','microkorg-ambient','microkorg-electronica','volca-fm'];
 
-  function setupCanvas(cnv){ const r=cnv.getBoundingClientRect(), d=window.devicePixelRatio||1; cnv.width=r.width*d; cnv.height=r.height*d; const c=cnv.getContext('2d'); c.setTransform(1,0,0,1,0,0); c.scale(d,d); }
-  window.addEventListener('resize',()=>{ setupCanvas(scope); setupCanvas(envCanvas); });
+  function setupCanvas(cnv){ 
+    const r=cnv.getBoundingClientRect();
+    const d=window.devicePixelRatio||1;
+    const newW = r.width*d;
+    const newH = r.height*d;
+
+    // Only resize if dimensions actually changed
+    if(cnv.width !== newW || cnv.height !== newH) {
+      cnv.width = newW;
+      cnv.height = newH;
+      const c=cnv.getContext('2d');
+      c.setTransform(1,0,0,1,0,0);
+      c.scale(d,d);
+
+      // Clear the canvas to prevent artifacts
+      c.clearRect(0, 0, cnv.width, cnv.height);
+    }
+  }
+
+  // ResizeObserver for automatic canvas resizing
+  if(typeof ResizeObserver !== 'undefined') {
+    const scopeObserver = new ResizeObserver(() => {
+      setupCanvas(scope);
+      lastCanvasW = 0; lastCanvasH = 0; // Force redraw
+    });
+    scopeObserver.observe(scope);
+
+    const envObserver = new ResizeObserver(() => {
+      setupCanvas(envCanvas);
+    });
+    envObserver.observe(envCanvas);
+  }
+
+  // Fallback for browsers without ResizeObserver
+  window.addEventListener('resize',()=>{ 
+    setupCanvas(scope); 
+    setupCanvas(envCanvas);
+    lastCanvasW = 0;
+    lastCanvasH = 0;
+  });
   
   let freqData=null;
 
@@ -315,7 +368,9 @@
 
   function setupSpatialAudio(){
     if(!ctx) return;
+
     try {
+      // Try PannerNode (Safari with AirPods Pro spatial audio support)
       if(!spatialPanner) {
         spatialPanner = ctx.createPanner();
         spatialPanner.panningModel = 'HRTF';
@@ -323,6 +378,11 @@
         spatialPanner.refDistance = 1;
         spatialPanner.maxDistance = 10000;
         spatialPanner.rolloffFactor = 1;
+        spatialPanner.coneInnerAngle = 360;
+        spatialPanner.coneOuterAngle = 0;
+        spatialPanner.coneOuterGain = 0;
+
+        // Set listener (user's head) position and orientation
         if(ctx.listener.positionX) {
           ctx.listener.positionX.value = 0;
           ctx.listener.positionY.value = 0;
@@ -337,27 +397,38 @@
           ctx.listener.setPosition(0, 0, 0);
           ctx.listener.setOrientation(0, 0, -1, 0, 1, 0);
         }
+
         usingStereoFallback = false;
         updateSpatialPosition();
+        console.log('Spatial Audio: PannerNode (HRTF) initialized');
       }
     } catch(e) {
+      console.log('PannerNode failed, using StereoPanner fallback:', e);
+      // Fallback to StereoPanner for Chrome/browsers without PannerNode
       if(!spatialStereoPanner) {
-        spatialStereoPanner = ctx.createStereoPanner();
-        usingStereoFallback = true;
-        updateSpatialPosition();
+        try {
+          spatialStereoPanner = ctx.createStereoPanner();
+          usingStereoFallback = true;
+          updateSpatialPosition();
+          console.log('Spatial Audio: StereoPanner fallback initialized');
+        } catch(e2) {
+          console.error('Both PannerNode and StereoPanner failed:', e2);
+        }
       }
     }
   }
 
   function updateSpatialPosition(){
+    if(!ctx) return;
+
     if(usingStereoFallback && spatialStereoPanner) {
       const pan = Math.max(-1, Math.min(1, spatialX / 5));
       spatialStereoPanner.pan.setTargetAtTime(pan, ctx.currentTime, 0.05);
     } else if(spatialPanner) {
       if(spatialPanner.positionX) {
-        spatialPanner.positionX.value = spatialX;
-        spatialPanner.positionY.value = spatialY;
-        spatialPanner.positionZ.value = spatialZ;
+        spatialPanner.positionX.setTargetAtTime(spatialX, ctx.currentTime, 0.05);
+        spatialPanner.positionY.setTargetAtTime(spatialY, ctx.currentTime, 0.05);
+        spatialPanner.positionZ.setTargetAtTime(spatialZ, ctx.currentTime, 0.05);
       } else {
         spatialPanner.setPosition(spatialX, spatialY, spatialZ);
       }
@@ -365,13 +436,22 @@
   }
 
   function toggleSpatialAudio(){
-    if(!ctx) { initAudio(); setTimeout(toggleSpatialAudio, 100); return; }
+    if(!ctx) { 
+      initAudio(); 
+      setTimeout(toggleSpatialAudio, 200); 
+      return; 
+    }
+
     spatialEnabled = !spatialEnabled;
+
     if(spatialEnabled && !spatialPanner && !spatialStereoPanner) {
       setupSpatialAudio();
     }
+
+    // Reconnect audio graph
     try {
       analyser.disconnect();
+
       if(spatialEnabled) {
         if(usingStereoFallback && spatialStereoPanner) {
           analyser.connect(spatialStereoPanner);
@@ -379,25 +459,50 @@
         } else if(spatialPanner) {
           analyser.connect(spatialPanner);
           spatialPanner.connect(comp);
+        } else {
+          // Failed to setup, revert
+          analyser.connect(comp);
+          spatialEnabled = false;
         }
       } else {
         analyser.connect(comp);
       }
-    } catch(e) {}
+    } catch(e) {
+      console.error('Spatial audio toggle error:', e);
+      // Ensure audio still works
+      try { analyser.connect(comp); } catch(e2) {}
+      spatialEnabled = false;
+    }
+
+    // Update UI
     const btn = document.getElementById('spatialToggle');
     const controls = document.getElementById('spatialControls');
-    const mode = usingStereoFallback ? ' (Stereo)' : ' (3D)';
+    const mode = usingStereoFallback ? ' (Stereo)' : ' (3D HRTF)';
     if(btn) btn.textContent = 'Spatial: ' + (spatialEnabled ? 'On' + mode : 'Off');
     if(controls) controls.style.display = spatialEnabled ? 'block' : 'none';
   }
 
   function enableBackgroundAudio(){
     if(!ctx) return;
+
     document.addEventListener('visibilitychange', async () => {
-      if(ctx.state === 'suspended') {
-        try { await ctx.resume(); } catch(e) {}
+      if(document.hidden && ctx.state === 'running') {
+        // Keep audio alive when backgrounded (iOS limitation: ~30s)
+        console.log('App backgrounded, audio will continue briefly');
+      } else if(!document.hidden && ctx.state === 'suspended') {
+        try { 
+          await ctx.resume(); 
+          console.log('Audio resumed on foreground');
+        } catch(e) {
+          console.error('Resume failed:', e);
+        }
       }
     });
+
+    // iOS-specific: try to keep audio context active
+    if(/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+      console.log('iOS detected - spatial audio enabled for AirPods Pro/Max');
+    }
   }
 
   function initAudio(){
@@ -628,8 +733,24 @@
   startBtn.onclick=()=>initAudio();
   resetBtn.onclick=()=>resetAudio();
   themeSel.onchange=()=>{ document.body.className=document.body.className.replace(/theme-\S+/g, themeSel.value); };
-  deviceSel.onchange=()=>{ document.body.className=document.body.className.replace(/layout-(desktop|ipad|iphone)/g, deviceSel.value); };
-  orientSel.onchange=()=>{ document.body.className=document.body.className.replace(/layout-(h|v)/g, orientSel.value); };
+  deviceSel.onchange=()=>{ 
+    document.body.className=document.body.className.replace(/layout-(desktop|ipad|iphone)/g, deviceSel.value); 
+    setTimeout(() => {
+      setupCanvas(scope);
+      setupCanvas(envCanvas);
+      lastCanvasW = 0;
+      lastCanvasH = 0;
+    }, 150);
+  };
+  orientSel.onchange=()=>{ 
+    document.body.className=document.body.className.replace(/layout-(h|v)/g, orientSel.value); 
+    setTimeout(() => {
+      setupCanvas(scope);
+      setupCanvas(envCanvas);
+      lastCanvasW = 0;
+      lastCanvasH = 0;
+    }, 150);
+  };
   fontInc.onclick=()=>{ baseFont=Math.min(20, baseFont+1); document.documentElement.style.setProperty('--fs-base', baseFont+'px'); };
   fontDec.onclick=()=>{ baseFont=Math.max(14, baseFont-1); document.documentElement.style.setProperty('--fs-base', baseFont+'px'); };
   helpBtn.onclick=()=>{ helpModal.style.display='flex'; };
@@ -665,14 +786,24 @@
   let currentFreqDisplay = 0;
   let cachedScope1 = '#6897bb', cachedScope2 = '#9876aa';
   let colorCacheTime = 0;
+  let lastCanvasW = 0, lastCanvasH = 0;
 
   function drawScope(){
     animFrame = requestAnimationFrame(drawScope);
     if(!ctx || !analyser || !scope.isConnected) return;
-    const W=scope.getBoundingClientRect().width, H=scope.getBoundingClientRect().height;
-    analyser.getByteFrequencyData(freqData);
 
-    scopeCtx.fillStyle='rgba(0,0,0,0.15)';
+    const W = scope.getBoundingClientRect().width;
+    const H = scope.getBoundingClientRect().height;
+
+    // Check if canvas size changed (proper resize detection)
+    if(W !== lastCanvasW || H !== lastCanvasH) {
+      setupCanvas(scope); // Ensure canvas internal size matches
+      lastCanvasW = W;
+      lastCanvasH = H;
+    }
+
+    analyser.getByteFrequencyData(freqData);
+    scopeCtx.fillStyle='rgba(0,0,0,0.2)';
     scopeCtx.fillRect(0,0,W,H);
 
     const now = Date.now();
@@ -682,56 +813,39 @@
       colorCacheTime = now;
     }
 
-    const barCount = 64;
+    const barCount = 48;
     const usedData = freqData.slice(0, barCount);
     const barWidth = W / barCount;
 
     for(let i=0; i<barCount; i++){
-      const barHeight = (usedData[i] / 255) * H * 0.9;
+      const barHeight = (usedData[i] / 255) * H * 0.85;
+      if(barHeight < 2) continue;
+
       const x = i * barWidth;
       const y = H - barHeight;
 
       const barGrad = scopeCtx.createLinearGradient(x, H, x, y);
       barGrad.addColorStop(0, cachedScope1);
-      barGrad.addColorStop(0.5, cachedScope2);
+      barGrad.addColorStop(0.6, cachedScope2);
       barGrad.addColorStop(1, '#ffffff');
 
       scopeCtx.fillStyle = barGrad;
-      const barW = barWidth - 2;
-      scopeCtx.shadowColor = cachedScope2;
-      scopeCtx.shadowBlur = 8;
-      scopeCtx.fillRect(x + 1, y, barW, barHeight);
-
-      if(barHeight > 10) {
-        scopeCtx.fillStyle = '#ffffff';
-        scopeCtx.shadowBlur = 12;
-        scopeCtx.beginPath();
-        scopeCtx.arc(x + barW/2, y, 2, 0, Math.PI * 2);
-        scopeCtx.fill();
-      }
+      scopeCtx.fillRect(x + 1, y, barWidth - 2, barHeight);
     }
 
-    scopeCtx.shadowBlur = 0;
-
     if(currentNoteDisplay && currentFreqDisplay) {
-      scopeCtx.fillStyle = 'rgba(0,0,0,0.7)';
-      scopeCtx.fillRect(W - 180, 10, 170, 70);
-
+      scopeCtx.fillStyle = 'rgba(0,0,0,0.75)';
+      scopeCtx.fillRect(W - 170, 10, 160, 65);
       scopeCtx.strokeStyle = cachedScope2;
       scopeCtx.lineWidth = 2;
-      scopeCtx.shadowColor = cachedScope2;
-      scopeCtx.shadowBlur = 8;
-      scopeCtx.strokeRect(W - 180, 10, 170, 70);
-      scopeCtx.shadowBlur = 0;
-
+      scopeCtx.strokeRect(W - 170, 10, 160, 65);
       scopeCtx.fillStyle = '#ffffff';
-      scopeCtx.font = 'bold 28px sans-serif';
+      scopeCtx.font = 'bold 26px sans-serif';
       scopeCtx.textAlign = 'right';
-      scopeCtx.fillText(currentNoteDisplay, W - 20, 45);
-
-      scopeCtx.font = '16px sans-serif';
+      scopeCtx.fillText(currentNoteDisplay, W - 15, 40);
+      scopeCtx.font = '15px sans-serif';
       scopeCtx.fillStyle = cachedScope1;
-      scopeCtx.fillText(currentFreqDisplay.toFixed(2) + ' Hz', W - 20, 68);
+      scopeCtx.fillText(currentFreqDisplay.toFixed(1) + ' Hz', W - 15, 62);
     }
   }
 
