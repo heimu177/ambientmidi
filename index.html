@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Ambient Soundscape Studio — v1.5.0</title>
 <style>
-  /* Minimal iOS Performance */
+  /* Darcula + iOS */
   * { 
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
@@ -13,6 +13,11 @@
     user-select: none;
   }
   body {
+    --bg:#1e1e1e; --fg:#dcdcdc; --border:#3c3c3c;
+    --keyOff1:#2b2b2b; --keyOff2:#323232;
+    --accentA:#5a8fb3; --accentB:#4a7fa3;
+    --accentGlow:#5a8fb3;
+    --scope1:#5a8fb3; --scope2:#4a7fa3;
     -webkit-font-smoothing: antialiased;
     overscroll-behavior: none;
   }
@@ -73,7 +78,7 @@
   .key.active{
     transform:scale(0.97);
     background: linear-gradient(180deg, var(--accentB), var(--accentA));
-    box-shadow:0 0 15px 5px var(--accentGlow);
+    box-shadow:0 0 12px 4px var(--accentGlow);
     color:#fff;
   }
 
@@ -105,7 +110,7 @@
   #pet{ position:absolute; width:64px; height:64px; pointer-events:none; z-index:5; transition: left 0.3s ease, top 0.3s ease; font-size:48px; }
   #pet.hidden{ display:none; }
 </style>
-<script type="text/javascript" nonce="09fd1780df474b76a314de602cb" src="//local.adguard.org?ts=1763079747102&amp;type=content-script&amp;dmn=ppl-ai-code-interpreter-files.s3.amazonaws.com&amp;url=https%3A%2F%2Fppl-ai-code-interpreter-files.s3.amazonaws.com%2Fweb%2Fdirect-files%2Fb5215ad1f17a1d9f75c3618d75deca60%2F8cd63dd3-b366-4603-bddf-6c08aa5dccd7%2F68d590b0.html%3Fresponse-content-disposition%3Dattachment%253B%2520filename%253Dambient-synth-v2.1.0-fast-minimal.html%253B%2520filename%252A%253DUTF-8%2527%2527ambient-synth-v2.1.0-fast-minimal.html%26AWSAccessKeyId%3DASIA2F3EMEYEVWFV4TKA%26Signature%3DsKvnOeeO%252FP%252B5rnRSbH4S18Pm2eI%253D%26x-amz-security-token%3DIQoJb3JpZ2luX2VjEJH%252F%252F%252F%252F%252F%252F%252F%252F%252F%252FwEaCXVzLWVhc3QtMSJGMEQCIHFqeThh1X8KOjUv5zawNmPTLTOAxY%252F7fPkK%252FuNZG0OUAiAkhWLK%252Fd%252Fp2qeJBiXOPCSGfTwpCWUsc9HwDI6en3XGkirzBAhaEAEaDDY5OTc1MzMwOTcwNSIMt3eGbpGfD5%252F9vZrJKtAEsogMqyl78LylOrBOr09ybWn%252Bxp23jYe6g5IBtX9HnTCzwxFctKzTpD9hPRLza8w%252Bp%252B1NyCtsIOmHvC9TEvUPyxX96sbtWvJRADBo6Y3Cd43bEPU38m%252F7kDix5GuKoaDzr4o13LAtqDBDIDP66ztaUfnYuGknuA9i0uZpphUw3nlgftG5tdiHStKXW%252B5T0zoXUubLHW3MBQ2E4vdtoYlVRvtfwyXeFdqqHMmlRP2dVuCW3K3NcSjVHWPaOSmuRrKfwA5ZPdyrOTNpMsMqXu10NfFlYMwcxKnZvOdoeH8pgeWrCOm5APRxIQIZurd67ce3iXSWc4P5cxm3GyRPqlasmvVXBqe8zyKqgR6MmN0Iz%252FH%252BZyeD0vVpRLDEumRxPBpBJGOurRLh6dzDpGvSNvNKv5eMsh3so%252F7w3ZXR2l%252FVlIYdmjaO2zn4VDP%252F8r5033KJtfSqgd1x8KQnyh65ZvNQ1UlbzXk2BQvU9pfRy7R8JG%252F6wtPHFb0haNfHLT8178oPNwP9kaJxHRsofzhM1I2bH0l7CoEaJHoeNKEn9SDfcRLuT32IrfQ5V3DuMSxZfU85EKrC3KPMTDna2xo3V9pzrUdO2H1PQRmibDfMFc44Yng1GVxsGr4NHESW%252F3qeCmCjhC1AN%252Fx9nSpg2eyXgM%252BAu3%252F5gIzgkU5%252BZVEax75hNjNnoYO7ztBcZ4%252BjOim4%252BSdLZ4icLMPCFgZd9LZEiGOXpZQfJnec1bmPsEnD3%252Bm5zU8BIYQevb1mSIoW2SvMEfYdCPuTHO8V2D8iyoB0tqkV5zDP%252BNnIBjqZAZ96JXnf%252FmYLQ3CdWlO63IcGBdIoqJjTTrhvGTQz%252FDbklOe37q5FdwWujkidmFNTjbam5TOFxqPnDdYmHSkH3dGayHKOh6geKhD32eBI0n9a7qTgmsiDWEtZqxI%252Buza73rsFq537ft%252B9wxsz9LZAaPA7nHjutDKUa7GS3nSFEWf9NRGsL3FDCA02tNqOy6VsjtCUZtyZzn2XKA%253D%253D%26Expires%3D1763082701&amp;app=chrome.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="09fd1780df474b76a314de602cb" src="//local.adguard.org?ts=1763079747102&amp;name=AdGuard%20Assistant&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;name=Web%20of%20Trust&amp;type=user-script"></script></head>
+<script type="text/javascript" nonce="09fd1780df474b76a314de602cb" src="//local.adguard.org?ts=1763079747102&amp;type=content-script&amp;dmn=ppl-ai-code-interpreter-files.s3.amazonaws.com&amp;url=https%3A%2F%2Fppl-ai-code-interpreter-files.s3.amazonaws.com%2Fweb%2Fdirect-files%2F6403f2c402367047d140b492d3e29174%2F5fa4f860-cc81-4df0-8a73-139e079ecd4f%2F24cd91b8.html%3Fresponse-content-disposition%3Dattachment%253B%2520filename%253Dambient-synth-v2.2.4-volume-tested.html%253B%2520filename%252A%253DUTF-8%2527%2527ambient-synth-v2.2.4-volume-tested.html%26AWSAccessKeyId%3DASIA2F3EMEYEYGHSSHBY%26Signature%3DA46K5Lu0GjQpnuS8DwBwJ34NJ%252B8%253D%26x-amz-security-token%3DIQoJb3JpZ2luX2VjEJL%252F%252F%252F%252F%252F%252F%252F%252F%252F%252FwEaCXVzLWVhc3QtMSJHMEUCIQCkMbQ7D9cn1jVIOWWs5cEmzKI%252FPXqbFptzRyMq0wH12AIgQ7vTY6HsHy5w0W8h2TvNv%252FISgyCJ0PfjbEFAcoFRLkMq8wQIWxABGgw2OTk3NTMzMDk3MDUiDL19LnD6OtNuYK8jLirQBDAXs25voy7I6hRH7fDjXSWZiRbQyy%252B08c2wWRS5yyrSAyt69tM4cjG8Mnm4l9qLUFQxzEIlPZHWrXmyKEjGOGimJTKwWVcye5AYYGLSRY3oYmcnqi%252FJZLkmwFx1GCprp2mTG5EDKsmlhpdnl%252FunQni4c8GjjfM8wsgBMyfrl%252Fu1sryASTS7KdU0%252Fc%252F%252Fb4iN38HOx3rczFdlfJgSWQTitPP8I0Xnxr3F4NpPXLM549Hz5n3gch7LH8WolUXtv0kz6mGEnnkDcpebPeEjLEdESw8Fr8ORZZX4lNOO%252BzEtIiE2qxiYhFPt7FKY91oV72TjQtSx8s3aNX6yQXzUG8g7VVKYlogBmJ8w3kJkZuylj15cCvEioyYCUNZpyyghfI4W%252F%252FiJU1sEt33ag2A5NtUmJfhEOr%252FGem9P1W6aQnrV6o7lR6E6K%252B9kNaO0klFtrUrqwSYBTUu7Sad0JikHgmN8CSqC0rtS5tp3xjX5y%252B2AHoMGbPmHbUxB7Yfj5%252BuvQPJPs%252F1i22kPn2iAnG0BqTtMQ%252FGMD%252BckuR28k9BGh5nVGxiOXOt9KnYof8cn1YbnVTGXyIcvkEw626mbeLqgeA0vab8crD9%252FV2V3rxYwRbqn5Zp5HEpGiTLRReyDrTBnOF7CXGfnMh4GARVhW13WqSClZ65lwp%252F9MzBIPvSuWqRg3OtB5lyVEsC18z1wzIaCqSPjGonz4Zqus9TXsOA82dA4k6430EKhLSsv1E%252BprlfNsI2vRF31lO97B8k0qWCI%252F%252BoFja%252FXYbfY9W4kS3br7mRvVYUwkZHayAY6mAFd7fbBjtl94p2qc%252FbcbDrrtvHzsjydW%252BTOyIuDtqtihScaEpgK5SqLD9%252F%252BPCSuipyDuM6DBWvbFurT04tC8HgzLTvXSoYj673L2SCEltlPtrEY0NUqxofJmR96H%252F7%252FbhgjvaSI0utiDFaQEcwqgDeTt1MRdXPkG64t9Efo%252FrPSm6XxjqZQ6BHNP5P6OeJPuHyO3kTy0gGQ2w%253D%253D%26Expires%3D1763086286&amp;app=chrome.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="09fd1780df474b76a314de602cb" src="//local.adguard.org?ts=1763079747102&amp;name=AdGuard%20Assistant&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;name=Web%20of%20Trust&amp;type=user-script"></script></head>
 <body class="theme-darcula layout-desktop layout-v">
 <div class="container" id="mainContainer">
   <div class="title">
@@ -213,7 +218,19 @@
   const raga=[{note:'Sa',f:261.63,key:'h'},{note:'Re',f:261.63*1.122,key:'j'},{note:'Ma',f:261.63*1.333,key:'k'},{note:'Pa',f:261.63*1.5,key:'l'},{note:'Ni',f:261.63*1.889,key:';'}];
   const tet19=[{note:'C3',f:130.81,key:'a'},{note:'C#',f:130.81*Math.pow(2,1/19),key:'s'},{note:'D',f:130.81*Math.pow(2,2/19),key:'d'},{note:'Eb',f:130.81*Math.pow(2,3/19),key:'f'},{note:'E',f:130.81*Math.pow(2,4/19),key:'g'},{note:'F#',f:130.81*Math.pow(2,6/19),key:'h'}];
   const modes={pentatonic:{notes:pentatonic},solfeggio:{notes:solfeggio},chakra:{notes:chakra},bowls:{notes:bowls},just:{notes:just},a432:{notes:a432},raga:{notes:raga},'19tet':{notes:tet19}};
-  const presets=[ {name:'Wavescan Calm', mode:'pentatonic', notes:['C3','E3','G3','C4']}, {name:'Breath Bloom', mode:'pentatonic', notes:['D3','A3','D4','E4']}, {name:'Ladder Serenity', mode:'pentatonic', notes:['A3','C4','E4']}, {name:'SVF Float', mode:'pentatonic', notes:['C3','G3','C4','E4']}, {name:'Microtonal Drift', mode:'19tet', notes:['C3','D','E']}, {name:'Love & Heal', mode:'solfeggio', notes:['528Hz','639Hz']}, {name:'Cleanse Air', mode:'solfeggio', notes:['741Hz','852Hz','963Hz']}, {name:'Grounding', mode:'solfeggio', notes:['174Hz','396Hz']}, {name:'Lower Centers', mode:'chakra', notes:['Root','Sacral','Solar']}, {name:'Heart Bloom', mode:'chakra', notes:['Solar','Heart','Throat']}, {name:'Crown Clarity', mode:'chakra', notes:['Throat','3rd Eye','Crown']}, {name:'Bowls Calm', mode:'bowls', notes:['C3','G3','C4']}, {name:'Bowls Harmony', mode:'bowls', notes:['C3','E3','G3','B3']}, {name:'Just Serenity', mode:'just', notes:['C3','E3(5/4)','G3(3/2)','C4']}, {name:'432 Tranquil', mode:'a432', notes:['A3','C4','E4','A4']}, {name:'Raga Dawn', mode:'raga', notes:['Sa','Re','Ma','Pa','Ni']} ];
+  const presets=[ {name:'Wavescan Calm', mode:'pentatonic', notes:['C3','E3','G3','C4']}, {name:'Breath Bloom', mode:'pentatonic', notes:['D3','A3','D4','E4']}, {name:'Ladder Serenity', mode:'pentatonic', notes:['A3','C4','E4']}, {name:'SVF Float', mode:'pentatonic', notes:['C3','G3','C4','E4']}, {name:'Microtonal Drift', mode:'19tet', notes:['C3','D','E']}, {name:'Love & Heal', mode:'solfeggio', notes:['528Hz','639Hz']}, {name:'Cleanse Air', mode:'solfeggio', notes:['741Hz','852Hz','963Hz']}, {name:'Grounding', mode:'solfeggio', notes:['174Hz','396Hz']}, {name:'Lower Centers', mode:'chakra', notes:['Root','Sacral','Solar']}, {name:'Heart Bloom', mode:'chakra', notes:['Solar','Heart','Throat']}, {name:'Crown Clarity', mode:'chakra', notes:['Throat','3rd Eye','Crown']}, {name:'Bowls Calm', mode:'bowls', notes:['C3','G3','C4']}, {name:'Bowls Harmony', mode:'bowls', notes:['C3','E3','G3','B3']}, {name:'Just Serenity', mode:'just', notes:['C3','E3(5/4)','G3(3/2)','C4']}, {name:'432 Tranquil', mode:'a432', notes:['A3','C4','E4','A4']}, {name:'Raga Dawn', mode:'raga', notes:['Sa','Re','Ma','Pa','Ni']} ,
+    {name:'Solfeggio Healing', mode:'solfeggio', synth:'ambient-pad', notes:['UT3','RE3','MI3','FA3','MI3','RE3']},
+    {name:'Solfeggio Balance', mode:'solfeggio', synth:'hydra-pad', notes:['UT2','RE2','MI2','FA2','SOL2','LA2']},
+    {name:'Solfeggio Liberation', mode:'solfeggio', synth:'moog-one-pad', notes:['MI3','FA3','SOL3','FA3','MI3']},
+    {name:'Solfeggio Miracle', mode:'solfeggio', synth:'ambient-pad', notes:['FA2','FA3','FA2','SOL3']},
+    {name:'Solfeggio Awakening', mode:'solfeggio', synth:'hydra-pad', notes:['SOL2','LA2','SOL2','FA2','MI2']},
+    {name:'Solfeggio Divine', mode:'solfeggio', synth:'moog-one-pad', notes:['LA3','LA2','SOL2','FA2']},
+    {name:'Chakra Ascension', mode:'chakra', synth:'ambient-pad', notes:['Root','Sacral','Solar','Heart','Throat','Third Eye','Crown']},
+    {name:'Chakra Balance', mode:'chakra', synth:'hydra-pad', notes:['Root','Solar','Throat','Crown','Throat','Solar']},
+    {name:'Chakra Heart Open', mode:'chakra', synth:'moog-one-pad', notes:['Heart','Throat','Heart','Solar']},
+    {name:'Chakra Grounding', mode:'chakra', synth:'ambient-pad', notes:['Root','Sacral','Solar','Heart']},
+    {name:'Chakra Third Eye', mode:'chakra', synth:'hydra-pad', notes:['Third Eye','Crown','Third Eye','Throat']},
+    {name:'Chakra Spectrum', mode:'chakra', synth:'moog-one-pad', notes:['Root','Sacral','Solar','Heart','Throat','Third Eye','Crown']}];
 
   const startBtn=document.getElementById('startBtn'), resetBtn=document.getElementById('resetBtn');
   const themeSel=document.getElementById('themeSel'), deviceSel=document.getElementById('deviceSel'), orientSel=document.getElementById('orientSel');
@@ -302,7 +319,6 @@
     c.setTransform(1,0,0,1,0,0);
     c.scale(d,d);
   }
-
   if(typeof ResizeObserver !== 'undefined') {
     new ResizeObserver(() => setupCanvas(scope)).observe(scope);
     new ResizeObserver(() => setupCanvas(envCanvas)).observe(envCanvas);
@@ -329,7 +345,6 @@
     postChorusDelayL = ctx.createDelay(0.02); postChorusDelayR = ctx.createDelay(0.02);
     postChorusLFO.connect(postChorusDepth); postChorusDepth.connect(postChorusDelayL.delayTime); postChorusDepth.connect(postChorusDelayR.delayTime); postChorusLFO.start(ctx.currentTime);
 
-    // Defer reverb setup - will be lazy-loaded on first use
     reverbType = 'supermassive';
 
     delayNode.connect(delayFeedback); delayFeedback.connect(delayNode); delayNode.connect(delayGain);
@@ -360,40 +375,30 @@
     setTimeout(()=>initAudio(),150);
   }
 
-  let reverbBuffers = {}; // Cache generated buffers
+  let reverbBuffers = {};
 
   function setReverb(type){
     reverbType=type; 
     if(!ctx) return;
-
     const t = ctx.currentTime;
-    const fadeTime = 0.05;
-
     wetGain.gain.cancelScheduledValues(t);
     wetGain.gain.setValueAtTime(wetGain.gain.value, t);
-    wetGain.gain.linearRampToValueAtTime(0.001, t + fadeTime);
-
+    wetGain.gain.linearRampToValueAtTime(0.001, t + 0.05);
     setTimeout(() => {
       if(!ctx) return;
-
-      // Lazy-load: only generate buffer if not cached
       if(!reverbBuffers[type]) {
         reverbBuffers[type] = makeImpulse(type);
       }
       convolver.buffer = reverbBuffers[type];
-
       const cfg = revs[type];
       const t2 = ctx.currentTime;
       dryGain.gain.setTargetAtTime(cfg.dry, t2, 0.05);
       wetGain.gain.cancelScheduledValues(t2);
       wetGain.gain.setValueAtTime(0.001, t2);
       wetGain.gain.linearRampToValueAtTime(cfg.wet, t2 + 0.1);
-    }, fadeTime * 1000 + 10);
-
+    }, 60);
     reverbHint.textContent=revs[reverbType].hint||'';
     renderReverbTabs();
-    renderReverbControls();
-    applyReverbParams();
   }
 
   function renderReverbControls(){
@@ -464,21 +469,9 @@
 
   function applyReverbParams(){
     if(!ctx) return;
-    const t = ctx.currentTime;
-    const tau = 0.05;
-    loShelf.gain.setTargetAtTime(0, t, tau);
-    hiShelf.gain.setTargetAtTime(0, t, tau);
-    postChorusDepth.gain.setTargetAtTime(0, t, tau);
-    if(reverbType !== 'eventideVast' && reverbType !== 'cloud') { delayNode.delayTime.linearRampToValueAtTime(0, t + 0.1); }
-    if(reverbType==='eventideVast'){
-      loShelf.gain.setTargetAtTime(rv.eventideVast.lo, t, tau);
-      hiShelf.gain.setTargetAtTime(rv.eventideVast.hi, t, tau);
-      delayNode.delayTime.linearRampToValueAtTime(rv.eventideVast.preDelay, t + 0.1);
-    }else if(reverbType==='cloud'){
-      postChorusDepth.gain.setTargetAtTime(rv.cloudburst.ensemble*0.02, t, tau);
-      postChorusLFO.frequency.linearRampToValueAtTime(0.2 + rv.cloudburst.mod*0.8, t + 0.1);
-      delayNode.delayTime.linearRampToValueAtTime(rv.cloudburst.preDelay, t + 0.1);
-    }
+    loShelf.gain.value = 0;
+    hiShelf.gain.value = 0;
+    postChorusDepth.gain.value = 0;
   }
 
   function currentNotes(){ return modes[frequencyMode].notes; }
@@ -538,13 +531,59 @@
     timeouts.set(n.note,id);
     pressed.delete(n.note); sustained.delete(n.note);
     const idx=polyQueue.indexOf(n.note); if(idx>=0) polyQueue.splice(idx,1);
-    if(activeMap.size === 0) { currentNoteDisplay = ''; currentFreqDisplay = 0; }
   }
-  function stopAllNotes(){ Array.from(activeMap.keys()).forEach(k=>stopNote(k,true)); sustained.clear(); pressed.clear(); currentNoteDisplay = ''; currentFreqDisplay = 0; }
+  function stopAllNotes(){ 
+    if(!ctx) return;
+    const t = ctx.currentTime;
+
+    // Get current volume - vol.value is 0-100 percentage
+    const currentVolume = withHeadroom(parseFloat(vol.value)/100 || 30/100);
+
+    // Fade out
+    masterGain.gain.cancelScheduledValues(t);
+    masterGain.gain.setValueAtTime(masterGain.gain.value, t);
+    masterGain.gain.linearRampToValueAtTime(0.001, t + 0.3);
+
+    setTimeout(() => {
+      Array.from(activeMap.keys()).forEach(k=>stopNote(k,true)); 
+      sustained.clear(); 
+      pressed.clear();
+      currentNoteDisplay = ''; 
+      currentFreqDisplay = 0;
+
+      // Restore to previous volume
+      const t2 = ctx.currentTime;
+      masterGain.gain.cancelScheduledValues(t2);
+      masterGain.gain.setValueAtTime(0.001, t2);
+      masterGain.gain.linearRampToValueAtTime(currentVolume, t2 + 0.1);
+    }, 320);
+  }
 
   function renderSynthTabs(){ synthTabs.innerHTML=''; synthOrder.forEach(k=>{ const b=document.createElement('button'); b.className='tab'+(k===synthType?' active':''); b.textContent=synths[k].name; b.onclick=()=>{ synthType=k; synthHint.textContent=synths[k].hint; renderSynthTabs(); }; synthTabs.appendChild(b); }); synthHint.textContent=synths[synthType].hint; }
   function renderReverbTabs(){ reverbTabs.innerHTML=''; reverbOrder.forEach(k=>{ const b=document.createElement('button'); b.className='tab'+(k===reverbType?' active':''); b.textContent=revs[k].name; b.onclick=()=> setReverb(k); reverbTabs.appendChild(b); }); reverbHint.textContent=revs[reverbType].name; }
-  function renderPresets(){ presetWrap.innerHTML=''; presets.filter(p=>p.mode===frequencyMode).forEach(p=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=p.name; b.onclick=()=>{ stopAllNotes(); setTimeout(() => { const prev=synthType; const targetSynth = preserveSynth.checked ? prev : p.synth||prev; synthType=targetSynth; renderSynthTabs(); p.notes.forEach((nm,i)=> { setTimeout(()=>{ if(!activeMap.has(nm)) playNote(nm); }, i*120); }); }, 50); }; presetWrap.appendChild(b); }); }
+  function renderPresets(){ 
+    presetWrap.innerHTML=''; 
+    presets.filter(p=>p.mode===frequencyMode).forEach(p=>{ 
+      const b=document.createElement('button'); 
+      b.className='btn'; 
+      b.textContent=p.name; 
+      b.onclick=()=>{ 
+        stopAllNotes(); 
+        setTimeout(() => { 
+          const prev=synthType; 
+          const targetSynth = preserveSynth.checked ? prev : p.synth||prev; 
+          synthType=targetSynth; 
+          renderSynthTabs(); 
+          p.notes.forEach((nm,i)=> { 
+            setTimeout(()=>{ 
+              if(!activeMap.has(nm)) playNote(nm); 
+            }, i*120); 
+          }); 
+        }, 350);
+      }; 
+      presetWrap.appendChild(b); 
+    }); 
+  }
   function renderKeys(){ keysWrap.innerHTML=''; currentNotes().forEach(n=>{ const btn=document.createElement('div'); btn.className='key'; btn.dataset.note = n.note; btn.innerHTML='<div class="cap">'+n.key+'<br/>'+n.note+'</div>'; keysWrap.appendChild(btn); }); }
 
   startBtn.onclick=()=>initAudio();
@@ -565,7 +604,13 @@
   changelogBtn.onclick=()=>{ changelogModal.style.display='flex'; };
   changelogClose.onclick=()=>{ changelogModal.style.display='none'; };
 
-  vol.oninput=()=>{ volLabel.textContent=vol.value+'%'; if(masterGain&&ctx){ masterGain.gain.linearRampToValueAtTime(withHeadroom(vol.value/100), ctx.currentTime + 0.02); } };
+  vol.oninput=()=>{ 
+    volLabel.textContent=vol.value+'%'; 
+    if(masterGain&&ctx){ 
+      const volValue = withHeadroom(parseFloat(vol.value)/100);
+      masterGain.gain.setTargetAtTime(volValue, ctx.currentTime, 0.05); 
+    } 
+  };
   cut.oninput=()=>{ cutLabel.textContent=cut.value+'Hz'; activeMap.forEach(v=>{ if(v.filter&&ctx){ v.filter.frequency.linearRampToValueAtTime(parseFloat(cut.value), ctx.currentTime + 0.02); } }); };
   atk.oninput=()=>{ atkLabel.textContent=(+atk.value).toFixed(2)+'s'; };
   dec.oninput=()=>{ decLabel.textContent=(+dec.value).toFixed(2)+'s'; };
@@ -591,45 +636,37 @@
   let animFrame = null;
   let currentNoteDisplay = '';
   let currentFreqDisplay = 0;
-  let cachedScope1 = '#6897bb', cachedScope2 = '#9876aa';
+  let cachedScope1 = '#5a8fb3', cachedScope2 = '#4a7fa3';
   let colorCacheTime = 0;
 
   function drawScope(){
     animFrame = requestAnimationFrame(drawScope);
     if(!ctx || !analyser || !scope.isConnected) return;
-
     const W = scope.getBoundingClientRect().width;
     const H = scope.getBoundingClientRect().height;
-
     analyser.getByteFrequencyData(freqData);
-    scopeCtx.fillStyle='rgba(0,0,0,0.25)';
+    scopeCtx.fillStyle='rgba(30,30,30,0.3)';
     scopeCtx.fillRect(0,0,W,H);
-
     const now = Date.now();
     if(now - colorCacheTime > 2000) {
-      cachedScope1 = getComputedStyle(document.body).getPropertyValue('--scope1').trim() || '#6897bb';
-      cachedScope2 = getComputedStyle(document.body).getPropertyValue('--scope2').trim() || '#9876aa';
+      cachedScope1 = getComputedStyle(document.body).getPropertyValue('--scope1').trim() || '#5a8fb3';
+      cachedScope2 = getComputedStyle(document.body).getPropertyValue('--scope2').trim() || '#4a7fa3';
       colorCacheTime = now;
     }
-
     const barCount = 32;
     const barWidth = W / barCount;
-
     for(let i=0; i<barCount; i++){
       const barHeight = (freqData[i] / 255) * H * 0.8;
       if(barHeight < 3) continue;
-
       const x = i * barWidth;
       const y = H - barHeight;
-
       scopeCtx.fillStyle = i < barCount/2 ? cachedScope1 : cachedScope2;
       scopeCtx.fillRect(x + 1, y, barWidth - 2, barHeight);
     }
-
     if(currentNoteDisplay && currentFreqDisplay) {
       scopeCtx.fillStyle = 'rgba(0,0,0,0.8)';
       scopeCtx.fillRect(W - 150, 10, 140, 50);
-      scopeCtx.fillStyle = '#ffffff';
+      scopeCtx.fillStyle = '#fff';
       scopeCtx.font = 'bold 22px sans-serif';
       scopeCtx.textAlign = 'right';
       scopeCtx.fillText(currentNoteDisplay, W - 15, 35);
