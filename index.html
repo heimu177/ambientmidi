@@ -5,38 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Ambient Soundscape Studio — v1.5.0</title>
 <style>
-  /* Ultra iOS Performance */
-  * {
+  /* Minimal iOS Performance */
+  * { 
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
     user-select: none;
   }
   body {
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
   }
-  canvas {
-    will-change: auto;
-    touch-action: none;
-  }
-  .key {
-    will-change: transform, box-shadow;
-    contain: layout style paint;
-  }
-  .slider, input[type="range"] { 
-    touch-action: pan-y;
-  }
-  button, .btn, .tab { 
-    touch-action: manipulation;
-  }
-  .keys {
-    contain: layout;
-  }
+  canvas { touch-action: none; }
+  .slider { touch-action: pan-y; }
+  button, .btn, .tab { touch-action: manipulation; }
 
   :root{
     --fs-base: 16px;
@@ -90,15 +72,9 @@
   .key .cap{ position:absolute; bottom:0.9rem; left:0; right:0; text-align:center; font-size:0.8rem; pointer-events:none; line-height:1.1rem; font-weight:600; }
   .key.active{
     transform:scale(0.97);
-    background: radial-gradient(circle at center, rgba(104,151,187,0.6), rgba(152,118,170,0.3)), linear-gradient(180deg, var(--accentB), var(--accentA));
-    box-shadow:0 0 20px 8px var(--accentGlow), 0 0 40px 12px rgba(0,0,0,0.15) inset;
+    background: linear-gradient(180deg, var(--accentB), var(--accentA));
+    box-shadow:0 0 15px 5px var(--accentGlow);
     color:#fff;
-    animation: keyGlow 0.3s ease-in-out;
-  }
-  @keyframes keyGlow {
-    0% { box-shadow:0 0 10px 4px var(--accentGlow); }
-    50% { box-shadow:0 0 30px 12px var(--accentGlow), 0 0 40px 12px rgba(0,0,0,0.15) inset; }
-    100% { box-shadow:0 0 20px 8px var(--accentGlow), 0 0 40px 12px rgba(0,0,0,0.15) inset; }
   }
 
   body.theme-darcula{}
@@ -129,7 +105,7 @@
   #pet{ position:absolute; width:64px; height:64px; pointer-events:none; z-index:5; transition: left 0.3s ease, top 0.3s ease; font-size:48px; }
   #pet.hidden{ display:none; }
 </style>
-<script type="text/javascript" nonce="09fd1780df474b76a314de602cb" src="//local.adguard.org?ts=1763079747102&amp;type=content-script&amp;dmn=ppl-ai-code-interpreter-files.s3.amazonaws.com&amp;url=https%3A%2F%2Fppl-ai-code-interpreter-files.s3.amazonaws.com%2Fweb%2Fdirect-files%2F61b6b639f0c01e76b7cc65f0b5e6aefe%2Fda3720f9-4112-48e2-8a28-1df6fb214316%2F527deaf0.html%3Fresponse-content-disposition%3Dattachment%253B%2520filename%253Dambient-synth-v2.0.3-final.html%253B%2520filename%252A%253DUTF-8%2527%2527ambient-synth-v2.0.3-final.html%26AWSAccessKeyId%3DASIA2F3EMEYEQ442ARXG%26Signature%3DbKKIQ8jWfHk5JuJZAYqBrD47nEQ%253D%26x-amz-security-token%3DIQoJb3JpZ2luX2VjEJH%252F%252F%252F%252F%252F%252F%252F%252F%252F%252FwEaCXVzLWVhc3QtMSJHMEUCIEd5mCv0kToii0DHjl4ZFdL3IoFhd4%252BfVCzKVu3QwLXAAiEA6MXWMicQ93i0jO%252BqqXLN093GT1rMCMi5FxurYcIfWXIq8wQIWRABGgw2OTk3NTMzMDk3MDUiDM8bTEkq0kgd8dBcPirQBPzjVMPCIKfEfy%252FBT%252FfBGAMIEyUeF7lF9JhIxkDXevHjAAFXk9owKbVKJ8XTnbDxe29ALczALGKcJ4bCd56oNa0yzUpR1EEJifWzhnruOVeUtCTJeNLPHXdaN%252F6xzUAVi5jWEH7c%252F85b03My1PY5REynT88CPSfP%252F67JPEc4WNc6yazh8si%252Fy8aOAMxgS7CJPSMrAjus0iYVJ2Cgm9Zw1Z3Uj9L3RfhEPeXGUxzd0UsfFjY7VqSGK8rxRPQqOPw%252BytMueqyN6c%252F%252B1gosY13rYrA53yYa7NehmO41WaZ0dB1FscbLHuw1CshFMMzL8PAhTiPrkjNtzkp9NWGWwNB4NWEDi3GSCAtMd7efYswqyIkPPwZK%252F%252FMyuWTQnaovkLvgYhHuks0WMm%252B4sbKBh9nW9lkzYrY4JzYVIjEi4CY0tBEJQgtTeXj8yMDKPcuuU2sjbQ%252BvfFGBsRqRpjMCWP6SgjrWW%252FeoweR5BhaUadT%252BM3WqEKmR1wTk3PgzN%252BI5QHjaocsbeDO8Qajx%252FV%252FTMx2Vkn0tF2BJgYvDPAdTbLsuTMe51qwRtenIbIzC6i2sb5ODuq6uHg3D6jaThWYvLV4MhEmIDHK7zO8R3rATIv%252B0%252FmRWS%252Fc0CumglD3%252FAiFTyKQvjJRoKx5aJ8DKYKOsaKfdRfrlaZaGP2xFpIqdUjJiekbMnjH%252FENZYXkyR0inSl%252FADguhoVaKuqC%252BQFni60ztykLybJAUqAPNQJRZ912bR6UTU5kZS71dnaUnD6QVmZtqVmvbCPg6ONakM0tMpdZNmJ0gw2%252BnZyAY6mAF17cAP%252Bb2HtxTHeSEcvPbqrBjU%252Ff33T4oi1FmZDrVwzexfFI5y7sZEs69vZLyi%252BSvPwl4ek5InFQoo1ek0a8qC39YzutM%252BAQbWUN%252BQphsUQuIBccMSrbVNvXkgu2Ypx3ZxogHAlrf2mdQkBEGZGc1Oq4x3G6u3MRgph54tfM9b6LPjyYx%252BlxLMja0Gso3MVzFiCc4tpv7SYw%253D%253D%26Expires%3D1763081958&amp;app=chrome.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="09fd1780df474b76a314de602cb" src="//local.adguard.org?ts=1763079747102&amp;name=AdGuard%20Assistant&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;name=Web%20of%20Trust&amp;type=user-script"></script></head>
+<script type="text/javascript" nonce="09fd1780df474b76a314de602cb" src="//local.adguard.org?ts=1763079747102&amp;type=content-script&amp;dmn=ppl-ai-code-interpreter-files.s3.amazonaws.com&amp;url=https%3A%2F%2Fppl-ai-code-interpreter-files.s3.amazonaws.com%2Fweb%2Fdirect-files%2Fb5215ad1f17a1d9f75c3618d75deca60%2F8cd63dd3-b366-4603-bddf-6c08aa5dccd7%2F68d590b0.html%3Fresponse-content-disposition%3Dattachment%253B%2520filename%253Dambient-synth-v2.1.0-fast-minimal.html%253B%2520filename%252A%253DUTF-8%2527%2527ambient-synth-v2.1.0-fast-minimal.html%26AWSAccessKeyId%3DASIA2F3EMEYEVWFV4TKA%26Signature%3DsKvnOeeO%252FP%252B5rnRSbH4S18Pm2eI%253D%26x-amz-security-token%3DIQoJb3JpZ2luX2VjEJH%252F%252F%252F%252F%252F%252F%252F%252F%252F%252FwEaCXVzLWVhc3QtMSJGMEQCIHFqeThh1X8KOjUv5zawNmPTLTOAxY%252F7fPkK%252FuNZG0OUAiAkhWLK%252Fd%252Fp2qeJBiXOPCSGfTwpCWUsc9HwDI6en3XGkirzBAhaEAEaDDY5OTc1MzMwOTcwNSIMt3eGbpGfD5%252F9vZrJKtAEsogMqyl78LylOrBOr09ybWn%252Bxp23jYe6g5IBtX9HnTCzwxFctKzTpD9hPRLza8w%252Bp%252B1NyCtsIOmHvC9TEvUPyxX96sbtWvJRADBo6Y3Cd43bEPU38m%252F7kDix5GuKoaDzr4o13LAtqDBDIDP66ztaUfnYuGknuA9i0uZpphUw3nlgftG5tdiHStKXW%252B5T0zoXUubLHW3MBQ2E4vdtoYlVRvtfwyXeFdqqHMmlRP2dVuCW3K3NcSjVHWPaOSmuRrKfwA5ZPdyrOTNpMsMqXu10NfFlYMwcxKnZvOdoeH8pgeWrCOm5APRxIQIZurd67ce3iXSWc4P5cxm3GyRPqlasmvVXBqe8zyKqgR6MmN0Iz%252FH%252BZyeD0vVpRLDEumRxPBpBJGOurRLh6dzDpGvSNvNKv5eMsh3so%252F7w3ZXR2l%252FVlIYdmjaO2zn4VDP%252F8r5033KJtfSqgd1x8KQnyh65ZvNQ1UlbzXk2BQvU9pfRy7R8JG%252F6wtPHFb0haNfHLT8178oPNwP9kaJxHRsofzhM1I2bH0l7CoEaJHoeNKEn9SDfcRLuT32IrfQ5V3DuMSxZfU85EKrC3KPMTDna2xo3V9pzrUdO2H1PQRmibDfMFc44Yng1GVxsGr4NHESW%252F3qeCmCjhC1AN%252Fx9nSpg2eyXgM%252BAu3%252F5gIzgkU5%252BZVEax75hNjNnoYO7ztBcZ4%252BjOim4%252BSdLZ4icLMPCFgZd9LZEiGOXpZQfJnec1bmPsEnD3%252Bm5zU8BIYQevb1mSIoW2SvMEfYdCPuTHO8V2D8iyoB0tqkV5zDP%252BNnIBjqZAZ96JXnf%252FmYLQ3CdWlO63IcGBdIoqJjTTrhvGTQz%252FDbklOe37q5FdwWujkidmFNTjbam5TOFxqPnDdYmHSkH3dGayHKOh6geKhD32eBI0n9a7qTgmsiDWEtZqxI%252Buza73rsFq537ft%252B9wxsz9LZAaPA7nHjutDKUa7GS3nSFEWf9NRGsL3FDCA02tNqOy6VsjtCUZtyZzn2XKA%253D%253D%26Expires%3D1763082701&amp;app=chrome.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="09fd1780df474b76a314de602cb" src="//local.adguard.org?ts=1763079747102&amp;name=AdGuard%20Assistant&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;name=Web%20of%20Trust&amp;type=user-script"></script></head>
 <body class="theme-darcula layout-desktop layout-v">
 <div class="container" id="mainContainer">
   <div class="title">
@@ -320,191 +296,20 @@
   function setupCanvas(cnv){ 
     const r=cnv.getBoundingClientRect();
     const d=window.devicePixelRatio||1;
-    const newW = r.width*d;
-    const newH = r.height*d;
-
-    // Only resize if dimensions actually changed
-    if(cnv.width !== newW || cnv.height !== newH) {
-      cnv.width = newW;
-      cnv.height = newH;
-      const c=cnv.getContext('2d');
-      c.setTransform(1,0,0,1,0,0);
-      c.scale(d,d);
-
-      // Clear the canvas to prevent artifacts
-      c.clearRect(0, 0, cnv.width, cnv.height);
-    }
+    cnv.width = r.width*d;
+    cnv.height = r.height*d;
+    const c=cnv.getContext('2d');
+    c.setTransform(1,0,0,1,0,0);
+    c.scale(d,d);
   }
 
-  // ResizeObserver for automatic canvas resizing
   if(typeof ResizeObserver !== 'undefined') {
-    const scopeObserver = new ResizeObserver(() => {
-      setupCanvas(scope);
-      lastCanvasW = 0; lastCanvasH = 0; // Force redraw
-    });
-    scopeObserver.observe(scope);
-
-    const envObserver = new ResizeObserver(() => {
-      setupCanvas(envCanvas);
-    });
-    envObserver.observe(envCanvas);
+    new ResizeObserver(() => setupCanvas(scope)).observe(scope);
+    new ResizeObserver(() => setupCanvas(envCanvas)).observe(envCanvas);
   }
-
-  // Fallback for browsers without ResizeObserver
-  window.addEventListener('resize',()=>{ 
-    setupCanvas(scope); 
-    setupCanvas(envCanvas);
-    lastCanvasW = 0;
-    lastCanvasH = 0;
-  });
+  window.addEventListener('resize',()=>{ setupCanvas(scope); setupCanvas(envCanvas); });
   
   let freqData=null;
-
-  let spatialPanner = null;
-  let spatialStereoPanner = null;
-  let spatialEnabled = false;
-  let spatialX = 0, spatialY = 0, spatialZ = -1;
-  let usingStereoFallback = false;
-
-  function setupSpatialAudio(){
-    if(!ctx) return;
-
-    try {
-      // Try PannerNode (Safari with AirPods Pro spatial audio support)
-      if(!spatialPanner) {
-        spatialPanner = ctx.createPanner();
-        spatialPanner.panningModel = 'HRTF';
-        spatialPanner.distanceModel = 'inverse';
-        spatialPanner.refDistance = 1;
-        spatialPanner.maxDistance = 10000;
-        spatialPanner.rolloffFactor = 1;
-        spatialPanner.coneInnerAngle = 360;
-        spatialPanner.coneOuterAngle = 0;
-        spatialPanner.coneOuterGain = 0;
-
-        // Set listener (user's head) position and orientation
-        if(ctx.listener.positionX) {
-          ctx.listener.positionX.value = 0;
-          ctx.listener.positionY.value = 0;
-          ctx.listener.positionZ.value = 0;
-          ctx.listener.forwardX.value = 0;
-          ctx.listener.forwardY.value = 0;
-          ctx.listener.forwardZ.value = -1;
-          ctx.listener.upX.value = 0;
-          ctx.listener.upY.value = 1;
-          ctx.listener.upZ.value = 0;
-        } else {
-          ctx.listener.setPosition(0, 0, 0);
-          ctx.listener.setOrientation(0, 0, -1, 0, 1, 0);
-        }
-
-        usingStereoFallback = false;
-        updateSpatialPosition();
-        console.log('Spatial Audio: PannerNode (HRTF) initialized');
-      }
-    } catch(e) {
-      console.log('PannerNode failed, using StereoPanner fallback:', e);
-      // Fallback to StereoPanner for Chrome/browsers without PannerNode
-      if(!spatialStereoPanner) {
-        try {
-          spatialStereoPanner = ctx.createStereoPanner();
-          usingStereoFallback = true;
-          updateSpatialPosition();
-          console.log('Spatial Audio: StereoPanner fallback initialized');
-        } catch(e2) {
-          console.error('Both PannerNode and StereoPanner failed:', e2);
-        }
-      }
-    }
-  }
-
-  function updateSpatialPosition(){
-    if(!ctx) return;
-
-    if(usingStereoFallback && spatialStereoPanner) {
-      const pan = Math.max(-1, Math.min(1, spatialX / 5));
-      spatialStereoPanner.pan.setTargetAtTime(pan, ctx.currentTime, 0.05);
-    } else if(spatialPanner) {
-      if(spatialPanner.positionX) {
-        spatialPanner.positionX.setTargetAtTime(spatialX, ctx.currentTime, 0.05);
-        spatialPanner.positionY.setTargetAtTime(spatialY, ctx.currentTime, 0.05);
-        spatialPanner.positionZ.setTargetAtTime(spatialZ, ctx.currentTime, 0.05);
-      } else {
-        spatialPanner.setPosition(spatialX, spatialY, spatialZ);
-      }
-    }
-  }
-
-  function toggleSpatialAudio(){
-    if(!ctx) { 
-      initAudio(); 
-      setTimeout(toggleSpatialAudio, 200); 
-      return; 
-    }
-
-    spatialEnabled = !spatialEnabled;
-
-    if(spatialEnabled && !spatialPanner && !spatialStereoPanner) {
-      setupSpatialAudio();
-    }
-
-    // Reconnect audio graph
-    try {
-      analyser.disconnect();
-
-      if(spatialEnabled) {
-        if(usingStereoFallback && spatialStereoPanner) {
-          analyser.connect(spatialStereoPanner);
-          spatialStereoPanner.connect(comp);
-        } else if(spatialPanner) {
-          analyser.connect(spatialPanner);
-          spatialPanner.connect(comp);
-        } else {
-          // Failed to setup, revert
-          analyser.connect(comp);
-          spatialEnabled = false;
-        }
-      } else {
-        analyser.connect(comp);
-      }
-    } catch(e) {
-      console.error('Spatial audio toggle error:', e);
-      // Ensure audio still works
-      try { analyser.connect(comp); } catch(e2) {}
-      spatialEnabled = false;
-    }
-
-    // Update UI
-    const btn = document.getElementById('spatialToggle');
-    const controls = document.getElementById('spatialControls');
-    const mode = usingStereoFallback ? ' (Stereo)' : ' (3D HRTF)';
-    if(btn) btn.textContent = 'Spatial: ' + (spatialEnabled ? 'On' + mode : 'Off');
-    if(controls) controls.style.display = spatialEnabled ? 'block' : 'none';
-  }
-
-  function enableBackgroundAudio(){
-    if(!ctx) return;
-
-    document.addEventListener('visibilitychange', async () => {
-      if(document.hidden && ctx.state === 'running') {
-        // Keep audio alive when backgrounded (iOS limitation: ~30s)
-        console.log('App backgrounded, audio will continue briefly');
-      } else if(!document.hidden && ctx.state === 'suspended') {
-        try { 
-          await ctx.resume(); 
-          console.log('Audio resumed on foreground');
-        } catch(e) {
-          console.error('Resume failed:', e);
-        }
-      }
-    });
-
-    // iOS-specific: try to keep audio context active
-    if(/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-      console.log('iOS detected - spatial audio enabled for AirPods Pro/Max');
-    }
-  }
-
   function initAudio(){
     if(ctx) return;
     ctx=new (window.AudioContext||window.webkitAudioContext)();
@@ -524,7 +329,8 @@
     postChorusDelayL = ctx.createDelay(0.02); postChorusDelayR = ctx.createDelay(0.02);
     postChorusLFO.connect(postChorusDepth); postChorusDepth.connect(postChorusDelayL.delayTime); postChorusDepth.connect(postChorusDelayR.delayTime); postChorusLFO.start(ctx.currentTime);
 
-    setReverb('supermassive');
+    // Defer reverb setup - will be lazy-loaded on first use
+    reverbType = 'supermassive';
 
     delayNode.connect(delayFeedback); delayFeedback.connect(delayNode); delayNode.connect(delayGain);
     masterGain.connect(delayNode); masterGain.connect(dryGain); masterGain.connect(convolver);
@@ -544,7 +350,6 @@
 
     document.addEventListener('visibilitychange', async ()=>{ if(ctx && ctx.state==='suspended'){ try{ await ctx.resume(); }catch(e){} } if(convolver && !convolver.buffer){ setReverb(reverbType); } }, {passive:true});
     if(!animFrame) animFrame = requestAnimationFrame(drawScope);
-    enableBackgroundAudio();
   }
 
   async function resetAudio(){
@@ -555,17 +360,28 @@
     setTimeout(()=>initAudio(),150);
   }
 
+  let reverbBuffers = {}; // Cache generated buffers
+
   function setReverb(type){
     reverbType=type; 
     if(!ctx) return;
+
     const t = ctx.currentTime;
     const fadeTime = 0.05;
+
     wetGain.gain.cancelScheduledValues(t);
     wetGain.gain.setValueAtTime(wetGain.gain.value, t);
     wetGain.gain.linearRampToValueAtTime(0.001, t + fadeTime);
+
     setTimeout(() => {
       if(!ctx) return;
-      convolver.buffer = makeImpulse(type);
+
+      // Lazy-load: only generate buffer if not cached
+      if(!reverbBuffers[type]) {
+        reverbBuffers[type] = makeImpulse(type);
+      }
+      convolver.buffer = reverbBuffers[type];
+
       const cfg = revs[type];
       const t2 = ctx.currentTime;
       dryGain.gain.setTargetAtTime(cfg.dry, t2, 0.05);
@@ -573,6 +389,7 @@
       wetGain.gain.setValueAtTime(0.001, t2);
       wetGain.gain.linearRampToValueAtTime(cfg.wet, t2 + 0.1);
     }, fadeTime * 1000 + 10);
+
     reverbHint.textContent=revs[reverbType].hint||'';
     renderReverbTabs();
     renderReverbControls();
@@ -735,21 +552,11 @@
   themeSel.onchange=()=>{ document.body.className=document.body.className.replace(/theme-\S+/g, themeSel.value); };
   deviceSel.onchange=()=>{ 
     document.body.className=document.body.className.replace(/layout-(desktop|ipad|iphone)/g, deviceSel.value); 
-    setTimeout(() => {
-      setupCanvas(scope);
-      setupCanvas(envCanvas);
-      lastCanvasW = 0;
-      lastCanvasH = 0;
-    }, 150);
+    setTimeout(() => { setupCanvas(scope); setupCanvas(envCanvas); }, 100);
   };
   orientSel.onchange=()=>{ 
     document.body.className=document.body.className.replace(/layout-(h|v)/g, orientSel.value); 
-    setTimeout(() => {
-      setupCanvas(scope);
-      setupCanvas(envCanvas);
-      lastCanvasW = 0;
-      lastCanvasH = 0;
-    }, 150);
+    setTimeout(() => { setupCanvas(scope); setupCanvas(envCanvas); }, 100);
   };
   fontInc.onclick=()=>{ baseFont=Math.min(20, baseFont+1); document.documentElement.style.setProperty('--fs-base', baseFont+'px'); };
   fontDec.onclick=()=>{ baseFont=Math.max(14, baseFont-1); document.documentElement.style.setProperty('--fs-base', baseFont+'px'); };
@@ -786,7 +593,6 @@
   let currentFreqDisplay = 0;
   let cachedScope1 = '#6897bb', cachedScope2 = '#9876aa';
   let colorCacheTime = 0;
-  let lastCanvasW = 0, lastCanvasH = 0;
 
   function drawScope(){
     animFrame = requestAnimationFrame(drawScope);
@@ -795,57 +601,41 @@
     const W = scope.getBoundingClientRect().width;
     const H = scope.getBoundingClientRect().height;
 
-    // Check if canvas size changed (proper resize detection)
-    if(W !== lastCanvasW || H !== lastCanvasH) {
-      setupCanvas(scope); // Ensure canvas internal size matches
-      lastCanvasW = W;
-      lastCanvasH = H;
-    }
-
     analyser.getByteFrequencyData(freqData);
-    scopeCtx.fillStyle='rgba(0,0,0,0.2)';
+    scopeCtx.fillStyle='rgba(0,0,0,0.25)';
     scopeCtx.fillRect(0,0,W,H);
 
     const now = Date.now();
-    if(now - colorCacheTime > 1000) {
+    if(now - colorCacheTime > 2000) {
       cachedScope1 = getComputedStyle(document.body).getPropertyValue('--scope1').trim() || '#6897bb';
       cachedScope2 = getComputedStyle(document.body).getPropertyValue('--scope2').trim() || '#9876aa';
       colorCacheTime = now;
     }
 
-    const barCount = 48;
-    const usedData = freqData.slice(0, barCount);
+    const barCount = 32;
     const barWidth = W / barCount;
 
     for(let i=0; i<barCount; i++){
-      const barHeight = (usedData[i] / 255) * H * 0.85;
-      if(barHeight < 2) continue;
+      const barHeight = (freqData[i] / 255) * H * 0.8;
+      if(barHeight < 3) continue;
 
       const x = i * barWidth;
       const y = H - barHeight;
 
-      const barGrad = scopeCtx.createLinearGradient(x, H, x, y);
-      barGrad.addColorStop(0, cachedScope1);
-      barGrad.addColorStop(0.6, cachedScope2);
-      barGrad.addColorStop(1, '#ffffff');
-
-      scopeCtx.fillStyle = barGrad;
+      scopeCtx.fillStyle = i < barCount/2 ? cachedScope1 : cachedScope2;
       scopeCtx.fillRect(x + 1, y, barWidth - 2, barHeight);
     }
 
     if(currentNoteDisplay && currentFreqDisplay) {
-      scopeCtx.fillStyle = 'rgba(0,0,0,0.75)';
-      scopeCtx.fillRect(W - 170, 10, 160, 65);
-      scopeCtx.strokeStyle = cachedScope2;
-      scopeCtx.lineWidth = 2;
-      scopeCtx.strokeRect(W - 170, 10, 160, 65);
+      scopeCtx.fillStyle = 'rgba(0,0,0,0.8)';
+      scopeCtx.fillRect(W - 150, 10, 140, 50);
       scopeCtx.fillStyle = '#ffffff';
-      scopeCtx.font = 'bold 26px sans-serif';
+      scopeCtx.font = 'bold 22px sans-serif';
       scopeCtx.textAlign = 'right';
-      scopeCtx.fillText(currentNoteDisplay, W - 15, 40);
-      scopeCtx.font = '15px sans-serif';
+      scopeCtx.fillText(currentNoteDisplay, W - 15, 35);
+      scopeCtx.font = '14px sans-serif';
       scopeCtx.fillStyle = cachedScope1;
-      scopeCtx.fillText(currentFreqDisplay.toFixed(1) + ' Hz', W - 15, 62);
+      scopeCtx.fillText(currentFreqDisplay.toFixed(1) + ' Hz', W - 15, 52);
     }
   }
 
