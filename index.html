@@ -5,6 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Ambient Soundscape Studio — v1.5.0</title>
 <style>
+  /* iOS Performance Optimizations */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
+  }
+  .slider, input[type="range"] { touch-action: pan-y; }
+  button, .btn, .tab { touch-action: manipulation; }
+  canvas { touch-action: none; }
+
   :root{
     --fs-base: 16px;
     --bg:#2b2b2b; --text:#a9b7c6; --muted:#a0a4a8; --card:#3c3f41; --border:#4b4f52;
@@ -62,7 +80,6 @@
     color:#fff;
     animation: keyGlow 0.3s ease-in-out;
   }
-
   @keyframes keyGlow {
     0% { box-shadow:0 0 10px 4px var(--accentGlow); }
     50% { box-shadow:0 0 30px 12px var(--accentGlow), 0 0 40px 12px rgba(0,0,0,0.15) inset; }
@@ -97,7 +114,7 @@
   #pet{ position:absolute; width:64px; height:64px; pointer-events:none; z-index:5; transition: left 0.3s ease, top 0.3s ease; font-size:48px; }
   #pet.hidden{ display:none; }
 </style>
-<script type="text/javascript" nonce="09fd1780df474b76a314de602cb" src="//local.adguard.org?ts=1763076150557&amp;type=content-script&amp;dmn=ppl-ai-code-interpreter-files.s3.amazonaws.com&amp;url=https%3A%2F%2Fppl-ai-code-interpreter-files.s3.amazonaws.com%2Fweb%2Fdirect-files%2F0d92f116224fe19b7d102cc704aa00e4%2F9eb8d833-4ef3-41e1-bac3-e3ad18b64a28%2F5e826c30.html%3Fresponse-content-disposition%3Dattachment%253B%2520filename%253Dambient-synth-v2.0-complete.html%253B%2520filename%252A%253DUTF-8%2527%2527ambient-synth-v2.0-complete.html%26AWSAccessKeyId%3DASIA2F3EMEYEUBIZBLEC%26Signature%3Dl0bEsknFpPKwWK2G8cc%252BJqc6sTA%253D%26x-amz-security-token%3DIQoJb3JpZ2luX2VjEJD%252F%252F%252F%252F%252F%252F%252F%252F%252F%252FwEaCXVzLWVhc3QtMSJGMEQCIEDnxKQPhde9o9U4pa3sorGDn%252F7RlFXxEv7Qsz11%252BJvNAiBZSeQ7X91G4MQEpN7ol5mSxTYWV1X4TB%252FUx%252F%252FXkeaGmCrzBAhZEAEaDDY5OTc1MzMwOTcwNSIM1bbZiTZTscdNlpPyKtAESEiowKTvGFmpXI9Dui8utpHmzSx3BoEarp9xM%252BD6MIoZl3RNkM3Qg4G7FuvfP5l0hQJdGPrSJDa7PxnPpWwTvqV7ZgZDk08EZzO%252FZ5BppVmqLC5iy6WQlj%252BEGV3VIXQwDyw78kRWLp6%252Fl1pXi%252Fq7vY55W8EiL6ZfywHN7sLXP753oI4RPIf5bZTuue5aBw3Fph7XaUniuWWvGkhBzdDyHRgnE56C3Co9fUUP6BbguxctqGth8stfXBrSR%252BpVf5fMkyz%252Fp%252FSSoOI4Lufc5Ef9w2Hda65pve8CZ1VN4%252Br6ofeocH6I3QqaMMRjscbV7V%252F0vgaQhUoogoINfBZ40fB0rzmecBWM%252BRjdcdy56i4AWwrpB6GZYG89A5rC8VS4CHzkKZos0v3Qnie5uD2zp6W1vJw8Xpl4LSNt1SwgxDSx7m2O0OSSza3GPnfi2JnhjU0dLaNVJN4o4ERdosj1zC%252BxEGiKXP6M4YKJNu4LGhKZpGQe1H73tj7d1xC4uaN3dzxudmNYNDA9ZkmL9hQ6SutMqcfoxFATx%252BiE5UIDADYR5X7WaCTQY90ErEUunLFyU8ZL0ueZkavaxt5%252F9z2KthtKW5Q4w0wjcu3gZno0Q%252BOeP7nXkgE5LItLGyzvcush%252B3cC4SKAhD1TgBkTjLubASiUyfxkhGbFisQMXul9NdomofBH2YQ1xhB0fhi6Grid9q0gypyeSJjqe1WrRz2Eaq7Alghzs%252BIpOSKD2QwdpT1urtEw%252F03uDpMDDX0synUro5wqp99DwAA1%252FTo8H%252BvhEmupCTD90NnIBjqZAarVxzSIKOzx6Pi9%252BTs4eED8ndXsT9raX%252FJJuuAuHvs3RDNUQjSub%252F4ZRRriqXPpFdy01sZDyoTiGJHZsLIDbBoswAlLVgGFU7ME4WwoVA8ElK44z%252BmM8bWW%252BWDMW78taY6YKrpPWTws8ZNHJ6TclxRVICIwgNFle5zSglecwYY05KXWL1e%252BFcbiExWKjNOZlQqHdmpotbapvA%253D%253D%26Expires%3D1763077054&amp;app=chrome.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="09fd1780df474b76a314de602cb" src="//local.adguard.org?ts=1763076150557&amp;name=AdGuard%20Assistant&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;name=Web%20of%20Trust&amp;type=user-script"></script></head>
+<script type="text/javascript" nonce="09fd1780df474b76a314de602cb" src="//local.adguard.org?ts=1763079747102&amp;type=content-script&amp;dmn=ppl-ai-code-interpreter-files.s3.amazonaws.com&amp;url=https%3A%2F%2Fppl-ai-code-interpreter-files.s3.amazonaws.com%2Fweb%2Fdirect-files%2F45e9956efd573c03eccacb6896cf4ce7%2Fc828fe40-32c5-4d7a-bc97-3af615ccd954%2F4e478687.html%3Fresponse-content-disposition%3Dattachment%253B%2520filename%253Dambient-synth-v2.0.1-ios-optimized.html%253B%2520filename%252A%253DUTF-8%2527%2527ambient-synth-v2.0.1-ios-optimized.html%26AWSAccessKeyId%3DASIA2F3EMEYE2XBQFQ4H%26Signature%3Deyo1rXOobAmnU6rDNcAiP6FHdSU%253D%26x-amz-security-token%3DIQoJb3JpZ2luX2VjEJH%252F%252F%252F%252F%252F%252F%252F%252F%252F%252FwEaCXVzLWVhc3QtMSJGMEQCIG5aCRkiEVjvf2ztRYy5QscgIE4erDLsyZV93mVwk1dOAiBpE5KMlcJRCi%252Bf%252BQLy4NSQERChHsUQbrKdkpwj0zqicyrzBAhZEAEaDDY5OTc1MzMwOTcwNSIMMuUYyiiiTX10VShmKtAE0BDlT7j%252FooRQ9ye5QWEqo%252BiP5oFeHOucmIy%252FLdmRJTaH%252BNXr4dqn3i86ub5lA%252B7dhds0rP7r5PQNnGXlVjKd79QzJLHGYxXyDUYzH5UVzYEKUXieHVJGge%252Bg5kwVCapTYmVdn52a68dGsic00Unc9R%252Fjkq0sfWToPS1LthQh7vAnxReDDihSWL2PCInKl6xrqKt3ZwJz9V2isuUaesKcjnGdQClMFfXPr%252BTgTiL3IY%252Bk9f64Ks9Q0t5yK%252B%252FLtJW8eWg2OGMX3dPmf4YiJcDx%252Fil1B6G1VniTQBwTeJwEDuPQOSOVcZqFyL9brdjpXFyGjSvNcYTe05uTlmGZEl5h18FrXOnL9QrLBYQ%252F4kKynkYgzh1iXyR95Q6pls5XONTUh5uhKTK2dPTFCYs7zRaIj4jMIUBaeQLqjrXBoFgO1vKswW2f7KY%252BA%252FZxsIVHqtXBxYHRNjEkat%252FxeNHcSU6Rk1PH575ViPKsyTupqc7onEg7QDvlJIWecqoi3Tu7Ec%252BtMvWAFvV%252F9vn1pbhX7E2Ob16tHC%252FdkteQTxsgGViFxgQnGYMIWiXrLRf01gWdZlLfrVvotUiFmMwWSvOguDBxSMHptGcHT6LdRp5TI%252F6oUaVDXsd9dPtxs2ekghLPw9H0C0QausOImzFGETwVTBqAS9Eb1t8BGg3Ju905bTXUWtk89RK3K%252Ff5dDtSub4pAF8ddqVRsLk2VIdI48eYImJg3KRzmkZFUa3sieSB0w%252Bs8S9WvbC6YbxHZfwZxI13JyWvQDi0reBKeYk2UCOQeMHsPzCL6tnIBjqZAY5FxA183kip4exv9OEAP4YWXE8bkaTD4ubK8oih%252BI8pGJ3pcOGsHpnhnj%252FQTgbq%252BuVb61WSRD6hiArc4QoZA9IWqWnhyT20DEY2cmmq0tPWtAHb79dCeoCQBD8nIlwPkttjW6WIBV5XirjHe4zPLYXPV7E1X5qEYDMEiPfkHefoD9VQJXy3x8pd%252BqLIfNj7t1at%252Fn87GPFbdQ%253D%253D%26Expires%3D1763080511&amp;app=chrome.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-dnt"></script><script type="text/javascript" nonce="09fd1780df474b76a314de602cb" src="//local.adguard.org?ts=1763079747102&amp;name=AdGuard%20Assistant&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;name=Web%20of%20Trust&amp;type=user-script"></script></head>
 <body class="theme-darcula layout-desktop layout-v">
 <div class="container" id="mainContainer">
   <div class="title">
@@ -290,75 +307,97 @@
   
   let freqData=null;
 
-  // Spatial Audio (Web Audio API PannerNode with HRTF)
   let spatialPanner = null;
+  let spatialStereoPanner = null;
   let spatialEnabled = false;
   let spatialX = 0, spatialY = 0, spatialZ = -1;
+  let usingStereoFallback = false;
 
   function setupSpatialAudio(){
-    if(!ctx || spatialPanner) return;
-
-    spatialPanner = ctx.createPanner();
-    spatialPanner.panningModel = 'HRTF';
-    spatialPanner.distanceModel = 'inverse';
-    spatialPanner.refDistance = 1;
-    spatialPanner.maxDistance = 10000;
-    spatialPanner.rolloffFactor = 1;
-    spatialPanner.coneInnerAngle = 360;
-    spatialPanner.coneOuterAngle = 0;
-    spatialPanner.coneOuterGain = 0;
-
-    if(ctx.listener.positionX) {
-      ctx.listener.positionX.value = 0;
-      ctx.listener.positionY.value = 0;
-      ctx.listener.positionZ.value = 0;
-      ctx.listener.forwardX.value = 0;
-      ctx.listener.forwardY.value = 0;
-      ctx.listener.forwardZ.value = -1;
-      ctx.listener.upX.value = 0;
-      ctx.listener.upY.value = 1;
-      ctx.listener.upZ.value = 0;
-    } else {
-      ctx.listener.setPosition(0, 0, 0);
-      ctx.listener.setOrientation(0, 0, -1, 0, 1, 0);
+    if(!ctx) return;
+    try {
+      if(!spatialPanner) {
+        spatialPanner = ctx.createPanner();
+        spatialPanner.panningModel = 'HRTF';
+        spatialPanner.distanceModel = 'inverse';
+        spatialPanner.refDistance = 1;
+        spatialPanner.maxDistance = 10000;
+        spatialPanner.rolloffFactor = 1;
+        if(ctx.listener.positionX) {
+          ctx.listener.positionX.value = 0;
+          ctx.listener.positionY.value = 0;
+          ctx.listener.positionZ.value = 0;
+          ctx.listener.forwardX.value = 0;
+          ctx.listener.forwardY.value = 0;
+          ctx.listener.forwardZ.value = -1;
+          ctx.listener.upX.value = 0;
+          ctx.listener.upY.value = 1;
+          ctx.listener.upZ.value = 0;
+        } else {
+          ctx.listener.setPosition(0, 0, 0);
+          ctx.listener.setOrientation(0, 0, -1, 0, 1, 0);
+        }
+        usingStereoFallback = false;
+        updateSpatialPosition();
+      }
+    } catch(e) {
+      if(!spatialStereoPanner) {
+        spatialStereoPanner = ctx.createStereoPanner();
+        usingStereoFallback = true;
+        updateSpatialPosition();
+      }
     }
-
-    updateSpatialPosition();
   }
 
   function updateSpatialPosition(){
-    if(!spatialPanner) return;
-    if(spatialPanner.positionX) {
-      spatialPanner.positionX.value = spatialX;
-      spatialPanner.positionY.value = spatialY;
-      spatialPanner.positionZ.value = spatialZ;
-    } else {
-      spatialPanner.setPosition(spatialX, spatialY, spatialZ);
+    if(usingStereoFallback && spatialStereoPanner) {
+      const pan = Math.max(-1, Math.min(1, spatialX / 5));
+      spatialStereoPanner.pan.setTargetAtTime(pan, ctx.currentTime, 0.05);
+    } else if(spatialPanner) {
+      if(spatialPanner.positionX) {
+        spatialPanner.positionX.value = spatialX;
+        spatialPanner.positionY.value = spatialY;
+        spatialPanner.positionZ.value = spatialZ;
+      } else {
+        spatialPanner.setPosition(spatialX, spatialY, spatialZ);
+      }
     }
   }
 
   function toggleSpatialAudio(){
     if(!ctx) { initAudio(); setTimeout(toggleSpatialAudio, 100); return; }
     spatialEnabled = !spatialEnabled;
-
-    if(spatialEnabled && !spatialPanner) {
+    if(spatialEnabled && !spatialPanner && !spatialStereoPanner) {
       setupSpatialAudio();
     }
-
     try {
       analyser.disconnect();
-      if(spatialEnabled && spatialPanner) {
-        analyser.connect(spatialPanner);
-        spatialPanner.connect(comp);
+      if(spatialEnabled) {
+        if(usingStereoFallback && spatialStereoPanner) {
+          analyser.connect(spatialStereoPanner);
+          spatialStereoPanner.connect(comp);
+        } else if(spatialPanner) {
+          analyser.connect(spatialPanner);
+          spatialPanner.connect(comp);
+        }
       } else {
         analyser.connect(comp);
       }
-    } catch(e) { console.error('Spatial audio error:', e); }
-
+    } catch(e) {}
     const btn = document.getElementById('spatialToggle');
     const controls = document.getElementById('spatialControls');
-    if(btn) btn.textContent = 'Spatial: ' + (spatialEnabled ? 'On' : 'Off');
+    const mode = usingStereoFallback ? ' (Stereo)' : ' (3D)';
+    if(btn) btn.textContent = 'Spatial: ' + (spatialEnabled ? 'On' + mode : 'Off');
     if(controls) controls.style.display = spatialEnabled ? 'block' : 'none';
+  }
+
+  function enableBackgroundAudio(){
+    if(!ctx) return;
+    document.addEventListener('visibilitychange', async () => {
+      if(ctx.state === 'suspended') {
+        try { await ctx.resume(); } catch(e) {}
+      }
+    });
   }
 
   function initAudio(){
@@ -400,6 +439,7 @@
 
     document.addEventListener('visibilitychange', async ()=>{ if(ctx && ctx.state==='suspended'){ try{ await ctx.resume(); }catch(e){} } if(convolver && !convolver.buffer){ setReverb(reverbType); } }, {passive:true});
     if(!animFrame) animFrame = requestAnimationFrame(drawScope);
+    enableBackgroundAudio();
   }
 
   async function resetAudio(){
@@ -413,26 +453,21 @@
   function setReverb(type){
     reverbType=type; 
     if(!ctx) return;
-
     const t = ctx.currentTime;
     const fadeTime = 0.05;
-
     wetGain.gain.cancelScheduledValues(t);
     wetGain.gain.setValueAtTime(wetGain.gain.value, t);
     wetGain.gain.linearRampToValueAtTime(0.001, t + fadeTime);
-
     setTimeout(() => {
       if(!ctx) return;
       convolver.buffer = makeImpulse(type);
       const cfg = revs[type];
       const t2 = ctx.currentTime;
-
       dryGain.gain.setTargetAtTime(cfg.dry, t2, 0.05);
       wetGain.gain.cancelScheduledValues(t2);
       wetGain.gain.setValueAtTime(0.001, t2);
       wetGain.gain.linearRampToValueAtTime(cfg.wet, t2 + 0.1);
     }, fadeTime * 1000 + 10);
-
     reverbHint.textContent=revs[reverbType].hint||'';
     renderReverbTabs();
     renderReverbControls();
@@ -509,12 +544,10 @@
     if(!ctx) return;
     const t = ctx.currentTime;
     const tau = 0.05;
-
     loShelf.gain.setTargetAtTime(0, t, tau);
     hiShelf.gain.setTargetAtTime(0, t, tau);
     postChorusDepth.gain.setTargetAtTime(0, t, tau);
     if(reverbType !== 'eventideVast' && reverbType !== 'cloud') { delayNode.delayTime.linearRampToValueAtTime(0, t + 0.1); }
-
     if(reverbType==='eventideVast'){
       loShelf.gain.setTargetAtTime(rv.eventideVast.lo, t, tau);
       hiShelf.gain.setTargetAtTime(rv.eventideVast.hi, t, tau);
@@ -630,6 +663,8 @@
   let animFrame = null;
   let currentNoteDisplay = '';
   let currentFreqDisplay = 0;
+  let cachedScope1 = '#6897bb', cachedScope2 = '#9876aa';
+  let colorCacheTime = 0;
 
   function drawScope(){
     animFrame = requestAnimationFrame(drawScope);
@@ -640,10 +675,14 @@
     scopeCtx.fillStyle='rgba(0,0,0,0.15)';
     scopeCtx.fillRect(0,0,W,H);
 
-    const scope1 = getComputedStyle(document.body).getPropertyValue('--scope1').trim() || '#6897bb';
-    const scope2 = getComputedStyle(document.body).getPropertyValue('--scope2').trim() || '#9876aa';
+    const now = Date.now();
+    if(now - colorCacheTime > 1000) {
+      cachedScope1 = getComputedStyle(document.body).getPropertyValue('--scope1').trim() || '#6897bb';
+      cachedScope2 = getComputedStyle(document.body).getPropertyValue('--scope2').trim() || '#9876aa';
+      colorCacheTime = now;
+    }
 
-    const barCount = 128;
+    const barCount = 64;
     const usedData = freqData.slice(0, barCount);
     const barWidth = W / barCount;
 
@@ -653,19 +692,19 @@
       const y = H - barHeight;
 
       const barGrad = scopeCtx.createLinearGradient(x, H, x, y);
-      barGrad.addColorStop(0, scope1);
-      barGrad.addColorStop(0.5, scope2);
+      barGrad.addColorStop(0, cachedScope1);
+      barGrad.addColorStop(0.5, cachedScope2);
       barGrad.addColorStop(1, '#ffffff');
 
       scopeCtx.fillStyle = barGrad;
       const barW = barWidth - 2;
-      scopeCtx.shadowColor = scope2;
-      scopeCtx.shadowBlur = 15;
+      scopeCtx.shadowColor = cachedScope2;
+      scopeCtx.shadowBlur = 8;
       scopeCtx.fillRect(x + 1, y, barW, barHeight);
 
       if(barHeight > 10) {
         scopeCtx.fillStyle = '#ffffff';
-        scopeCtx.shadowBlur = 20;
+        scopeCtx.shadowBlur = 12;
         scopeCtx.beginPath();
         scopeCtx.arc(x + barW/2, y, 2, 0, Math.PI * 2);
         scopeCtx.fill();
@@ -678,10 +717,10 @@
       scopeCtx.fillStyle = 'rgba(0,0,0,0.7)';
       scopeCtx.fillRect(W - 180, 10, 170, 70);
 
-      scopeCtx.strokeStyle = scope2;
+      scopeCtx.strokeStyle = cachedScope2;
       scopeCtx.lineWidth = 2;
-      scopeCtx.shadowColor = scope2;
-      scopeCtx.shadowBlur = 10;
+      scopeCtx.shadowColor = cachedScope2;
+      scopeCtx.shadowBlur = 8;
       scopeCtx.strokeRect(W - 180, 10, 170, 70);
       scopeCtx.shadowBlur = 0;
 
@@ -691,7 +730,7 @@
       scopeCtx.fillText(currentNoteDisplay, W - 20, 45);
 
       scopeCtx.font = '16px sans-serif';
-      scopeCtx.fillStyle = scope1;
+      scopeCtx.fillStyle = cachedScope1;
       scopeCtx.fillText(currentFreqDisplay.toFixed(2) + ' Hz', W - 20, 68);
     }
   }
