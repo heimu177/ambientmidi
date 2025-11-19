@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Obsidian Pan v30 | Power Reset & Solfeggio Scales</title>
+    <title>Obsidian Pan v31 | iPad/Safari Viewport Fix</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -25,13 +25,16 @@
         body {
             background-color: var(--bg-color);
             margin: 0;
-            height: 100vh;
+            /* REMOVED: height: 100vh; to allow proper scrolling/sizing */
+            min-height: 100vh; /* Ensure it covers at least the viewport */
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start; /* Start content from the top */
+            padding-top: 20px; /* Add some padding at the top */
+            padding-bottom: 50px; /* Add padding at the bottom for scrolling */
             font-family: 'Poppins', sans-serif;
-            overflow: hidden;
+            overflow-y: auto; /* Allow scrolling */
             touch-action: none;
             user-select: none;
             color: var(--label-text);
@@ -39,7 +42,8 @@
 
         /* --- START OVERLAY --- */
         #start-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; /* Use fixed so it covers the whole screen regardless of scroll */
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); z-index: 1000;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             color: white; font-size: 1.1rem;
@@ -61,6 +65,8 @@
             gap: 30px; 
             max-width: var(--control-width);
             width: 95%;
+            /* Added min-height to help with layout on small screens */
+            min-height: 100vh; 
         }
         
         /* --- HANDPAN VISUAL (Enhanced 3D Look) --- */
@@ -212,7 +218,7 @@
             flex-wrap: wrap; 
         }
         .scale-btn { 
-            flex-basis: calc(33% - 8px); /* Adjusted for 7 scales */
+            flex-basis: calc(33% - 8px); 
             padding: 10px 8px;
             border-radius: 10px;
             background: var(--panel-bg);
@@ -250,17 +256,29 @@
              margin-bottom: 0;
         }
 
-        /* --- RESPONSIVENESS (iPhone/smaller devices) --- */
+        /* --- RESPONSIVENESS (iPad and smaller devices) --- */
         @media (max-width: 768px) {
             :root {
-                --pan-size: 300px;
+                --pan-size: 300px; /* Reduced for smaller phones */
                 --control-width: 100%;
+            }
+
+            /* Tablet-specific reduction for the handpan so other elements fit/can scroll */
+            @media (min-width: 481px) and (max-width: 768px) {
+                :root {
+                    --pan-size: 380px; /* Slight increase for iPad size range */
+                }
+            }
+            
+            body { 
+                padding-top: 10px;
+                padding-bottom: 30px;
             }
             .pan-wrapper { gap: 20px; }
             .ding-note { width: 80px; height: 80px; }
             .outer-note { width: 60px; height: 60px; }
             .scale-btn {
-                flex-basis: calc(50% - 8px); /* Max 2 buttons per row */
+                flex-basis: calc(50% - 8px); 
                 font-size: 0.7rem;
             }
             .slider-group {
@@ -285,8 +303,8 @@
 <body>
 
     <div id="start-overlay">
-        <h2>OBSIDIAN PAN v30</h2>
-        <p style="font-weight: 300;">Power Reset Fixed | Solfeggio & Chakra Scales Added</p>
+        <h2>OBSIDIAN PAN v31</h2>
+        <p style="font-weight: 300;">iPad/Safari Viewport Fix Applied</p>
         <button id="start-btn">BEGIN SOUNDSCAPE</button>
     </div>
 
@@ -405,14 +423,13 @@
             2: [174.61, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88], // F Lydian (Dream)
             3: [164.81, 220.00, 246.94, 293.66, 329.63, 392.00, 440.00, 493.88], // E Minor Pent.
             4: [220.00, 261.63, 293.66, 329.63, 349.23, 415.30, 440.00, 493.88], // A Harmonic Minor
-            // NEW SCALES
             5: [293.66, 349.23, 392.00, 417.00, 440.00, 528.00, 639.00, 741.00], // D4 Solfeggio (D4, F4, G4, Re, A4, Mi, Fa, Sol)
             6: [396.00, 417.00, 440.00, 528.00, 639.00, 741.00, 852.00, 963.00]  // C4 Chakra (Ut, Re, A4, Mi, Fa, Sol, La, Si)
         };
         
         // Note names are a compromise, mapping the note names to the first scale (D Minor) for UI consistency
         const NOTE_NAMES_D_MINOR = ["D3", "A3", "C4", "D4", "E4", "F4", "G4", "A4"];
-        const NOTE_NAMES_CHAKRA = ["Root", "Sacral", "Solar", "Heart", "Throat", "Third Eye", "Crown", "High"];
+        const NOTE_NAMES_CHAKRA = ["Root", "Sacral", "Solar", "Heart", "Throat", "3rd Eye", "Crown", "High"];
 
         
         // --- INITIALIZATION ---
@@ -907,7 +924,7 @@
                 // 1. Fade out main volume
                 masterGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.1); 
                 
-                // 2. ***FIX: KILL THE FEEDBACK LOOP INSTANTLY***
+                // 2. FIX: KILL THE FEEDBACK LOOP INSTANTLY
                 dimensionFeedback.gain.setValueAtTime(0, audioCtx.currentTime); 
                 
                 // Set a short delay before suspension to allow the fade to finish
