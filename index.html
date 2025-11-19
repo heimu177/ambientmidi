@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Obsidian Pan v33 | Ultimate Safari Scroll Fix</title>
+    <title>Obsidian Pan v35 | Tutorial Mode</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -18,6 +18,12 @@
             --label-text: #999999;
             --shadow-light: rgba(255, 255, 255, 0.05);
             --shadow-dark: rgba(0, 0, 0, 0.8);
+            
+            /* NEW TUTORIAL COLORS */
+            --accent-yellow: #ffee58; /* Tutorial highlight */ 
+            --accent-green: #4caf50; /* Success feedback */
+            --accent-red: #ff5252; /* Error feedback */
+
             --pan-size: 450px; 
             --control-width: 750px; 
         }
@@ -41,9 +47,9 @@
             
             /* The ultimate scroll guarantee for mobile devices */
             overflow-y: auto; 
-            overflow-x: hidden; /* Prevent horizontal scrolling */
+            overflow-x: hidden; 
             
-            touch-action: pan-y; /* Allow vertical touch scrolling */
+            touch-action: pan-y; 
             user-select: none;
             color: var(--label-text);
         }
@@ -100,13 +106,15 @@
                 inset 5px 5px 10px var(--shadow-dark), 
                 inset -5px -5px 10px var(--shadow-light);
             cursor: pointer;
-            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out, background-color 0.2s, border 0.2s;
             display: flex; justify-content: center; align-items: center;
             font-size: 0.85rem;
             font-weight: 600;
             color: var(--note-text-color);
             z-index: 10; 
         }
+        
+        /* Note Hit Active Style */
         .note-field.active {
             transform: scale(0.92);
             box-shadow: 
@@ -114,6 +122,30 @@
                 inset -2px -2px 5px var(--shadow-light),
                 0 0 15px var(--accent-blue);
         }
+        
+        /* --- TUTORIAL MODE STYLES --- */
+        .note-field.tutorial-active {
+            /* TARGET - Yellow/Gold Glow */
+            box-shadow: 0 0 25px var(--accent-yellow), 0 0 10px var(--accent-yellow) inset;
+            transform: scale(1.05);
+            background-color: rgba(255, 255, 0, 0.2); 
+            border: 2px solid var(--accent-yellow);
+        }
+
+        .note-field.tutorial-success {
+            /* SUCCESS - Green Glow */
+            box-shadow: 0 0 15px var(--accent-green), 0 0 8px var(--accent-green) inset;
+            background-color: rgba(76, 175, 80, 0.4); 
+        }
+        
+        .note-field.tutorial-error {
+            /* ERROR - Red Flash */
+            box-shadow: 0 0 15px var(--accent-red), 0 0 8px var(--accent-red) inset;
+            background-color: rgba(255, 82, 82, 0.4);
+            transform: scale(0.98);
+        }
+
+
         .ding-note { width: 100px; height: 100px; }
         .outer-note { width: 70px; height: 70px; }
 
@@ -130,6 +162,25 @@
             flex-direction: column;
             gap: 20px;
             width: 100%;
+        }
+
+        /* Container for displaying instructions */
+        #tutorial-display {
+            text-align: center;
+            padding: 10px;
+            margin-top: 5px;
+            background: #2a2a35;
+            color: var(--note-text-color);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            min-height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+            border-left: 5px solid var(--accent-yellow);
+            transition: all 0.2s;
         }
 
         /* --- UTILITY BUTTONS (Color Theory Update) --- */
@@ -217,7 +268,7 @@
             box-shadow: 0 0 8px var(--accent-blue);
         }
 
-        /* --- SCALE BUTTONS --- */
+        /* --- SCALE/TUTORIAL BUTTONS --- */
         .scale-buttons-group { 
             display: flex;
             justify-content: space-around;
@@ -241,7 +292,7 @@
                 -3px -3px 6px var(--shadow-light);
             transition: all 0.2s;
         }
-        .scale-btn:active {
+        .scale-btn:active, .tutorial-list-btn:active {
             box-shadow: 
                 inset 2px 2px 5px var(--shadow-dark), 
                 inset -2px -2px 5px var(--shadow-light);
@@ -256,6 +307,14 @@
                 inset -2px -2px 5px var(--shadow-light),
                 0 0 10px var(--accent-blue); 
         }
+
+        /* Tutorial Button Styling */
+        #tutorial-btn {
+            background: var(--accent-yellow);
+            color: var(--bg-color);
+            font-weight: 700;
+            box-shadow: 0 0 10px var(--accent-yellow);
+        }
         
         h3 {
              color: var(--note-text-color); 
@@ -267,14 +326,13 @@
         /* --- RESPONSIVENESS (iPad and smaller devices) --- */
         @media (max-width: 768px) {
             :root {
-                /* Even on 11inch iPad, the visible viewport height often makes 450px too tall. */
                 --pan-size: 380px; 
                 --control-width: 100%;
             }
 
             @media (min-width: 481px) and (max-width: 768px) {
                 :root {
-                    --pan-size: 400px; /* Slight bump for mid-size tablets, still allows space for controls */
+                    --pan-size: 400px; 
                 }
             }
             
@@ -305,14 +363,15 @@
             }
             .slider-container label { margin-right: 10px; }
             .control-panel { padding: 15px; }
+            #tutorial-display { font-size: 0.9rem; }
         }
     </style>
 </head>
 <body>
 
     <div id="start-overlay">
-        <h2>OBSIDIAN PAN v33</h2>
-        <p style="font-weight: 300;">Ultimate Safari Scroll Fix Applied</p>
+        <h2>OBSIDIAN PAN v35</h2>
+        <p style="font-weight: 300;">Tutorial Mode Added</p>
         <button id="start-btn">BEGIN SOUNDSCAPE</button>
     </div>
 
@@ -360,8 +419,17 @@
                 </div>
             </div>
 
-
-            <h3 style="text-align: center;">SCALE SELECTION</h3>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                <button class="scale-btn" id="tutorial-btn" style="flex-grow: 1;">
+                    START TUTORIAL MODE
+                </button>
+                <div id="tutorial-list" style="display: none; justify-content: space-around; gap: 8px; flex-wrap: wrap;">
+                    </div>
+                <div id="tutorial-display" style="display: none;">
+                    Select a lesson above to begin...
+                </div>
+            </div>
+            <h3 style="text-align: center; margin-top: 10px;">SCALE SELECTION</h3>
             <div class="scale-buttons-group" id="scale-selector">
                 <button class="scale-btn active" data-scale-index="0">D Minor (Amara)</button>
                 <button class="scale-btn" data-scale-index="1">C Major (Ionian)</button>
@@ -405,11 +473,21 @@
             surfaceSound: true 
         };
 
+        // --- TUTORIAL LOGIC STATE ---
+        let isTutorialMode = false;
+        let currentLesson = null;
+        let currentStepIndex = 0;
+        let stepDelayTimeout = null;
+        let isWaitingForHit = false;
+
         // --- UI & PARAMETERS ---
         const startButton = document.getElementById('start-btn');
         const powerButton = document.getElementById('power-btn');
         const surfaceButton = document.getElementById('surface-btn');
         const handpanVisual = document.getElementById('handpan-visual');
+        const tutorialButton = document.getElementById('tutorial-btn');
+        const tutorialList = document.getElementById('tutorial-list');
+        const tutorialDisplay = document.getElementById('tutorial-display');
 
         const sliders = {
             volume: document.getElementById('volume-slider'),
@@ -424,7 +502,63 @@
 
         let currentParams = { ...DEFAULT_PARAMS }; 
 
-        // --- SCALE DEFINITIONS ---
+        // --- LESSON DATA (Note Index: 0=Ding, 1-7=Outer notes) ---
+        // Scale Index 0: D Minor (D3, A3, C4, D4, E4, F4, G4, A4)
+        const LESSONS = {
+            // --- Existing Lessons ---
+            "Simple Melody": {
+                scaleIndex: 0,
+                sequence: [0, 1, 2, 1, 4, 3, 0], 
+                names: ["Ding", "A3", "C4", "A3", "E4", "D4", "Ding"]
+            },
+            "Twinkle Star": {
+                scaleIndex: 0, 
+                sequence: [1, 1, 5, 5, 6, 6, 5],
+                names: ["A3", "A3", "F4", "F4", "G4", "G4", "F4"]
+            },
+            "Ambient Chord": {
+                scaleIndex: 0, 
+                sequence: [0, 2, 4, 7, 4, 2, 0],
+                names: ["Ding", "C4", "E4", "A4", "E4", "C4", "Ding"]
+            },
+            
+            // --- NEW JRPG/ANIME LESSONS (All using Scale Index 0: D Minor) ---
+
+            // Final Fantasy - Prelude (The famous arpeggiated motif)
+            // Notes: D, A, C, D, E, C, A, D3, D4
+            "FF Prelude Arp.": {
+                scaleIndex: 0,
+                sequence: [3, 1, 2, 3, 4, 2, 1, 0, 3],
+                names: ["D4", "A3", "C4", "D4", "E4", "C4", "A3", "D3", "D4"]
+            },
+
+            // Chrono Trigger - Main Theme (First section of the main melody)
+            // Notes: A, C, D, E, D, C, A, C, Ding
+            "Chrono Trigger Theme": {
+                scaleIndex: 0,
+                sequence: [1, 2, 3, 4, 3, 2, 1, 2, 0],
+                names: ["A3", "C4", "D4", "E4", "D4", "C4", "A3", "C4", "D3"]
+            },
+
+            // Xenogears - Small Two of Pieces (First phrase, adapted to D Minor)
+            // Notes: D, F, E, D, A, G, F, E, D
+            "Xenogears - Small Two": {
+                scaleIndex: 0,
+                sequence: [3, 5, 4, 3, 1, 6, 5, 4, 3],
+                names: ["D4", "F4", "E4", "D4", "A3", "G4", "F4", "E4", "D4"]
+            },
+
+            // Studio Ghibli - Spirited Away (One Summer's Day - Opening Phrase)
+            // Notes: A, G, F, E, D, C, A, D (Simplified, evocative progression)
+            "Ghibli - One Summer's Day": {
+                scaleIndex: 0,
+                sequence: [7, 6, 5, 4, 3, 2, 1, 3],
+                names: ["A4", "G4", "F4", "E4", "D4", "C4", "A3", "D4"]
+            }
+        };
+
+
+        // --- SCALE DEFINITIONS (Unchanged) ---
         const NOTE_FREQUENCIES = {
             0: [146.83, 220.00, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00], // D Minor (Amara)
             1: [130.81, 196.00, 220.00, 261.63, 293.66, 329.63, 349.23, 392.00], // C Major (Ionian)
@@ -447,22 +581,28 @@
             try {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 
-                // RENAME UI LABEL 
+                // Update slider labels to reflect the name change for dimension
+                // The elements are queried here before initAudioGraph/generateHandpanNotes but they are static HTML elements, safe.
                 document.querySelector('.slider-container input#width-slider').parentNode.querySelector('label').textContent = 'DIMENSION (DELAY)';
                 document.querySelector('.slider-container input#width-slider').parentNode.querySelector('.slider-label-value').id = 'dimension-val';
                 
                 await audioCtx.resume();
                 
+                // 1. Initialize Audio and Controls
                 initAudioGraph();
                 initSliderInteractions();
                 initScaleButtonInteractions();
                 initUtilityButtonInteractions();
                 
+                // 2. CREATE the Handpan Notes (The elements that were causing the DOM crash)
                 generateHandpanNotes(NOTE_FREQUENCIES[DEFAULT_PARAMS.scale], NOTE_NAMES_D_MINOR); 
                 initSurfaceHitHandler();
 
+                // 3. Initialize TUTORIAL (Relies on note elements created in step 2)
+                initTutorialInteractions(); 
+                
                 isAudioInitialized = true; 
-                resetUIAndParams(); 
+                resetUIAndParams(); // FIXED: Uses querySelector() now.
 
                 document.getElementById('start-overlay').style.opacity = 0;
                 setTimeout(() => document.getElementById('start-overlay').style.display = 'none', 500);
@@ -472,7 +612,6 @@
             }
         });
         
-        // Function to create a hard-clipping curve for WaveShaperNode
         function createHardClipCurve(amount = 0.8) {
             const n = 2048;
             const curve = new Float32Array(n);
@@ -490,10 +629,8 @@
             return curve;
         }
 
-
         // --- AUDIO GRAPH SETUP ---
         function initAudioGraph() {
-            // Master Gain & Limiting chain
             masterGain = audioCtx.createGain();
             masterGain.gain.value = currentParams.volume;
             masterCompressor = audioCtx.createDynamicsCompressor();
@@ -502,26 +639,21 @@
             masterLimiter.ratio.value = 20; 
             
             masterGain.connect(masterCompressor).connect(masterLimiter).connect(audioCtx.destination);
-
-            // DRY BUS (Mono foundation)
             dryGain = audioCtx.createGain(); 
             dryGain.connect(masterGain); 
             
-            // REVERB BUS
             globalReverb = audioCtx.createConvolver();
             globalReverb.buffer = createReverbImpulse(5.0);
             globalReverbSend = audioCtx.createGain();
             globalReverbSend.gain.setValueAtTime(currentParams.reverb, audioCtx.currentTime);
             globalReverbSend.connect(globalReverb).connect(masterGain); 
 
-            // --- DIMENSION (MODULATED DELAY) SETUP ---
             dimensionDelay = audioCtx.createDelay(MAX_DIMENSION_DELAY);
             dimensionFeedback = audioCtx.createGain(); 
             dimensionHPF = audioCtx.createBiquadFilter(); 
             dimensionHPF.type = 'highpass';
             dimensionHPF.frequency.value = 100; 
 
-            // Hard Clipping WaveShaper for feedback loop safety
             dimensionLimiter = audioCtx.createWaveShaper(); 
             dimensionLimiter.curve = createHardClipCurve(0.8); 
 
@@ -536,19 +668,15 @@
             
             dimensionLFO.gain = lfoGain.gain;
             
-            // Routing: Dry Signal feeds the delay in parallel
             dryGain.connect(dimensionDelay);
-            
-            // Delay Output feeds Feedback Loop -> Limiter -> Filter -> Master Gain (Mix)
             dimensionDelay.connect(dimensionFeedback); 
             dimensionFeedback.connect(dimensionLimiter); 
             dimensionLimiter.connect(dimensionHPF).connect(masterGain); 
-
-            // Feedback Loop: Filtered and limited signal feeds back into its input
             dimensionHPF.connect(dimensionDelay); 
-
-            // LFO connects to the delay time parameter (modulation)
             lfoGain.connect(dimensionDelay.delayTime); 
+            
+            // FIX: Ensure the feedback gain is zeroed out to prevent the humming/drone sound
+            dimensionFeedback.gain.setValueAtTime(0.0, audioCtx.currentTime);
         }
 
         function createReverbImpulse(duration) {
@@ -571,19 +699,10 @@
             masterGain.gain.setTargetAtTime(currentParams.volume, now, 0.05);
             globalReverbSend.gain.setTargetAtTime(currentParams.reverb, now, 0.05);
             
-            // --- Dimension (Modulated Delay) Control ---
             const dimVal = currentParams.dimension;
-
-            // 1. Delay Time/Modulation Base: Base Delay is 50ms + up to 200ms
             dimensionDelay.delayTime.setTargetAtTime(0.05 + (dimVal * 0.20), now, 0.01);
-            
-            // 2. LFO Modulation Depth: Controls the shimmer/movement
             dimensionLFO.gain.setTargetAtTime(dimVal * 0.015, now, 0.05); 
-
-            // 3. Feedback/Sustain: Capped at 0.60
             dimensionFeedback.gain.setTargetAtTime(dimVal * MAX_FEEDBACK_GAIN, now, 0.05); 
-            
-            // 4. HPF adjustment 
             dimensionHPF.frequency.setTargetAtTime(100 + (dimVal * 400), now, 0.05);
         }
 
@@ -603,17 +722,14 @@
             const reverbVoiceSend = audioCtx.createGain();
             reverbVoiceSend.gain.value = currentParams.reverb * velocity; 
 
-            // Connections: Voice feeds Dry Gain AND Reverb Send
             masterVoiceGain.connect(dryGain);
             masterVoiceGain.connect(reverbVoiceSend).connect(globalReverbSend);
             
-            // Handpan Synthesis (Additive FM)
             createPartial(freq, 1.0, 0.005, 5.0, masterVoiceGain, 'sine');
             createPartial(freq * 2.0, 0.5, 0.01, 3.5, masterVoiceGain, 'sine');
             createPartial(freq * 3.007, 0.35, 0.015, 2.5, masterVoiceGain, 'sine');
             createPartial(freq * 4.25, 0.1, 0.005, 0.5, masterVoiceGain, 'triangle');
             
-            // Edge Hit Noise Feature
             if (isEdgeHit && currentParams.surfaceSound) {
                 const noiseGain = audioCtx.createGain();
                 noiseGain.gain.setValueAtTime(0, now);
@@ -630,7 +746,6 @@
                 noise.stop(now + 0.5);
             }
 
-            // Cleanup
             setTimeout(() => {
                 try { 
                     masterVoiceGain.disconnect();
@@ -639,7 +754,6 @@
             }, envelopeTime * 1000 + 500);
         }
 
-        // --- SYNTHESIS ENGINE (SURFACE) ---
         function triggerSurfaceSound(velocity) {
              if (!isAudioInitialized || !currentParams.power || !currentParams.surfaceSound) return; 
              const now = audioCtx.currentTime;
@@ -759,6 +873,10 @@
             });
 
             document.querySelectorAll('.note-field').forEach(el => {
+                // Ensure listeners are only attached once per element generation cycle
+                el.removeEventListener('mousedown', handleNoteInteractionStart);
+                el.removeEventListener('touchstart', handleNoteInteractionStart);
+                
                 el.addEventListener('mousedown', handleNoteInteractionStart);
                 el.addEventListener('touchstart', handleNoteInteractionStart);
                 el.addEventListener('mouseup', handleNoteInteractionEnd);
@@ -770,14 +888,23 @@
         
         function initSurfaceHitHandler() {
             const handleSurfaceInteractionStart = (e) => {
+                // Only process clicks on the main visual container, not the notes
                 if (e.target.id !== 'handpan-visual') return; 
 
                 e.preventDefault();
                 if (!isAudioInitialized || !currentParams.power) return;
+                if (isTutorialMode) {
+                    tutorialDisplay.textContent = "Only hit the highlighted note!";
+                    clearVisualFeedback(tutorialDisplay);
+                    return; 
+                }
 
                 let velocity = getVelocityFromEvent(e);
                 triggerSurfaceSound(velocity);
             };
+
+            handpanVisual.removeEventListener('mousedown', handleSurfaceInteractionStart);
+            handpanVisual.removeEventListener('touchstart', handleSurfaceInteractionStart);
 
             handpanVisual.addEventListener('mousedown', handleSurfaceInteractionStart);
             handpanVisual.addEventListener('touchstart', handleSurfaceInteractionStart);
@@ -790,8 +917,7 @@
             const el = this;
 
             if (!isAudioInitialized || !currentParams.power) return;
-            el.classList.add('active');
-
+            
             let velocity = getVelocityFromEvent(e);
             let clientX, clientY;
             
@@ -805,14 +931,22 @@
             
             const hitData = getHitData(el, clientX, clientY);
 
-            triggerNote(parseFloat(el.dataset.freq), velocity, hitData.isEdgeHit);
+            if (isTutorialMode) {
+                checkTutorialHit(el, velocity, hitData.isEdgeHit);
+            } else {
+                el.classList.add('active'); // Free play visual feedback
+                triggerNote(parseFloat(el.dataset.freq), velocity, hitData.isEdgeHit);
+            }
         }
 
         function handleNoteInteractionEnd(e) {
             e.preventDefault();
+            // Find the closest note-field element from the event target
             const el = e.currentTarget.closest('.note-field') || (e.target.classList.contains('note-field') ? e.target : null); 
             if (el) {
-                 el.classList.remove('active');
+                 if (!isTutorialMode) {
+                     el.classList.remove('active');
+                 }
             }
         }
 
@@ -821,6 +955,7 @@
             if (e.type.startsWith('touch') && e.touches.length > 0) {
                 const touch = e.touches[0];
                 if (touch.force !== undefined) {
+                    // Use touch force if available, clamp between 0.1 and 1.0
                     velocity = Math.max(0.1, Math.min(1.0, touch.force));
                 }
             }
@@ -838,12 +973,181 @@
             const dy = clientY - centerY;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
+            // True if hit outside the center threshold
             const isEdgeHit = distance > edgeThreshold; 
             return { isEdgeHit, distance };
         }
 
 
-        // --- CONTROL INTERACTIONS ---
+        // --- TUTORIAL CORE LOGIC ---
+        function initTutorialInteractions() {
+            // Only populate the list if it hasn't been done already
+            if (tutorialList.children.length === 0) {
+                Object.keys(LESSONS).forEach(lessonName => {
+                    const btn = document.createElement('button');
+                    // Ensure the className includes 'tutorial-list-btn' for explicit targeting later
+                    btn.className = 'scale-btn tutorial-list-btn'; 
+                    btn.textContent = lessonName;
+                    btn.dataset.lessonName = lessonName;
+                    btn.style.flexBasis = 'auto'; 
+                    btn.style.flexGrow = '1';
+                    btn.addEventListener('click', () => startLesson(lessonName));
+                    tutorialList.appendChild(btn);
+                });
+            }
+            
+            // Toggle Tutorial Mode Button
+            tutorialButton.addEventListener('click', toggleTutorialMode);
+        }
+
+        function toggleTutorialMode() {
+            isTutorialMode = !isTutorialMode;
+            tutorialButton.classList.toggle('active', isTutorialMode);
+            tutorialList.style.display = isTutorialMode ? 'flex' : 'none';
+            tutorialDisplay.style.display = isTutorialMode ? 'flex' : 'none';
+            
+            if (isTutorialMode) {
+                tutorialButton.textContent = "STOP TUTORIAL MODE";
+                tutorialDisplay.textContent = "Select a tune above to begin playing!";
+                stopLesson();
+            } else {
+                tutorialButton.textContent = "START TUTORIAL MODE";
+                tutorialDisplay.textContent = "Welcome to Free Play!";
+                // Ensure everything is cleaned up when exiting tutorial
+                stopLesson(); 
+                clearAllNoteHighlights(); 
+            }
+        }
+        
+        function startLesson(lessonName) {
+            if (!isAudioInitialized) return;
+
+            const lessonData = LESSONS[lessonName];
+            currentParams.scale = lessonData.scaleIndex;
+            
+            // Highlight the correct scale button
+            document.querySelectorAll('.scale-btn:not(.tutorial-list-btn)').forEach(b => b.classList.remove('active'));
+            
+            // FIX: Use querySelector for single element
+            const scaleBtnToActivate = document.querySelector(`.scale-btn[data-scale-index="${lessonData.scaleIndex}"]`);
+            if (scaleBtnToActivate) {
+                 scaleBtnToActivate.classList.add('active');
+            }
+            
+            // Re-generate the notes for the correct scale
+            const names = getScaleNames(lessonData.scaleIndex);
+            generateHandpanNotes(NOTE_FREQUENCIES[lessonData.scaleIndex], names);
+
+            currentLesson = lessonData.sequence;
+            currentStepIndex = 0;
+            
+            tutorialDisplay.style.borderLeftColor = 'var(--accent-yellow)';
+            
+            if (!currentParams.power) {
+                 powerButton.click(); // Turn on power if it's off
+            }
+            
+            tutorialDisplay.textContent = `Lesson: ${lessonName} - Get Ready...`;
+            clearAllNoteHighlights();
+            stepDelayTimeout = setTimeout(advanceLessonStep, 1000);
+        }
+
+        function stopLesson() {
+            if (stepDelayTimeout) {
+                clearTimeout(stepDelayTimeout);
+                stepDelayTimeout = null;
+            }
+            currentLesson = null;
+            currentStepIndex = 0;
+            isWaitingForHit = false;
+            clearAllNoteHighlights();
+            tutorialDisplay.style.borderLeftColor = 'var(--accent-yellow)';
+        }
+
+        function advanceLessonStep() {
+            clearAllNoteHighlights();
+
+            if (currentStepIndex >= currentLesson.length) {
+                // Lesson complete!
+                tutorialDisplay.style.borderLeftColor = 'var(--accent-green)';
+                tutorialDisplay.textContent = "🎶 Lesson Complete! Great job! 🎉";
+                isWaitingForHit = false;
+                return;
+            }
+
+            const expectedIndex = currentLesson[currentStepIndex];
+            const noteElement = document.querySelector(`.note-field[data-note-index="${expectedIndex}"]`);
+            const noteName = noteElement ? noteElement.textContent : 'Note';
+
+            if (noteElement) {
+                noteElement.classList.add('tutorial-active');
+                tutorialDisplay.style.borderLeftColor = 'var(--accent-yellow)';
+                tutorialDisplay.textContent = `STEP ${currentStepIndex + 1}: Hit the ${noteName} now!`;
+                isWaitingForHit = true;
+            } else {
+                console.error("Tutorial error: Note element not found for index", expectedIndex);
+            }
+        }
+        
+        function checkTutorialHit(hitElement, velocity, isEdgeHit) {
+            if (!isWaitingForHit) {
+                return;
+            }
+            
+            const hitIndex = parseInt(hitElement.dataset.noteIndex);
+            const expectedIndex = currentLesson[currentStepIndex];
+
+            if (hitIndex === expectedIndex) {
+                // SUCCESS
+                isWaitingForHit = false;
+                
+                triggerNote(parseFloat(hitElement.dataset.freq), velocity, isEdgeHit);
+                
+                hitElement.classList.remove('tutorial-active', 'tutorial-error');
+                hitElement.classList.add('tutorial-success');
+                tutorialDisplay.style.borderLeftColor = 'var(--accent-green)';
+                tutorialDisplay.textContent = "✅ Correct! Moving to the next note...";
+
+                currentStepIndex++;
+                
+                stepDelayTimeout = setTimeout(advanceLessonStep, 800);
+                
+            } else {
+                // ERROR
+                
+                // Do NOT play sound
+                
+                // Flash red feedback on the incorrectly hit note
+                hitElement.classList.remove('tutorial-active', 'tutorial-success');
+                hitElement.classList.add('tutorial-error');
+                tutorialDisplay.style.borderLeftColor = 'var(--accent-red)';
+                
+                const expectedNoteName = document.querySelector(`.note-field[data-note-index="${expectedIndex}"]`)?.textContent || 'highlighted note';
+                tutorialDisplay.textContent = `❌ That was the wrong note. Try hitting the ${expectedNoteName}!`;
+                
+                // Clear red flash after short delay
+                clearVisualFeedback(hitElement, 400); 
+            }
+        }
+        
+        function clearVisualFeedback(element, delay = 0) {
+            if (delay > 0) {
+                 setTimeout(() => element.classList.remove('tutorial-error', 'tutorial-success'), delay);
+            } else {
+                 element.classList.remove('tutorial-error', 'tutorial-success');
+            }
+        }
+
+        function clearAllNoteHighlights() {
+            // FIX: Added check (el && el.classList) for robustness against initialization race conditions
+            document.querySelectorAll('.note-field').forEach(el => {
+                if (el && el.classList) {
+                    el.classList.remove('active', 'tutorial-active', 'tutorial-success', 'tutorial-error');
+                }
+            });
+        }
+
+        // --- CONTROL INTERACTIONS (Unchanged) ---
         function initSliderInteractions() {
             Object.keys(sliders).forEach(key => {
                 const slider = sliders[key];
@@ -865,17 +1169,26 @@
             if (scaleIndex === 6) {
                 return NOTE_NAMES_CHAKRA;
             }
-            // Use D Minor names for everything else for now 
             return NOTE_NAMES_D_MINOR;
         }
 
         function initScaleButtonInteractions() {
-            document.querySelectorAll('.scale-btn').forEach(btn => {
+            // Exclude the tutorial lesson buttons
+            document.querySelectorAll('.scale-btn:not(.tutorial-list-btn)').forEach(btn => {
                 btn.addEventListener('click', (e) => {
+                    if (isTutorialMode) {
+                        tutorialDisplay.style.borderLeftColor = 'var(--accent-red)';
+                        tutorialDisplay.textContent = "🛑 Stop the tutorial before changing scales!";
+                        clearVisualFeedback(tutorialDisplay, 2000);
+                        return;
+                    }
+
                     const newScaleIndex = parseInt(e.target.dataset.scaleIndex);
                     if (newScaleIndex === currentParams.scale) return; 
 
-                    document.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.scale-btn:not(.tutorial-list-btn)').forEach(b => b.classList.remove('active'));
+                    
+                    // FIX: Use querySelector for single element
                     document.querySelector(`.scale-btn[data-scale-index="${newScaleIndex}"]`).classList.add('active');
 
                     currentParams.scale = newScaleIndex;
@@ -886,19 +1199,16 @@
         }
         
         function initUtilityButtonInteractions() {
-            // Surface Sound Toggle
             surfaceButton.addEventListener('click', () => {
                 currentParams.surfaceSound = !currentParams.surfaceSound;
                 surfaceButton.classList.toggle('active', currentParams.surfaceSound);
             });
 
-            // Bluetooth button is non-functional placeholder
             document.getElementById('bluetooth-btn').addEventListener('click', (e) => {
                 e.currentTarget.classList.toggle('active');
             });
         }
 
-        // --- UTILITY BUTTON LOGIC ---
         function resetUIAndParams() {
             currentParams = { ...DEFAULT_PARAMS };
             currentParams.power = true; 
@@ -908,14 +1218,16 @@
                 sliderVals[key].textContent = DEFAULT_PARAMS[key].toFixed(2);
             });
             
-            document.querySelectorAll('.scale-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.scale-btn[data-scale-index="${DEFAULT_PARAMS.scale}"]`).classList.add('active');
+            // FIX: Use querySelector to get the single element and avoid the crash
+            const defaultScaleBtn = document.querySelector(`.scale-btn[data-scale-index="${DEFAULT_PARAMS.scale}"]`);
+            if (defaultScaleBtn) {
+                defaultScaleBtn.classList.add('active');
+            }
             
             powerButton.classList.add('active');
             surfaceButton.classList.add('active');
             
             if (isAudioInitialized) {
-                // Ensure audio is running and gains are set on reset
                 audioCtx.resume();
                 updateMasterGains(); 
             }
@@ -925,17 +1237,17 @@
             if (!isAudioInitialized) return;
 
             if (currentParams.power) {
-                // Powering OFF
+                // Turning OFF
                 currentParams.power = false;
                 powerButton.classList.remove('active');
+                if (isTutorialMode) {
+                    toggleTutorialMode(); 
+                    clearAllNoteHighlights(); 
+                }
                 
-                // 1. Fade out main volume
                 masterGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.1); 
-                
-                // 2. FIX: KILL THE FEEDBACK LOOP INSTANTLY
                 dimensionFeedback.gain.setValueAtTime(0, audioCtx.currentTime); 
                 
-                // Set a short delay before suspension to allow the fade to finish
                 setTimeout(async () => {
                     if (audioCtx.state !== 'suspended') {
                         await audioCtx.suspend(); 
@@ -943,17 +1255,14 @@
                 }, 150); 
                 
             } else {
-                // Powering ON
+                // Turning ON
                 currentParams.power = true;
                 powerButton.classList.add('active');
                 
-                // Resume the context first
                 if (audioCtx.state !== 'running') {
                     await audioCtx.resume();
                 }
-                // Then smoothly ramp up the gain to the stored volume
                 masterGain.gain.setTargetAtTime(currentParams.volume, audioCtx.currentTime, 0.1); 
-                // Restore feedback gain immediately to the current slider setting
                 updateMasterGains();
             }
         });
