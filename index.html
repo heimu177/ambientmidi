@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Obsidian Pan v32 | Guaranteed Scrolling Fix</title>
+    <title>Obsidian Pan v33 | Ultimate Safari Scroll Fix</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -22,10 +22,15 @@
             --control-width: 750px; 
         }
 
+        /* --- CRITICAL SCROLL FIXES FOR SAFARI --- */
+        html {
+            height: 100%;
+        }
+
         body {
             background-color: var(--bg-color);
             margin: 0;
-            min-height: 100vh; /* Ensure it covers at least the viewport */
+            min-height: 100vh; 
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -34,13 +39,16 @@
             padding-bottom: 50px; 
             font-family: 'Poppins', sans-serif;
             
-            /* --- FIX: FORCE SCROLLING --- */
-            overflow-y: scroll; 
+            /* The ultimate scroll guarantee for mobile devices */
+            overflow-y: auto; 
+            overflow-x: hidden; /* Prevent horizontal scrolling */
             
-            touch-action: none;
+            touch-action: pan-y; /* Allow vertical touch scrolling */
             user-select: none;
             color: var(--label-text);
         }
+        /* -------------------------------------- */
+
 
         /* --- START OVERLAY --- */
         #start-overlay {
@@ -259,13 +267,14 @@
         /* --- RESPONSIVENESS (iPad and smaller devices) --- */
         @media (max-width: 768px) {
             :root {
-                --pan-size: 300px; 
+                /* Even on 11inch iPad, the visible viewport height often makes 450px too tall. */
+                --pan-size: 380px; 
                 --control-width: 100%;
             }
 
             @media (min-width: 481px) and (max-width: 768px) {
                 :root {
-                    --pan-size: 380px; 
+                    --pan-size: 400px; /* Slight bump for mid-size tablets, still allows space for controls */
                 }
             }
             
@@ -302,8 +311,8 @@
 <body>
 
     <div id="start-overlay">
-        <h2>OBSIDIAN PAN v32</h2>
-        <p style="font-weight: 300;">Guaranteed Scrolling Fix</p>
+        <h2>OBSIDIAN PAN v33</h2>
+        <p style="font-weight: 300;">Ultimate Safari Scroll Fix Applied</p>
         <button id="start-btn">BEGIN SOUNDSCAPE</button>
     </div>
 
@@ -863,7 +872,7 @@
         function initScaleButtonInteractions() {
             document.querySelectorAll('.scale-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    const newScaleIndex = parseInt(e.target.dataset.scale-index);
+                    const newScaleIndex = parseInt(e.target.dataset.scaleIndex);
                     if (newScaleIndex === currentParams.scale) return; 
 
                     document.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('active'));
