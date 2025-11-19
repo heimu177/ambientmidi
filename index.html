@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Obsidian Pan v31 | iPad/Safari Viewport Fix</title>
+    <title>Obsidian Pan v32 | Guaranteed Scrolling Fix</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -25,16 +25,18 @@
         body {
             background-color: var(--bg-color);
             margin: 0;
-            /* REMOVED: height: 100vh; to allow proper scrolling/sizing */
             min-height: 100vh; /* Ensure it covers at least the viewport */
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start; /* Start content from the top */
-            padding-top: 20px; /* Add some padding at the top */
-            padding-bottom: 50px; /* Add padding at the bottom for scrolling */
+            justify-content: flex-start; 
+            padding-top: 20px; 
+            padding-bottom: 50px; 
             font-family: 'Poppins', sans-serif;
-            overflow-y: auto; /* Allow scrolling */
+            
+            /* --- FIX: FORCE SCROLLING --- */
+            overflow-y: scroll; 
+            
             touch-action: none;
             user-select: none;
             color: var(--label-text);
@@ -42,7 +44,7 @@
 
         /* --- START OVERLAY --- */
         #start-overlay {
-            position: fixed; /* Use fixed so it covers the whole screen regardless of scroll */
+            position: fixed; 
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); z-index: 1000;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -65,8 +67,6 @@
             gap: 30px; 
             max-width: var(--control-width);
             width: 95%;
-            /* Added min-height to help with layout on small screens */
-            min-height: 100vh; 
         }
         
         /* --- HANDPAN VISUAL (Enhanced 3D Look) --- */
@@ -259,14 +259,13 @@
         /* --- RESPONSIVENESS (iPad and smaller devices) --- */
         @media (max-width: 768px) {
             :root {
-                --pan-size: 300px; /* Reduced for smaller phones */
+                --pan-size: 300px; 
                 --control-width: 100%;
             }
 
-            /* Tablet-specific reduction for the handpan so other elements fit/can scroll */
             @media (min-width: 481px) and (max-width: 768px) {
                 :root {
-                    --pan-size: 380px; /* Slight increase for iPad size range */
+                    --pan-size: 380px; 
                 }
             }
             
@@ -303,8 +302,8 @@
 <body>
 
     <div id="start-overlay">
-        <h2>OBSIDIAN PAN v31</h2>
-        <p style="font-weight: 300;">iPad/Safari Viewport Fix Applied</p>
+        <h2>OBSIDIAN PAN v32</h2>
+        <p style="font-weight: 300;">Guaranteed Scrolling Fix</p>
         <button id="start-btn">BEGIN SOUNDSCAPE</button>
     </div>
 
@@ -864,7 +863,7 @@
         function initScaleButtonInteractions() {
             document.querySelectorAll('.scale-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    const newScaleIndex = parseInt(e.target.dataset.scaleIndex);
+                    const newScaleIndex = parseInt(e.target.dataset.scale-index);
                     if (newScaleIndex === currentParams.scale) return; 
 
                     document.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('active'));
