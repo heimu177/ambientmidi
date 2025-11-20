@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Obsidian Pan v35 | Tutorial Mode</title>
+    <title>Obsidian Pan v41 | Three Independent Sequencers & Internal Booster Rack</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -13,26 +13,25 @@
             --pan-body-light: #32323c;
             --note-field-base: rgba(0, 0, 0, 0.4);
             --note-text-color: #dddddd;
-            --accent-blue: #00bcd4; /* Cyan/Teal (Primary Accent) */
-            --accent-magenta: #cf4f9a; /* Deep Purple/Magenta (Secondary Accent) */
+            --accent-blue: #00bcd4; /* Cyan/Teal (Primary Accent - Synth) */
+            --accent-magenta: #cf4f9a; /* Deep Purple/Magenta (Secondary Accent - Booster) */
+            --accent-orange: #ff9800; /* Tertiary Accent (Sequencer B) */
+            --accent-purple: #9c27b0; /* New Accent (Sequencer C) */
             --label-text: #999999;
             --shadow-light: rgba(255, 255, 255, 0.05);
             --shadow-dark: rgba(0, 0, 0, 0.8);
             
-            /* NEW TUTORIAL COLORS */
-            --accent-yellow: #ffee58; /* Tutorial highlight */ 
-            --accent-green: #4caf50; /* Success feedback */
-            --accent-red: #ff5252; /* Error feedback */
+            /* TUTORIAL & SEQUENCER COLORS */
+            --accent-yellow: #ffee58; /* Tutorial highlight / Active Step */ 
+            --accent-green: #4caf50; /* Success feedback / Play Button */
+            --accent-red: #ff5252; /* Error feedback / Record Button */
 
             --pan-size: 450px; 
-            --control-width: 750px; 
+            --control-width: 850px; /* Adjusted width for better spacing */
         }
 
         /* --- CRITICAL SCROLL FIXES FOR SAFARI --- */
-        html {
-            height: 100%;
-        }
-
+        html { height: 100%; }
         body {
             background-color: var(--bg-color);
             margin: 0;
@@ -44,11 +43,8 @@
             padding-top: 20px; 
             padding-bottom: 50px; 
             font-family: 'Poppins', sans-serif;
-            
-            /* The ultimate scroll guarantee for mobile devices */
             overflow-y: auto; 
             overflow-x: hidden; 
-            
             touch-action: pan-y; 
             user-select: none;
             color: var(--label-text);
@@ -56,7 +52,7 @@
         /* -------------------------------------- */
 
 
-        /* --- START OVERLAY --- */
+        /* --- START OVERLAY (Unchanged) --- */
         #start-overlay {
             position: fixed; 
             top: 0; left: 0; width: 100%; height: 100%;
@@ -83,7 +79,7 @@
             width: 95%;
         }
         
-        /* --- HANDPAN VISUAL (Enhanced 3D Look) --- */
+        /* --- HANDPAN VISUAL (Unchanged) --- */
         .handpan-container {
             position: relative;
             width: var(--pan-size);
@@ -123,34 +119,19 @@
                 0 0 15px var(--accent-blue);
         }
         
-        /* --- TUTORIAL MODE STYLES --- */
+        /* --- TUTORIAL MODE STYLES (Unchanged) --- */
         .note-field.tutorial-active {
-            /* TARGET - Yellow/Gold Glow */
             box-shadow: 0 0 25px var(--accent-yellow), 0 0 10px var(--accent-yellow) inset;
             transform: scale(1.05);
             background-color: rgba(255, 255, 0, 0.2); 
             border: 2px solid var(--accent-yellow);
         }
 
-        .note-field.tutorial-success {
-            /* SUCCESS - Green Glow */
-            box-shadow: 0 0 15px var(--accent-green), 0 0 8px var(--accent-green) inset;
-            background-color: rgba(76, 175, 80, 0.4); 
-        }
-        
-        .note-field.tutorial-error {
-            /* ERROR - Red Flash */
-            box-shadow: 0 0 15px var(--accent-red), 0 0 8px var(--accent-red) inset;
-            background-color: rgba(255, 82, 82, 0.4);
-            transform: scale(0.98);
-        }
-
-
         .ding-note { width: 100px; height: 100px; }
         .outer-note { width: 70px; height: 70px; }
 
 
-        /* --- CONTROL PANEL (Neumorphic Container) */
+        /* --- CONTROL PANEL (Neumorphic Container) --- */
         .control-panel {
             background-color: var(--panel-bg);
             border-radius: 20px;
@@ -164,66 +145,7 @@
             width: 100%;
         }
 
-        /* Container for displaying instructions */
-        #tutorial-display {
-            text-align: center;
-            padding: 10px;
-            margin-top: 5px;
-            background: #2a2a35;
-            color: var(--note-text-color);
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 500;
-            min-height: 38px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
-            border-left: 5px solid var(--accent-yellow);
-            transition: all 0.2s;
-        }
-
-        /* --- UTILITY BUTTONS (Color Theory Update) --- */
-        .utility-buttons {
-            display: flex;
-            gap: 15px; 
-            align-items: center;
-        }
-        .utility-btn {
-            width: 40px; height: 40px; 
-            border-radius: 12px;
-            background: var(--panel-bg);
-            color: var(--label-text); 
-            display: flex; justify-content: center; align-items: center;
-            cursor: pointer;
-            box-shadow: 
-                3px 3px 6px var(--shadow-dark), 
-                -3px -3px 6px var(--shadow-light);
-            transition: all 0.2s;
-        }
-        .utility-btn:active {
-            box-shadow: 
-                inset 2px 2px 5px var(--shadow-dark), 
-                inset -2px -2px 5px var(--shadow-light);
-            transform: scale(0.98);
-        }
-
-        /* Power Button Active: Matches Primary Accent (Teal) */
-        .utility-btn.power.active { 
-            color: var(--bg-color); 
-            background: var(--accent-blue); 
-            box-shadow: 0 0 15px var(--accent-blue); 
-        }
-
-        /* Surface Sound Button Active: Matches Secondary Accent (Magenta) */
-        .utility-btn.surface.active {
-            color: var(--bg-color);
-            background: var(--accent-magenta); 
-            box-shadow: 0 0 15px var(--accent-magenta); 
-        }
-        .utility-btn svg { width: 18px; height: 18px; fill: currentColor; }
-
-        /* --- SLIDERS --- */
+        /* --- SLIDERS (Unchanged) --- */
         .slider-group {
             display: flex;
             justify-content: space-around;
@@ -267,53 +189,13 @@
             cursor: pointer;
             box-shadow: 0 0 8px var(--accent-blue);
         }
-
-        /* --- SCALE/TUTORIAL BUTTONS --- */
-        .scale-buttons-group { 
-            display: flex;
-            justify-content: space-around;
-            gap: 12px;
-            padding: 10px 0;
-            flex-wrap: wrap; 
+        .control-slider.magenta::-webkit-slider-thumb {
+            background: var(--accent-magenta);
+            box-shadow: 0 0 8px var(--accent-magenta);
         }
-        .scale-btn { 
-            flex-basis: calc(33% - 8px); 
-            padding: 10px 8px;
-            border-radius: 10px;
-            background: var(--panel-bg);
-            color: var(--label-text);
-            border: none;
-            cursor: pointer;
-            font-weight: 400;
-            font-size: 0.8rem;
-            text-align: center;
-            box-shadow: 
-                3px 3px 6px var(--shadow-dark), 
-                -3px -3px 6px var(--shadow-light);
-            transition: all 0.2s;
-        }
-        .scale-btn:active, .tutorial-list-btn:active {
-            box-shadow: 
-                inset 2px 2px 5px var(--shadow-dark), 
-                inset -2px -2px 5px var(--shadow-light);
-            transform: scale(0.98);
-        }
-        .scale-btn.active {
-            background: var(--accent-blue);
-            color: var(--bg-color);
-            font-weight: 600;
-            box-shadow: 
-                inset 2px 2px 5px var(--shadow-dark), 
-                inset -2px -2px 5px var(--shadow-light),
-                0 0 10px var(--accent-blue); 
-        }
-
-        /* Tutorial Button Styling */
-        #tutorial-btn {
-            background: var(--accent-yellow);
-            color: var(--bg-color);
-            font-weight: 700;
-            box-shadow: 0 0 10px var(--accent-yellow);
+        .control-slider.orange::-webkit-slider-thumb {
+            background: var(--accent-orange);
+            box-shadow: 0 0 8px var(--accent-orange);
         }
         
         h3 {
@@ -322,6 +204,239 @@
              letter-spacing: 1px; 
              margin-bottom: 0;
         }
+        .utility-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .utility-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #2a2a35;
+            color: var(--label-text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        .utility-btn svg { width: 18px; height: 18px; fill: currentColor; }
+        .utility-btn:active {
+            box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);
+            transform: scale(0.95);
+        }
+        .utility-btn.active {
+            color: var(--accent-blue);
+            box-shadow: 0 0 5px var(--accent-blue);
+        }
+        #booster-bypass.active {
+            color: var(--accent-magenta);
+            box-shadow: 0 0 5px var(--accent-magenta);
+        }
+
+        /* --- SEQUENCER GRID LAYOUT --- */
+        .sequencer-container-grid {
+             display: grid;
+             grid-template-columns: repeat(3, 1fr); /* Three columns for A, B, C */
+             gap: 20px;
+             width: 100%;
+             margin-top: 15px;
+        }
+        
+        .sequencer-panel {
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            background: #2a2a35;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        .seq-title {
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        /* Sequencer A (Default Blue) */
+        .seq-a .seq-title { color: var(--accent-blue); }
+        .seq-a .seq-step.note-recorded { background: var(--accent-blue); }
+        /* Sequencer B (Orange) */
+        .seq-b .seq-title { color: var(--accent-orange); }
+        .seq-b .seq-step.note-recorded { background: var(--accent-orange); }
+        /* Sequencer C (Purple) */
+        .seq-c .seq-title { color: var(--accent-purple); }
+        .seq-c .seq-step.note-recorded { background: var(--accent-purple); }
+
+
+        .seq-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .seq-transport {
+            display: flex;
+            gap: 5px;
+        }
+
+        .seq-btn {
+            width: 35px; height: 30px;
+            border-radius: 6px;
+            background: var(--panel-bg);
+            color: var(--label-text);
+            border: none;
+            cursor: pointer;
+            box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+            transition: all 0.1s;
+        }
+        .seq-btn.active {
+            background-color: var(--accent-red);
+            color: var(--note-text-color);
+            box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);
+        }
+        .seq-btn#seq-play-btn.active {
+            background-color: var(--accent-green);
+        }
+
+        .seq-btn:active {
+            box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);
+            transform: scale(0.98);
+        }
+        .seq-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+        /* Sequencer Grid */
+        .seq-grid {
+            display: flex;
+            gap: 3px;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .seq-step {
+            flex-grow: 1;
+            flex-basis: 0;
+            height: 12px;
+            border-radius: 2px;
+            background: #333340;
+            transition: background 0.1s, border 0.1s;
+            cursor: pointer;
+            position: relative;
+            border: 1px solid transparent;
+        }
+
+        .seq-step.active-step {
+            /* Currently playing step OR Manually selected step */
+            border: 1px solid var(--accent-yellow);
+        }
+        
+        .seq-step.note-recorded.active-step {
+             /* Playing a step with recorded data OR Selected recorded step */
+             background: var(--accent-green) !important; /* Override specific color with GREEN for PLAYING */
+             border: 1px solid var(--accent-yellow);
+        }
+        
+        .seq-global-controls {
+            display: flex; 
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+        
+        .seq-tempo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+        #bpm-input {
+            width: 60px;
+            padding: 5px;
+            border: none;
+            border-radius: 5px;
+            background: #2a2a35;
+            color: var(--note-text-color);
+            text-align: center;
+            font-family: inherit;
+            box-shadow: inset 0 1px 3px var(--shadow-dark);
+        }
+
+        /* --- BOOSTER RACK STYLES (Unchanged) --- */
+        .booster-rack {
+             padding: 10px 0;
+             border-top: 1px solid rgba(255, 255, 255, 0.05);
+             margin-top: 20px;
+        }
+        #booster-status {
+            text-align: center;
+            padding: 10px;
+            margin-top: 5px;
+            background: #2a2a35;
+            color: var(--note-text-color);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            min-height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+            border-left: 5px solid var(--accent-magenta);
+            transition: all 0.2s;
+        }
+        .booster-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-top: 10px;
+        }
+
+        /* Scale Button Style */
+        .scale-btn {
+            background: #2a2a35;
+            color: var(--label-text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-grow: 1;
+        }
+        .scale-btn:hover {
+            border-color: var(--accent-blue);
+        }
+        .scale-btn.active {
+            background: var(--accent-blue);
+            color: var(--bg-color);
+            font-weight: 600;
+            box-shadow: 0 0 10px rgba(0, 188, 212, 0.5);
+        }
+        .scale-buttons-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding-top: 10px;
+        }
+        
+        /* TUTORIAL LIST Buttons */
+        .tutorial-list-btn {
+             background: #333340;
+             color: var(--note-text-color);
+             flex-grow: 1;
+             min-width: 45%;
+        }
+        .tutorial-list-btn:hover {
+             border-color: var(--accent-yellow);
+        }
+        .tutorial-list-btn.active {
+            background: var(--accent-yellow);
+            color: var(--bg-color);
+            box-shadow: 0 0 10px rgba(255, 238, 88, 0.5);
+        }
+
 
         /* --- RESPONSIVENESS (iPad and smaller devices) --- */
         @media (max-width: 768px) {
@@ -329,49 +444,34 @@
                 --pan-size: 380px; 
                 --control-width: 100%;
             }
-
-            @media (min-width: 481px) and (max-width: 768px) {
-                :root {
-                    --pan-size: 400px; 
-                }
-            }
-            
-            body { 
-                padding-top: 10px;
-                padding-bottom: 30px;
-            }
-            .pan-wrapper { gap: 20px; }
-            .ding-note { width: 80px; height: 80px; }
-            .outer-note { width: 60px; height: 60px; }
-            .scale-btn {
-                flex-basis: calc(50% - 8px); 
-                font-size: 0.7rem;
-            }
             .slider-group {
                 flex-direction: column;
-                gap: 10px;
+                gap: 15px;
             }
-            .slider-container {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-                width: 100%;
+            
+            .sequencer-container-grid {
+                grid-template-columns: 1fr; /* Single column on small screens */
             }
-            .control-slider {
-                width: 50%;
-                margin: 0;
+            .sequencer-panel {
+                padding: 8px;
             }
-            .slider-container label { margin-right: 10px; }
-            .control-panel { padding: 15px; }
-            #tutorial-display { font-size: 0.9rem; }
+            .seq-title {
+                font-size: 0.9rem;
+            }
+            .seq-btn {
+                 width: 30px; height: 25px;
+            }
+            .seq-tempo {
+                 font-size: 0.8rem;
+            }
         }
     </style>
 </head>
 <body>
 
     <div id="start-overlay">
-        <h2>OBSIDIAN PAN v35</h2>
-        <p style="font-weight: 300;">Tutorial Mode Added</p>
+        <h2>OBSIDIAN PAN v41</h2>
+        <p style="font-weight: 300;">Three Sequencers & Synth Booster Rack</p>
         <button id="start-btn">BEGIN SOUNDSCAPE</button>
     </div>
 
@@ -381,24 +481,24 @@
             
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div class="utility-buttons">
-                    <div class="utility-btn power" id="power-btn">
+                    <div class="utility-btn power" id="power-btn" title="Power On/Off">
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M13 3C13 2.44772 12.5523 2 12 2C11.4477 2 11 2.44772 11 3V11C11 11.5523 11.4477 12 12 12C12.5523 12 13 11.5523 13 11V3Z"/>
                             <path fill-rule="evenodd" clip-rule="evenodd" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20Z"/>
                         </svg>
                     </div>
-                     <div class="utility-btn surface" id="surface-btn">
+                     <div class="utility-btn surface" id="surface-btn" title="Toggle Surface Hit Sound">
                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="12" cy="12" r="5" fill="currentColor"/>
                          </svg>
                     </div>
-                    <div class="utility-btn bluetooth" id="bluetooth-btn">
+                    <div class="utility-btn bluetooth" id="bluetooth-btn" title="Bluetooth/MIDI Input">
                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M7 17L17 7L12 2V22L17 17L7 7L12 12L7 17Z"/>
                         </svg>
                     </div>
                 </div>
-                <h3>AMBIENT MIXER</h3>
+                <h3>MASTER MIXER</h3>
             </div>
 
             <div class="slider-group">
@@ -409,28 +509,103 @@
                 </div>
                 <div class="slider-container">
                     <label for="reverb-slider">REVERB (SIZE)</label>
-                    <input type="range" min="0" max="1" step="0.01" value="0.3" class="control-slider" id="reverb-slider">
+                    <input type="range" min="0" max="1" step="0.01" value="0.3" class="control-slider magenta" id="reverb-slider">
                     <span class="slider-label-value" id="reverb-val">0.30</span>
                 </div>
                 <div class="slider-container">
                     <label for="width-slider">DIMENSION (DELAY)</label> 
-                    <input type="range" min="0" max="1" step="0.01" value="0.0" class="control-slider" id="width-slider">
+                    <input type="range" min="0" max="1" step="0.01" value="0.0" class="control-slider orange" id="width-slider">
                     <span class="slider-label-value" id="width-val">0.00</span>
                 </div>
             </div>
+            
+            <h3 style="text-align: center; margin-top: 10px;">SEQUENCER RACK (16 STEPS)</h3>
+            <div style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                <div class="seq-global-controls">
+                    <div class="seq-transport">
+                        <button class="seq-btn" id="seq-play-btn" title="Play All Sequences">
+                            <svg viewBox="0 0 24 24"><path d="M8 5V19L19 12L8 5Z"/></svg>
+                        </button>
+                        <button class="seq-btn" id="seq-rec-btn" title="Toggle Global Recording">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/></svg>
+                        </button>
+                        <button class="seq-btn" id="seq-clear-all-btn" title="Clear All Steps on A, B, and C">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="seq-tempo">
+                        <label for="bpm-input">TEMPO (BPM)</label>
+                        <input type="number" id="bpm-input" min="60" max="240" value="120">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sequencer-container-grid">
+                
+                <div class="sequencer-panel seq-a">
+                    <div class="seq-title">SEQUENCER A (Melody)</div>
+                    <div class="seq-grid" id="seq-grid-A"></div>
+                </div>
+                
+                <div class="sequencer-panel seq-b">
+                    <div class="seq-title">SEQUENCER B (Harmony)</div>
+                    <div class="seq-grid" id="seq-grid-B"></div>
+                </div>
+                
+                <div class="sequencer-panel seq-c">
+                    <div class="seq-title">SEQUENCER C (Rhythm)</div>
+                    <div class="seq-grid" id="seq-grid-C"></div>
+                </div>
+                
+            </div>
+            <h3 style="text-align: center; margin-top: 10px; color: var(--accent-magenta);">BOOSTER RACK (SYNTH CHAIN INPUT)</h3>
+            <div class="booster-rack">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <button class="scale-btn" id="booster-toggle-btn" style="flex-grow: 1; margin-right: 10px;">
+                        ENABLE BOOSTER EFFECTS
+                    </button>
+                    <div class="utility-btn surface" id="booster-bypass" title="Bypass Filter/Flanger">
+                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 1L3 5V11C3 16.55 6.84 21.78 12 23C17.16 21.78 21 16.55 21 11V5L12 1ZM12 14.5C10.62 14.5 9.5 13.38 9.5 12C9.5 10.62 10.62 9.5 12 9.5C13.38 9.5 14.5 10.62 14.5 12C14.5 13.38 13.38 14.5 12 14.5Z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div id="booster-status" style="margin-top: 10px; border-left-color: var(--label-text);">
+                    Booster is bypassed (Synth output goes directly to Master).
+                </div>
 
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                <div class="booster-controls" style="display: none;" id="booster-controls-panel">
+                     <label for="filterFreq" style="color: var(--accent-magenta);">POLIVOKS FILTER Cutoff: <span id="freqValue" class="slider-label-value">200</span> Hz</label>
+                    <input type="range" id="filterFreq" min="50" max="2000" value="200" step="10" class="control-slider magenta">
+
+                    <label for="filterQ" style="color: var(--accent-magenta);">RESONANCE (Q): <span id="qValue" class="slider-label-value">10</span></label>
+                    <input type="range" id="filterQ" min="0.1" max="30" value="10" step="0.1" class="control-slider magenta">
+                    
+                    <label for="envSensitivity" style="color: var(--accent-magenta);">ENVELOPE SWEEP Sensitivity: <span id="envValue" class="slider-label-value">1500</span> Hz Range</label>
+                    <input type="range" id="envSensitivity" min="0" max="4000" value="1500" step="10" class="control-slider magenta">
+                    
+                    <label for="flangerDepth" style="color: var(--accent-magenta);">FLANGER/CHORUS Depth: <span id="depthValue" class="slider-label-value">0.0030</span> sec</label>
+                    <input type="range" id="flangerDepth" min="0.001" max="0.01" value="0.003" step="0.0001" class="control-slider magenta">
+
+                    <label for="flangerRate" style="color: var(--accent-magenta);">FLANGER Speed (LFO Rate): <span id="rateValue" class="slider-label-value">0.5</span> Hz</label>
+                    <input type="range" id="flangerRate" min="0.1" max="5" value="0.5" step="0.1" class="control-slider magenta">
+                </div>
+            </div>
+            <h3 style="text-align: center; margin-top: 10px;">TUTORIAL MODE</h3>
+            <div style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px;">
                 <button class="scale-btn" id="tutorial-btn" style="flex-grow: 1;">
                     START TUTORIAL MODE
                 </button>
-                <div id="tutorial-list" style="display: none; justify-content: space-around; gap: 8px; flex-wrap: wrap;">
+                <div id="tutorial-list" style="display: none; justify-content: space-around; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
                     </div>
-                <div id="tutorial-display" style="display: none;">
+                <div id="tutorial-display" style="display: none; text-align: center; padding: 10px; margin-top: 10px; background: #2a2a35; color: var(--note-text-color); border-radius: 10px; font-size: 1rem; font-weight: 500; min-height: 38px; align-items: center; justify-content: center; box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3); border-left: 5px solid var(--accent-yellow); transition: all 0.2s;">
                     Select a lesson above to begin...
                 </div>
             </div>
             <h3 style="text-align: center; margin-top: 10px;">SCALE SELECTION</h3>
-            <div class="scale-buttons-group" id="scale-selector">
+            <div class="scale-buttons-group" id="scale-selector" style="border-top: 1px solid rgba(255, 255, 255, 0.05);">
                 <button class="scale-btn active" data-scale-index="0">D Minor (Amara)</button>
                 <button class="scale-btn" data-scale-index="1">C Major (Ionian)</button>
                 <button class="scale-btn" data-scale-index="2">F Lydian (Dream)</button>
@@ -451,6 +626,7 @@
         let isAudioInitialized = false;
         let masterGain, masterCompressor, masterLimiter;
         let dryGain; 
+        let boosterInputMixer; 
         
         // REVERB & AMBIENCE NODES
         let globalReverb, globalReverbSend; 
@@ -458,10 +634,21 @@
         // DIMENSION/SUPERMASSIVE EFFECT NODES
         let dimensionDelay, dimensionLFO, dimensionFeedback, dimensionHPF, dimensionLimiter; 
 
+        // --- BOOSTER RACK NODES ---
+        let boosterSourceNode; 
+        let boosterFilterNode, boosterAnalyserNode;
+        let boosterFlangerDelay, boosterFlangerLFO, boosterFlangerFeedback, boosterLFOAmplitude;
+        let boosterOutputGain; 
+        
+        let boosterEnabled = false; 
+        let boosterBypassed = true; 
+        const FILTER_BASE_FREQ = 100;
+
         // --- CONSTANTS ---
         const MAX_DIMENSION_DELAY = 0.25; 
         const LFO_RATE = 0.2; 
         const MAX_FEEDBACK_GAIN = 0.60; 
+        const MAX_FLANGER_DELAY = 0.02;
 
         // --- DEFAULT PARAMETERS ---
         const DEFAULT_PARAMS = {
@@ -473,7 +660,22 @@
             surfaceSound: true 
         };
 
-        // --- TUTORIAL LOGIC STATE ---
+        // --- SEQUENCER LOGIC STATE (UPDATED FOR A, B, C) ---
+        const NUM_STEPS = 16;
+        let sequencerDataA = Array(NUM_STEPS).fill(null); 
+        let sequencerDataB = Array(NUM_STEPS).fill(null); 
+        let sequencerDataC = Array(NUM_STEPS).fill(null); 
+        
+        let currentStep = -1; 
+        // selectedStep now holds the step index for step input mode for each sequencer
+        let selectedStep = { A: -1, B: -1, C: -1 }; 
+        let isPlaying = false;
+        let isRecording = false; // CHANGED: Default is OFF
+        let stepIntervalTime = 500; 
+        let seqTimer; 
+        let animationFrameId; 
+
+        // --- TUTORIAL LOGIC STATE (Unchanged) ---
         let isTutorialMode = false;
         let currentLesson = null;
         let currentStepIndex = 0;
@@ -488,6 +690,10 @@
         const tutorialButton = document.getElementById('tutorial-btn');
         const tutorialList = document.getElementById('tutorial-list');
         const tutorialDisplay = document.getElementById('tutorial-display');
+        const boosterToggleButton = document.getElementById('booster-toggle-btn');
+        const boosterStatus = document.getElementById('booster-status');
+        const boosterPanel = document.getElementById('booster-controls-panel');
+        const boosterBypassBtn = document.getElementById('booster-bypass');
 
         const sliders = {
             volume: document.getElementById('volume-slider'),
@@ -499,13 +705,20 @@
              reverb: document.getElementById('reverb-val'),
              dimension: document.getElementById('width-val') 
         };
+        
+        // Sequencer UI Elements
+        const seqGridElA = document.getElementById('seq-grid-A');
+        const seqGridElB = document.getElementById('seq-grid-B');
+        const seqGridElC = document.getElementById('seq-grid-C');
+        const seqPlayBtn = document.getElementById('seq-play-btn');
+        const seqRecBtn = document.getElementById('seq-rec-btn');
+        const seqClearAllBtn = document.getElementById('seq-clear-all-btn');
+        const bpmInput = document.getElementById('bpm-input');
 
         let currentParams = { ...DEFAULT_PARAMS }; 
 
-        // --- LESSON DATA (Note Index: 0=Ding, 1-7=Outer notes) ---
-        // Scale Index 0: D Minor (D3, A3, C4, D4, E4, F4, G4, A4)
+        // --- LESSON DATA (Unchanged) ---
         const LESSONS = {
-            // --- Existing Lessons ---
             "Simple Melody": {
                 scaleIndex: 0,
                 sequence: [0, 1, 2, 1, 4, 3, 0], 
@@ -521,58 +734,61 @@
                 sequence: [0, 2, 4, 7, 4, 2, 0],
                 names: ["Ding", "C4", "E4", "A4", "E4", "C4", "Ding"]
             },
-            
-            // --- NEW JRPG/ANIME LESSONS (All using Scale Index 0: D Minor) ---
-
-            // Final Fantasy - Prelude (The famous arpeggiated motif)
-            // Notes: D, A, C, D, E, C, A, D3, D4
             "FF Prelude Arp.": {
                 scaleIndex: 0,
                 sequence: [3, 1, 2, 3, 4, 2, 1, 0, 3],
                 names: ["D4", "A3", "C4", "D4", "E4", "C4", "A3", "D3", "D4"]
             },
-
-            // Chrono Trigger - Main Theme (First section of the main melody)
-            // Notes: A, C, D, E, D, C, A, C, Ding
             "Chrono Trigger Theme": {
                 scaleIndex: 0,
                 sequence: [1, 2, 3, 4, 3, 2, 1, 2, 0],
                 names: ["A3", "C4", "D4", "E4", "D4", "C4", "A3", "C4", "D3"]
-            },
-
-            // Xenogears - Small Two of Pieces (First phrase, adapted to D Minor)
-            // Notes: D, F, E, D, A, G, F, E, D
-            "Xenogears - Small Two": {
-                scaleIndex: 0,
-                sequence: [3, 5, 4, 3, 1, 6, 5, 4, 3],
-                names: ["D4", "F4", "E4", "D4", "A3", "G4", "F4", "E4", "D4"]
-            },
-
-            // Studio Ghibli - Spirited Away (One Summer's Day - Opening Phrase)
-            // Notes: A, G, F, E, D, C, A, D (Simplified, evocative progression)
-            "Ghibli - One Summer's Day": {
-                scaleIndex: 0,
-                sequence: [7, 6, 5, 4, 3, 2, 1, 3],
-                names: ["A4", "G4", "F4", "E4", "D4", "C4", "A3", "D4"]
             }
         };
 
 
-        // --- SCALE DEFINITIONS (Unchanged) ---
+        // --- SCALE DEFINITIONS (9 NOTES) ---
         const NOTE_FREQUENCIES = {
-            0: [146.83, 220.00, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00], // D Minor (Amara)
-            1: [130.81, 196.00, 220.00, 261.63, 293.66, 329.63, 349.23, 392.00], // C Major (Ionian)
-            2: [174.61, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88], // F Lydian (Dream)
-            3: [164.81, 220.00, 246.94, 293.66, 329.63, 392.00, 440.00, 493.88], // E Minor Pent.
-            4: [220.00, 261.63, 293.66, 329.63, 349.23, 415.30, 440.00, 493.88], // A Harmonic Minor
-            5: [293.66, 349.23, 392.00, 417.00, 440.00, 528.00, 639.00, 741.00], // D4 Solfeggio (D4, F4, G4, Re, A4, Mi, Fa, Sol)
-            6: [396.00, 417.00, 440.00, 528.00, 639.00, 741.00, 852.00, 963.00]  // C4 Chakra (Ut, Re, A4, Mi, Fa, Sol, La, Si)
+            // D3, A3, C4, D4, E4, F4, G4, A4, B4
+            0: [146.83, 220.00, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88], 
+            // C3, G3, A3, C4, D4, E4, F4, G4, A4
+            1: [130.81, 196.00, 220.00, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00], 
+            // F3, C4, D4, E4, F4, G4, A4, B4, C5
+            2: [174.61, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25], 
+            // E3, A3, B3, D4, E4, G4, A4, B4, C#5
+            3: [164.81, 220.00, 246.94, 293.66, 329.63, 392.00, 440.00, 493.88, 554.37], 
+            // A3, C4, D4, E4, F4, G#4, A4, B4, C5
+            4: [220.00, 261.63, 293.66, 329.63, 349.23, 415.30, 440.00, 493.88, 523.25], 
+            // D4, F4, G4, Re, A4, Mi, Fa, Sol, La
+            5: [293.66, 349.23, 392.00, 417.00, 440.00, 528.00, 639.00, 741.00, 852.00], 
+            // Ut, Re, A4, Mi, Fa, Sol, La, Si, High
+            6: [396.00, 417.00, 440.00, 528.00, 639.00, 741.00, 852.00, 963.00, 1074.0]  
         };
         
-        // Note names are a compromise, mapping the note names to the first scale (D Minor) for UI consistency
-        const NOTE_NAMES_D_MINOR = ["D3", "A3", "C4", "D4", "E4", "F4", "G4", "A4"];
-        const NOTE_NAMES_CHAKRA = ["Root", "Sacral", "Solar", "Heart", "Throat", "3rd Eye", "Crown", "High"];
+        const NOTE_NAMES_D_MINOR = ["D3", "A3", "C4", "D4", "E4", "F4", "G4", "A4", "B4"];
+        const NOTE_NAMES_CHAKRA = ["Root", "Sacral", "Solar", "Heart", "Throat", "3rd Eye", "Crown", "High1", "High2"];
 
+        // --- SEQUENCER DEFINITIONS ---
+        const SEQUENCER_MAPS = {
+             A: {
+                 data: sequencerDataA,
+                 gridEl: seqGridElA,
+                 colorClass: 'seq-a',
+                 activeStep: -1 // Used for step input
+             },
+             B: {
+                 data: sequencerDataB,
+                 gridEl: seqGridElB,
+                 colorClass: 'seq-b',
+                 activeStep: -1 // Used for step input
+             },
+             C: {
+                 data: sequencerDataC,
+                 gridEl: seqGridElC,
+                 colorClass: 'seq-c',
+                 activeStep: -1 // Used for step input
+             }
+        };
         
         // --- INITIALIZATION ---
         startButton.addEventListener('click', async () => {
@@ -580,12 +796,6 @@
             
             try {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // Update slider labels to reflect the name change for dimension
-                // The elements are queried here before initAudioGraph/generateHandpanNotes but they are static HTML elements, safe.
-                document.querySelector('.slider-container input#width-slider').parentNode.querySelector('label').textContent = 'DIMENSION (DELAY)';
-                document.querySelector('.slider-container input#width-slider').parentNode.querySelector('.slider-label-value').id = 'dimension-val';
-                
                 await audioCtx.resume();
                 
                 // 1. Initialize Audio and Controls
@@ -594,15 +804,24 @@
                 initScaleButtonInteractions();
                 initUtilityButtonInteractions();
                 
-                // 2. CREATE the Handpan Notes (The elements that were causing the DOM crash)
+                // 2. Sequencer Init
+                initSequencer();
+
+                // 3. CREATE the Handpan Notes (9 notes now)
                 generateHandpanNotes(NOTE_FREQUENCIES[DEFAULT_PARAMS.scale], NOTE_NAMES_D_MINOR); 
+                
+                // 4. Initialize SURFACE HIT HANDLER
                 initSurfaceHitHandler();
 
-                // 3. Initialize TUTORIAL (Relies on note elements created in step 2)
+                // 5. Initialize TUTORIAL
                 initTutorialInteractions(); 
                 
+                // 6. Initialize Booster Rack Controls
+                initBoosterControls();
+                
                 isAudioInitialized = true; 
-                resetUIAndParams(); // FIXED: Uses querySelector() now.
+                resetUIAndParams(); 
+                connectBoosterGraph(); 
 
                 document.getElementById('start-overlay').style.opacity = 0;
                 setTimeout(() => document.getElementById('start-overlay').style.display = 'none', 500);
@@ -629,7 +848,7 @@
             return curve;
         }
 
-        // --- AUDIO GRAPH SETUP ---
+        // --- AUDIO GRAPH SETUP (Unchanged from v40) ---
         function initAudioGraph() {
             masterGain = audioCtx.createGain();
             masterGain.gain.value = currentParams.volume;
@@ -639,44 +858,76 @@
             masterLimiter.ratio.value = 20; 
             
             masterGain.connect(masterCompressor).connect(masterLimiter).connect(audioCtx.destination);
-            dryGain = audioCtx.createGain(); 
-            dryGain.connect(masterGain); 
             
+            // --- 1. SYNTH/SEQUENCER PATH NODES ---
+            dryGain = audioCtx.createGain(); 
+            
+            boosterInputMixer = audioCtx.createGain(); 
+            boosterSourceNode = boosterInputMixer; 
+
+            // Reverb Path
             globalReverb = audioCtx.createConvolver();
             globalReverb.buffer = createReverbImpulse(5.0);
             globalReverbSend = audioCtx.createGain();
             globalReverbSend.gain.setValueAtTime(currentParams.reverb, audioCtx.currentTime);
-            globalReverbSend.connect(globalReverb).connect(masterGain); 
-
+            globalReverbSend.connect(globalReverb).connect(boosterInputMixer); 
+            
+            // Dimension/Delay Path
             dimensionDelay = audioCtx.createDelay(MAX_DIMENSION_DELAY);
             dimensionFeedback = audioCtx.createGain(); 
             dimensionHPF = audioCtx.createBiquadFilter(); 
             dimensionHPF.type = 'highpass';
             dimensionHPF.frequency.value = 100; 
-
             dimensionLimiter = audioCtx.createWaveShaper(); 
             dimensionLimiter.curve = createHardClipCurve(0.8); 
-
             dimensionLFO = audioCtx.createOscillator(); 
             dimensionLFO.type = 'sine';
             dimensionLFO.frequency.value = LFO_RATE; 
-            
             const lfoGain = audioCtx.createGain();
             lfoGain.gain.value = 0.0; 
             dimensionLFO.connect(lfoGain);
             dimensionLFO.start(0);
-            
             dimensionLFO.gain = lfoGain.gain;
             
             dryGain.connect(dimensionDelay);
             dimensionDelay.connect(dimensionFeedback); 
             dimensionFeedback.connect(dimensionLimiter); 
-            dimensionLimiter.connect(dimensionHPF).connect(masterGain); 
+            dimensionLimiter.connect(dimensionHPF).connect(boosterInputMixer); 
             dimensionHPF.connect(dimensionDelay); 
             lfoGain.connect(dimensionDelay.delayTime); 
             
-            // FIX: Ensure the feedback gain is zeroed out to prevent the humming/drone sound
             dimensionFeedback.gain.setValueAtTime(0.0, audioCtx.currentTime);
+            
+            dryGain.connect(boosterInputMixer); 
+
+            // --- 2. BOOSTER RACK NODES ---
+            boosterFilterNode = audioCtx.createBiquadFilter();
+            boosterAnalyserNode = audioCtx.createAnalyser();
+            boosterFlangerDelay = audioCtx.createDelay(MAX_FLANGER_DELAY); 
+            boosterFlangerFeedback = audioCtx.createGain();
+            boosterFlangerLFO = audioCtx.createOscillator();
+            boosterLFOAmplitude = audioCtx.createGain();
+            boosterOutputGain = audioCtx.createGain(); 
+
+            // Setup Filter
+            boosterFilterNode.type = 'lowpass';
+            boosterFilterNode.frequency.setValueAtTime(FILTER_BASE_FREQ, audioCtx.currentTime);
+            boosterFilterNode.Q.setValueAtTime(10, audioCtx.currentTime);
+
+            // Setup Flanger LFO
+            boosterFlangerLFO.type = 'sine';
+            boosterFlangerLFO.frequency.setValueAtTime(0.5, audioCtx.currentTime);
+            boosterLFOAmplitude.gain.setValueAtTime(0.003, audioCtx.currentTime); 
+            boosterFlangerLFO.connect(boosterLFOAmplitude).connect(boosterFlangerDelay.delayTime);
+            boosterFlangerFeedback.gain.setValueAtTime(0.8, audioCtx.currentTime); 
+            boosterFlangerLFO.start(0);
+            
+            // Connect Flanger feedback loop
+            boosterFlangerDelay.connect(boosterFlangerFeedback).connect(boosterFlangerDelay);
+            
+            boosterOutputGain.connect(masterGain);
+            
+            runEnvelopeFollowerLoop(); 
         }
 
         function createReverbImpulse(duration) {
@@ -691,7 +942,6 @@
             return buff;
         }
 
-        // --- UPDATE GAINS (RANGE CONSTRAINT) ---
         function updateMasterGains() {
             if (!isAudioInitialized) return;
             const now = audioCtx.currentTime;
@@ -705,13 +955,149 @@
             dimensionFeedback.gain.setTargetAtTime(dimVal * MAX_FEEDBACK_GAIN, now, 0.05); 
             dimensionHPF.frequency.setTargetAtTime(100 + (dimVal * 400), now, 0.05);
         }
+        
+        // --- BOOSTER RACK LOGIC (Unchanged) ---
+        function initBoosterControls() {
+            boosterToggleButton.addEventListener('click', toggleBoosterEnabled);
+            boosterBypassBtn.addEventListener('click', toggleBoosterBypass);
 
-        // --- SYNTHESIS ENGINE (NOTES) ---
+            document.getElementById('filterFreq').addEventListener('input', updateBoosterFilter);
+            document.getElementById('filterQ').addEventListener('input', updateBoosterFilter);
+            document.getElementById('envSensitivity').addEventListener('input', updateBoosterEnvDisplay);
+            document.getElementById('flangerDepth').addEventListener('input', updateBoosterFlanger);
+            document.getElementById('flangerRate').addEventListener('input', updateBoosterFlanger);
+
+            updateBoosterFilter({target: document.getElementById('filterFreq')});
+            updateBoosterFilter({target: document.getElementById('filterQ')});
+            updateBoosterFlanger({target: document.getElementById('flangerDepth')});
+            updateBoosterFlanger({target: document.getElementById('flangerRate')});
+        }
+        
+        function toggleBoosterEnabled() {
+            if (!isAudioInitialized) return;
+
+            boosterEnabled = !boosterEnabled;
+            
+            boosterToggleButton.classList.toggle('active', boosterEnabled);
+            boosterPanel.style.display = boosterEnabled ? 'flex' : 'none';
+            
+            if (boosterEnabled) {
+                boosterBypassed = true; 
+                boosterBypassBtn.classList.remove('active');
+                boosterToggleButton.textContent = 'DISABLE BOOSTER EFFECTS';
+            } else {
+                boosterBypassed = true; 
+                boosterToggleButton.textContent = 'ENABLE BOOSTER EFFECTS';
+            }
+            
+            connectBoosterGraph();
+        }
+
+        function connectBoosterGraph() {
+            boosterSourceNode.disconnect();
+            boosterFilterNode.disconnect();
+            boosterFlangerDelay.disconnect();
+            boosterAnalyserNode.disconnect();
+
+            boosterSourceNode.connect(boosterAnalyserNode);
+            
+            if (!boosterEnabled) {
+                // PATH 1: BOOSTER DISABLED (Synth Mixer -> Master)
+                boosterSourceNode.connect(boosterOutputGain);
+                boosterStatus.textContent = 'Booster is disabled (Direct output).';
+                boosterStatus.style.borderLeftColor = 'var(--label-text)';
+                boosterBypassBtn.style.pointerEvents = 'none';
+
+            } else if (boosterBypassed) {
+                // PATH 2: BOOSTER ENABLED, BYPASSED (Synth Mixer -> Booster Output Gain -> Master)
+                boosterSourceNode.connect(boosterOutputGain);
+                boosterStatus.textContent = 'Booster is enabled, effects BYPASSED.';
+                boosterStatus.style.borderLeftColor = 'var(--accent-magenta)';
+                boosterBypassBtn.style.pointerEvents = 'auto';
+
+            } else {
+                // PATH 3: BOOSTER ACTIVE (Synth Mixer -> Filter/Flanger -> Booster Output Gain -> Master)
+                boosterSourceNode.connect(boosterFilterNode);
+                boosterFilterNode.connect(boosterOutputGain);
+                
+                boosterFilterNode.connect(boosterFlangerDelay);
+                boosterFlangerDelay.connect(boosterOutputGain);
+                
+                boosterStatus.textContent = 'Booster is active. Filter/Flanger processing synth sound.';
+                boosterStatus.style.borderLeftColor = 'var(--accent-green)';
+                boosterBypassBtn.style.pointerEvents = 'auto';
+            }
+        }
+
+        function toggleBoosterBypass() {
+            if (!boosterEnabled) return;
+            
+            boosterBypassed = !boosterBypassed;
+            boosterBypassBtn.classList.toggle('active', !boosterBypassed); 
+            
+            connectBoosterGraph();
+        }
+
+        function updateBoosterFilter(e) {
+            const now = audioCtx.currentTime;
+            if (e.target.id === 'filterFreq') {
+                const freq = parseFloat(e.target.value);
+                boosterFilterNode.frequency.setTargetAtTime(freq, now, 0.05);
+                document.getElementById('freqValue').textContent = freq;
+            } else if (e.target.id === 'filterQ') {
+                const q = parseFloat(e.target.value);
+                boosterFilterNode.Q.setTargetAtTime(q, now, 0.05);
+                document.getElementById('qValue').textContent = q;
+            }
+        }
+        
+        function updateBoosterEnvDisplay(e) {
+             document.getElementById('envValue').textContent = e.target.value;
+        }
+
+        function updateBoosterFlanger(e) {
+            const now = audioCtx.currentTime;
+            if (e.target.id === 'flangerDepth') {
+                const depth = parseFloat(e.target.value);
+                boosterLFOAmplitude.gain.setTargetAtTime(depth, now, 0.05); 
+                document.getElementById('depthValue').textContent = depth.toFixed(4);
+            } else if (e.target.id === 'flangerRate') {
+                const rate = parseFloat(e.target.value);
+                boosterFlangerLFO.frequency.setTargetAtTime(rate, now, 0.05);
+                document.getElementById('rateValue').textContent = rate;
+            }
+        }
+
+        function runEnvelopeFollowerLoop() {
+            const bufferLength = boosterAnalyserNode.fftSize; 
+            const dataArray = new Uint8Array(bufferLength);
+            boosterAnalyserNode.getByteTimeDomainData(dataArray);
+
+            let sumOfSquares = 0;
+            for (let i = 0; i < bufferLength; i++) {
+                const value = (dataArray[i] / 128.0) - 1;
+                sumOfSquares += value * value;
+            }
+            const rms = Math.sqrt(sumOfSquares / bufferLength);
+
+            const sensitivity = parseFloat(document.getElementById('envSensitivity').value) || 0;
+            const sweepAmount = rms * rms * rms * sensitivity; 
+            
+            const baseFreq = parseFloat(document.getElementById('filterFreq').value);
+            const newCutoff = Math.min(baseFreq + sweepAmount, audioCtx.sampleRate / 2);
+
+            const now = audioCtx.currentTime;
+            boosterFilterNode.frequency.setTargetAtTime(newCutoff, now, 0.05); 
+
+            animationFrameId = requestAnimationFrame(runEnvelopeFollowerLoop);
+        }
+
+        // --- SYNTHESIS ENGINE (NOTES) (Unchanged) ---
         function triggerNote(freq, velocity, isEdgeHit) {
             if (!isAudioInitialized || !currentParams.power) return;
             const now = audioCtx.currentTime;
 
-            const initialGain = 0.1 + (velocity * 0.4); 
+            const initialGain = 0.05 + (velocity * 0.65); 
             const envelopeTime = 8.0 + (velocity * 2.0); 
 
             const masterVoiceGain = audioCtx.createGain();
@@ -722,13 +1108,21 @@
             const reverbVoiceSend = audioCtx.createGain();
             reverbVoiceSend.gain.value = currentParams.reverb * velocity; 
 
+            const lpf = audioCtx.createBiquadFilter();
+            lpf.type = 'lowpass';
+            const cutoffFreq = 2000 + (velocity * 10000); 
+            lpf.frequency.setValueAtTime(cutoffFreq, now);
+            lpf.Q.setValueAtTime(0.7, now); 
+
             masterVoiceGain.connect(dryGain);
             masterVoiceGain.connect(reverbVoiceSend).connect(globalReverbSend);
             
-            createPartial(freq, 1.0, 0.005, 5.0, masterVoiceGain, 'sine');
-            createPartial(freq * 2.0, 0.5, 0.01, 3.5, masterVoiceGain, 'sine');
-            createPartial(freq * 3.007, 0.35, 0.015, 2.5, masterVoiceGain, 'sine');
-            createPartial(freq * 4.25, 0.1, 0.005, 0.5, masterVoiceGain, 'triangle');
+            lpf.connect(masterVoiceGain);
+
+            createPartial(freq, 1.0, 0.005, 5.0, lpf, 'sine');
+            createPartial(freq * 2.0, 0.5, 0.01, 3.5, lpf, 'sine');
+            createPartial(freq * 3.007, 0.35, 0.015, 2.5, lpf, 'sine');
+            createPartial(freq * 4.25, 0.1, 0.005, 0.5, lpf, 'triangle');
             
             if (isEdgeHit && currentParams.surfaceSound) {
                 const noiseGain = audioCtx.createGain();
@@ -750,6 +1144,7 @@
                 try { 
                     masterVoiceGain.disconnect();
                     reverbVoiceSend.disconnect();
+                    lpf.disconnect(); 
                 } catch(e){}
             }, envelopeTime * 1000 + 500);
         }
@@ -802,7 +1197,7 @@
              }, decayTime * 1000 + 500);
         }
 
-        function createPartial(baseFreq, amp, attack, decay, masterVoiceGain, type = 'sine') {
+        function createPartial(baseFreq, amp, attack, decay, destinationNode, type = 'sine') {
             const now = audioCtx.currentTime;
             const osc = audioCtx.createOscillator();
             osc.type = type;
@@ -813,7 +1208,7 @@
             gain.gain.exponentialRampToValueAtTime(0.0001, now + decay);
 
             osc.connect(gain);
-            gain.connect(masterVoiceGain); 
+            gain.connect(destinationNode); 
             osc.start(now);
             osc.stop(now + decay + 0.1);
         }
@@ -830,10 +1225,11 @@
             return source;
         }
 
-        // --- HIT DETECTION & UI LOGIC ---
+        // --- HANDPAN UI LOGIC (UPDATED for 9 notes) ---
         function generateHandpanNotes(freqArray, namesArray) {
             handpanVisual.innerHTML = '';
             
+            // Note: The total number of notes is now 9 (0 to 8)
             const outerNotesData = freqArray.slice(1);
             
             const style = getComputedStyle(handpanVisual);
@@ -843,7 +1239,7 @@
             const center = containerWidth / 2;
             const radius = center * 0.75; 
 
-            // 1. Ding Note (Center)
+            // Ding Note (Index 0)
             const dingEl = document.createElement('div');
             dingEl.className = 'note-field ding-note';
             dingEl.dataset.freq = freqArray[0];
@@ -854,16 +1250,17 @@
             dingEl.style.left = `${center - dingSize / 2}px`;
             dingEl.style.top = `${center - dingSize / 2}px`;
 
-            // 2. Outer Notes
+            // Outer Notes (Index 1 to 8)
             outerNotesData.forEach((freq, index) => {
-                const angle = (index / outerNotesData.length) * 2 * Math.PI - (Math.PI / 2);
+                const totalOuterNotes = outerNotesData.length; // 8 notes
+                const angle = (index / totalOuterNotes) * 2 * Math.PI - (Math.PI / 2);
                 const x = center + radius * Math.cos(angle);
                 const y = center + radius * Math.sin(angle);
                 
                 const el = document.createElement('div');
                 el.className = 'note-field outer-note';
                 el.dataset.freq = freq;
-                el.dataset.noteIndex = index + 1;
+                el.dataset.noteIndex = index + 1; // Index 1 through 8
                 el.textContent = namesArray[index + 1];
                 handpanVisual.appendChild(el);
                 
@@ -871,9 +1268,8 @@
                 el.style.left = `${x - outerSize / 2}px`; 
                 el.style.top = `${y - outerSize / 2}px`;  
             });
-
+            
             document.querySelectorAll('.note-field').forEach(el => {
-                // Ensure listeners are only attached once per element generation cycle
                 el.removeEventListener('mousedown', handleNoteInteractionStart);
                 el.removeEventListener('touchstart', handleNoteInteractionStart);
                 
@@ -887,31 +1283,31 @@
         }
         
         function initSurfaceHitHandler() {
-            const handleSurfaceInteractionStart = (e) => {
-                // Only process clicks on the main visual container, not the notes
-                if (e.target.id !== 'handpan-visual') return; 
+            handpanVisual.removeEventListener('mousedown', handleSurfaceInteraction);
+            handpanVisual.removeEventListener('touchstart', handleSurfaceInteraction);
 
-                e.preventDefault();
-                if (!isAudioInitialized || !currentParams.power) return;
-                if (isTutorialMode) {
-                    tutorialDisplay.textContent = "Only hit the highlighted note!";
-                    clearVisualFeedback(tutorialDisplay);
-                    return; 
-                }
-
-                let velocity = getVelocityFromEvent(e);
-                triggerSurfaceSound(velocity);
-            };
-
-            handpanVisual.removeEventListener('mousedown', handleSurfaceInteractionStart);
-            handpanVisual.removeEventListener('touchstart', handleSurfaceInteractionStart);
-
-            handpanVisual.addEventListener('mousedown', handleSurfaceInteractionStart);
-            handpanVisual.addEventListener('touchstart', handleSurfaceInteractionStart);
-            handpanVisual.addEventListener('mouseup', handleNoteInteractionEnd); 
-            handpanVisual.addEventListener('touchend', handleNoteInteractionEnd);
+            handpanVisual.addEventListener('mousedown', handleSurfaceInteraction);
+            handpanVisual.addEventListener('touchstart', handleSurfaceInteraction);
         }
 
+        function handleSurfaceInteraction(e) {
+            e.preventDefault();
+            
+            if (e.target.classList.contains('note-field') || e.target.closest('.note-field')) {
+                return; 
+            }
+            
+            if (!isAudioInitialized || !currentParams.power || !currentParams.surfaceSound) return;
+
+            let velocity = getVelocityFromEvent(e);
+            
+            if (velocity < 0.5) velocity = 0.5;
+
+            triggerSurfaceSound(velocity);
+        }
+
+        
+        // --- NOTE INTERACTION HANDLER (UPDATED for Step Input Isolation) ---
         function handleNoteInteractionStart(e) {
             e.preventDefault();
             const el = this;
@@ -930,18 +1326,69 @@
             }
             
             const hitData = getHitData(el, clientX, clientY);
+            const freq = parseFloat(el.dataset.freq);
+            const noteIndex = parseInt(el.dataset.noteIndex);
 
             if (isTutorialMode) {
                 checkTutorialHit(el, velocity, hitData.isEdgeHit);
             } else {
-                el.classList.add('active'); // Free play visual feedback
-                triggerNote(parseFloat(el.dataset.freq), velocity, hitData.isEdgeHit);
+                el.classList.add('active'); 
+                triggerNote(freq, velocity, hitData.isEdgeHit);
+                
+                // SEQUENCER LOGIC (GLOBAL RECORDING / STEP INPUT)
+                if (isRecording) {
+                    let recorded = false;
+
+                    // Check for Step Input Mode first (Priority 1: Step-by-Step Programming)
+                    ['A', 'B', 'C'].forEach(seqId => {
+                        const seqMap = SEQUENCER_MAPS[seqId];
+                        
+                        if (seqMap.activeStep !== -1) {
+                            // A sequencer is in Step Input Mode. Only record to this one.
+                            const stepToRecord = seqMap.activeStep;
+                            recordNoteToStep(noteIndex, velocity, stepToRecord, seqMap.data, seqMap.gridEl);
+                            recorded = true; 
+
+                            // Advance step selection visually and logically
+                            const currentStepEl = seqMap.gridEl.querySelector(`[data-step="${stepToRecord}"]`);
+                            if (currentStepEl) currentStepEl.classList.remove('active-step');
+                            
+                            seqMap.activeStep = (seqMap.activeStep + 1) % NUM_STEPS;
+                            
+                            const nextStepEl = seqMap.gridEl.querySelector(`[data-step="${seqMap.activeStep}"]`);
+                            if (nextStepEl) nextStepEl.classList.add('active-step');
+
+                            // IMPORTANT: Since we handled Step Input for one sequencer, we break the loop, 
+                            // ensuring only ONE sequencer records per hit when in Step Input Mode.
+                            return; 
+                        }
+                    });
+
+                    if (recorded) {
+                        // If a step was recorded via Step Input Mode, we stop here.
+                        return; 
+                    }
+
+                    // Check for Real-time Recording Mode (Priority 2: Global Real-Time or Manual Sequential)
+                    if (isPlaying) {
+                        // Real-time recording (Quantized to current step)
+                        ['A', 'B', 'C'].forEach(seqId => {
+                            const seqMap = SEQUENCER_MAPS[seqId];
+                            recordNoteToStep(noteIndex, velocity, currentStep, seqMap.data, seqMap.gridEl);
+                        });
+                    } else {
+                        // Manual sequential recording (Find first empty slot in all sequencers simultaneously if no step is selected)
+                        ['A', 'B', 'C'].forEach(seqId => {
+                            const seqMap = SEQUENCER_MAPS[seqId];
+                            recordManualHit(noteIndex, velocity, seqMap.data, seqMap.gridEl); 
+                        });
+                    }
+                }
             }
         }
-
+        
         function handleNoteInteractionEnd(e) {
             e.preventDefault();
-            // Find the closest note-field element from the event target
             const el = e.currentTarget.closest('.note-field') || (e.target.classList.contains('note-field') ? e.target : null); 
             if (el) {
                  if (!isTutorialMode) {
@@ -949,19 +1396,20 @@
                  }
             }
         }
-
+        
         function getVelocityFromEvent(e) {
-            let velocity = 0.7; 
-            if (e.type.startsWith('touch') && e.touches.length > 0) {
-                const touch = e.touches[0];
-                if (touch.force !== undefined) {
-                    // Use touch force if available, clamp between 0.1 and 1.0
-                    velocity = Math.max(0.1, Math.min(1.0, touch.force));
-                }
-            }
-            return velocity;
+             let velocity = 0.7; 
+             if (e.type.startsWith('touch') && e.touches.length > 0) {
+                 const touch = e.touches[0];
+                 if (touch.force !== undefined && touch.force > 0) { 
+                     velocity = Math.max(0.1, Math.min(1.0, touch.force));
+                 } else {
+                     velocity = 0.5 + Math.random() * 0.5; 
+                 }
+             }
+             return velocity;
         }
-
+        
         function getHitData(noteElement, clientX, clientY) {
             const rect = noteElement.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
@@ -973,34 +1421,253 @@
             const dy = clientY - centerY;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
-            // True if hit outside the center threshold
             const isEdgeHit = distance > edgeThreshold; 
             return { isEdgeHit, distance };
         }
 
 
-        // --- TUTORIAL CORE LOGIC ---
-        function initTutorialInteractions() {
-            // Only populate the list if it hasn't been done already
-            if (tutorialList.children.length === 0) {
-                Object.keys(LESSONS).forEach(lessonName => {
-                    const btn = document.createElement('button');
-                    // Ensure the className includes 'tutorial-list-btn' for explicit targeting later
-                    btn.className = 'scale-btn tutorial-list-btn'; 
-                    btn.textContent = lessonName;
-                    btn.dataset.lessonName = lessonName;
-                    btn.style.flexBasis = 'auto'; 
-                    btn.style.flexGrow = '1';
-                    btn.addEventListener('click', () => startLesson(lessonName));
-                    tutorialList.appendChild(btn);
-                });
-            }
+        // --- SEQUENCER MODULE (UPDATED for A, B, C) ---
+
+        function initSequencer() {
+            // Generate steps for all grids
+            ['A', 'B', 'C'].forEach(seqId => {
+                for (let i = 0; i < NUM_STEPS; i++) {
+                    createStep(i, SEQUENCER_MAPS[seqId].gridEl, seqId);
+                }
+            });
             
-            // Toggle Tutorial Mode Button
-            tutorialButton.addEventListener('click', toggleTutorialMode);
+            updateSequencerTiming();
+
+            seqPlayBtn.addEventListener('click', togglePlay);
+            seqRecBtn.addEventListener('click', toggleRecord);
+            seqClearAllBtn.addEventListener('click', clearAllSequencers);
+            bpmInput.addEventListener('change', updateSequencerTiming);
+            
+            // seqRecBtn.classList.add('active'); // REMOVED: Default Record is OFF
+        }
+        
+        function createStep(index, gridEl, seqId) {
+            const step = document.createElement('div');
+            step.className = 'seq-step';
+            step.dataset.step = index;
+            step.dataset.seq = seqId;
+            step.title = `Step ${index + 1} (${seqId})`;
+            
+            step.addEventListener('click', toggleManualStep);
+            step.addEventListener('dblclick', clearManualStep); // <--- ADDED DBLCLICK LISTENER
+            
+            gridEl.appendChild(step);
         }
 
+        // NEW: Function to clear a step on double-click
+        function clearManualStep() {
+            const step = parseInt(this.dataset.step);
+            const seqId = this.dataset.seq;
+            const map = SEQUENCER_MAPS[seqId];
+            
+            // 1. Clear the data from the sequencer map
+            map.data[step] = null;
+            
+            // 2. Remove the visual indicator
+            this.classList.remove('note-recorded');
+            
+            // 3. Ensure step input mode is cleared for this step if it was active
+            if (map.activeStep === step) {
+                map.activeStep = -1;
+                this.classList.remove('active-step');
+            }
+        }
+        
+        function updateSequencerTiming() {
+            const bpm = parseInt(bpmInput.value) || 120;
+            stepIntervalTime = (60000 / bpm) / 4; 
+            
+            if (isPlaying) {
+                stopSequencer();
+                startSequencer();
+            }
+        }
+        
+        function togglePlay() {
+            if (isPlaying) {
+                stopSequencer();
+            } else {
+                if (isTutorialMode) {
+                    toggleTutorialMode(); 
+                }
+                
+                if (!currentParams.power) {
+                    powerButton.click(); 
+                }
+                startSequencer();
+            }
+        }
+        
+        function toggleRecord() {
+            isRecording = !isRecording;
+            seqRecBtn.classList.toggle('active', isRecording);
+            
+            // If Record is turned off, ensure no sequencer is left in Step Input Mode
+            if (!isRecording) {
+                SEQUENCER_MAPS.A.activeStep = -1;
+                SEQUENCER_MAPS.B.activeStep = -1;
+                SEQUENCER_MAPS.C.activeStep = -1;
+                document.querySelectorAll('.seq-step').forEach(s => s.classList.remove('active-step'));
+            }
+        }
+
+        function startSequencer() {
+            if (isPlaying) return;
+            isPlaying = true;
+            seqPlayBtn.classList.add('active');
+            
+            // Clear all active step highlights and step input mode when starting play
+            document.querySelectorAll('.seq-step').forEach(step => step.classList.remove('active-step'));
+            SEQUENCER_MAPS.A.activeStep = -1;
+            SEQUENCER_MAPS.B.activeStep = -1;
+            SEQUENCER_MAPS.C.activeStep = -1;
+            
+            currentStep = -1; 
+            
+            seqTimer = setInterval(scheduleNextStep, stepIntervalTime);
+        }
+
+        function stopSequencer() {
+            if (!isPlaying) return;
+            isPlaying = false;
+            seqPlayBtn.classList.remove('active');
+            
+            clearInterval(seqTimer);
+            
+            document.querySelectorAll('.seq-step').forEach(step => step.classList.remove('active-step'));
+            currentStep = -1;
+        }
+
+        function scheduleNextStep() {
+            const previousStep = currentStep;
+            
+            // 1. Advance Step
+            currentStep = (currentStep + 1) % NUM_STEPS;
+            
+            // 2. Highlight and Play for A, B, C
+            ['A', 'B', 'C'].forEach(seqId => {
+                const map = SEQUENCER_MAPS[seqId];
+                
+                // Clear previous step's playback highlight
+                if (previousStep !== -1) {
+                    const prevStepEl = map.gridEl.querySelector(`[data-step="${previousStep}"]`);
+                    if (prevStepEl) prevStepEl.classList.remove('active-step');
+                }
+
+                // Highlight current step
+                const currentStepEl = map.gridEl.querySelector(`[data-step="${currentStep}"]`);
+                if (currentStepEl) {
+                    currentStepEl.classList.add('active-step');
+                }
+
+                // Play note if data exists
+                const noteData = map.data[currentStep];
+                if (noteData) {
+                    const freqArray = NOTE_FREQUENCIES[noteData.scaleIndex];
+
+                    if (freqArray) {
+                        const freq = freqArray[noteData.index];
+                        const velocity = noteData.velocity;
+                        triggerNote(freq, velocity, false); 
+                    } else {
+                         console.warn(`Scale index ${noteData.scaleIndex} not found during playback on SEQ ${seqId}.`);
+                    }
+                }
+            });
+        }
+        
+        // UPDATED: Isolates Step Input Mode to only the clicked sequencer
+        function toggleManualStep() {
+            const step = parseInt(this.dataset.step);
+            const seqId = this.dataset.seq;
+            const map = SEQUENCER_MAPS[seqId];
+            
+            if (isPlaying) return; 
+            if (!isRecording) return; // Must be in record mode to enter step input
+
+            // 1. Clear ALL active step highlights globally
+            document.querySelectorAll('.seq-step').forEach(s => s.classList.remove('active-step'));
+            
+            // 2. Clear Step Input Mode from ALL sequencers (Isolation logic)
+            let deselecting = (map.activeStep === step);
+            
+            ['A', 'B', 'C'].forEach(id => {
+                 SEQUENCER_MAPS[id].activeStep = -1;
+            });
+
+            // 3. Set the new Step Input Mode only for the clicked sequencer
+            if (deselecting) {
+                // Already handled by step 2, but here for clarity:
+                map.activeStep = -1;
+            } else {
+                // Select new step (enters Step Input Mode for this sequencer)
+                map.activeStep = step;
+                this.classList.add('active-step');
+            }
+        }
+
+        function recordManualHit(noteIndex, velocity, dataArray, gridEl) {
+            let recordStep = dataArray.findIndex(data => data === null);
+            
+            if (recordStep === -1) {
+                recordStep = 0; // Wrap around to the start
+            }
+
+            recordNoteToStep(noteIndex, velocity, recordStep, dataArray, gridEl);
+        }
+
+        function recordNoteToStep(noteIndex, velocity, step, dataArray, gridEl) {
+            if (step === -1 || step === undefined) return; 
+
+            // If the step already has data, clicking a note will overwrite it
+            // To clear, the user should manually double-click the recorded step button
+
+            dataArray[step] = { 
+                index: noteIndex, 
+                velocity: velocity,
+                scaleIndex: currentParams.scale 
+            };
+            
+            const stepEl = gridEl.querySelector(`[data-step="${step}"]`);
+            if (stepEl) {
+                stepEl.classList.add('note-recorded');
+            }
+        }
+        
+        function clearAllSequencers() {
+            sequencerDataA.fill(null);
+            sequencerDataB.fill(null);
+            sequencerDataC.fill(null);
+            
+            SEQUENCER_MAPS.A.activeStep = -1;
+            SEQUENCER_MAPS.B.activeStep = -1;
+            SEQUENCER_MAPS.C.activeStep = -1;
+            
+            document.querySelectorAll('.seq-step').forEach(step => {
+                step.classList.remove('note-recorded');
+                step.classList.remove('active-step'); 
+            });
+            
+            if (isPlaying) {
+                stopSequencer();
+            }
+        }
+
+
+        // --- TUTORIAL CORE LOGIC (Unchanged) ---
         function toggleTutorialMode() {
+            if (isPlaying) {
+                stopSequencer(); 
+            }
+            if (SEQUENCER_MAPS.A.activeStep !== -1 || SEQUENCER_MAPS.B.activeStep !== -1 || SEQUENCER_MAPS.C.activeStep !== -1) {
+                 clearAllSequencers(); 
+            }
+
             isTutorialMode = !isTutorialMode;
             tutorialButton.classList.toggle('active', isTutorialMode);
             tutorialList.style.display = isTutorialMode ? 'flex' : 'none';
@@ -1013,28 +1680,39 @@
             } else {
                 tutorialButton.textContent = "START TUTORIAL MODE";
                 tutorialDisplay.textContent = "Welcome to Free Play!";
-                // Ensure everything is cleaned up when exiting tutorial
                 stopLesson(); 
                 clearAllNoteHighlights(); 
             }
         }
+
+        function initTutorialInteractions() {
+            tutorialButton.addEventListener('click', toggleTutorialMode);
+            
+            Object.keys(LESSONS).forEach(lessonName => {
+                const btn = document.createElement('button');
+                btn.className = 'scale-btn tutorial-list-btn';
+                btn.textContent = lessonName;
+                btn.addEventListener('click', () => startLesson(lessonName));
+                tutorialList.appendChild(btn);
+            });
+        }
         
         function startLesson(lessonName) {
-            if (!isAudioInitialized) return;
-
+             if (!isAudioInitialized) return;
+             if (isPlaying) {
+                 stopSequencer(); 
+             }
+             
             const lessonData = LESSONS[lessonName];
             currentParams.scale = lessonData.scaleIndex;
             
-            // Highlight the correct scale button
             document.querySelectorAll('.scale-btn:not(.tutorial-list-btn)').forEach(b => b.classList.remove('active'));
             
-            // FIX: Use querySelector for single element
             const scaleBtnToActivate = document.querySelector(`.scale-btn[data-scale-index="${lessonData.scaleIndex}"]`);
             if (scaleBtnToActivate) {
                  scaleBtnToActivate.classList.add('active');
             }
             
-            // Re-generate the notes for the correct scale
             const names = getScaleNames(lessonData.scaleIndex);
             generateHandpanNotes(NOTE_FREQUENCIES[lessonData.scaleIndex], names);
 
@@ -1044,7 +1722,7 @@
             tutorialDisplay.style.borderLeftColor = 'var(--accent-yellow)';
             
             if (!currentParams.power) {
-                 powerButton.click(); // Turn on power if it's off
+                 powerButton.click(); 
             }
             
             tutorialDisplay.textContent = `Lesson: ${lessonName} - Get Ready...`;
@@ -1068,7 +1746,6 @@
             clearAllNoteHighlights();
 
             if (currentStepIndex >= currentLesson.length) {
-                // Lesson complete!
                 tutorialDisplay.style.borderLeftColor = 'var(--accent-green)';
                 tutorialDisplay.textContent = "🎶 Lesson Complete! Great job! 🎉";
                 isWaitingForHit = false;
@@ -1098,7 +1775,6 @@
             const expectedIndex = currentLesson[currentStepIndex];
 
             if (hitIndex === expectedIndex) {
-                // SUCCESS
                 isWaitingForHit = false;
                 
                 triggerNote(parseFloat(hitElement.dataset.freq), velocity, isEdgeHit);
@@ -1113,19 +1789,13 @@
                 stepDelayTimeout = setTimeout(advanceLessonStep, 800);
                 
             } else {
-                // ERROR
-                
-                // Do NOT play sound
-                
-                // Flash red feedback on the incorrectly hit note
-                hitElement.classList.remove('tutorial-active', 'tutorial-success');
+                hitElement.classList.remove('tutorial-active', 'tutorial-error');
                 hitElement.classList.add('tutorial-error');
                 tutorialDisplay.style.borderLeftColor = 'var(--accent-red)';
                 
                 const expectedNoteName = document.querySelector(`.note-field[data-note-index="${expectedIndex}"]`)?.textContent || 'highlighted note';
                 tutorialDisplay.textContent = `❌ That was the wrong note. Try hitting the ${expectedNoteName}!`;
                 
-                // Clear red flash after short delay
                 clearVisualFeedback(hitElement, 400); 
             }
         }
@@ -1139,13 +1809,13 @@
         }
 
         function clearAllNoteHighlights() {
-            // FIX: Added check (el && el.classList) for robustness against initialization race conditions
             document.querySelectorAll('.note-field').forEach(el => {
                 if (el && el.classList) {
                     el.classList.remove('active', 'tutorial-active', 'tutorial-success', 'tutorial-error');
                 }
             });
         }
+
 
         // --- CONTROL INTERACTIONS (Unchanged) ---
         function initSliderInteractions() {
@@ -1173,7 +1843,6 @@
         }
 
         function initScaleButtonInteractions() {
-            // Exclude the tutorial lesson buttons
             document.querySelectorAll('.scale-btn:not(.tutorial-list-btn)').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     if (isTutorialMode) {
@@ -1182,13 +1851,20 @@
                         clearVisualFeedback(tutorialDisplay, 2000);
                         return;
                     }
+                    
+                    if (isPlaying) stopSequencer();
+                    
+                    // Clear all step input selections
+                    SEQUENCER_MAPS.A.activeStep = -1;
+                    SEQUENCER_MAPS.B.activeStep = -1;
+                    SEQUENCER_MAPS.C.activeStep = -1;
+                    document.querySelectorAll('.seq-step').forEach(s => s.classList.remove('active-step'));
 
                     const newScaleIndex = parseInt(e.target.dataset.scaleIndex);
                     if (newScaleIndex === currentParams.scale) return; 
 
                     document.querySelectorAll('.scale-btn:not(.tutorial-list-btn)').forEach(b => b.classList.remove('active'));
                     
-                    // FIX: Use querySelector for single element
                     document.querySelector(`.scale-btn[data-scale-index="${newScaleIndex}"]`).classList.add('active');
 
                     currentParams.scale = newScaleIndex;
@@ -1218,7 +1894,6 @@
                 sliderVals[key].textContent = DEFAULT_PARAMS[key].toFixed(2);
             });
             
-            // FIX: Use querySelector to get the single element and avoid the crash
             const defaultScaleBtn = document.querySelector(`.scale-btn[data-scale-index="${DEFAULT_PARAMS.scale}"]`);
             if (defaultScaleBtn) {
                 defaultScaleBtn.classList.add('active');
@@ -1240,11 +1915,14 @@
                 // Turning OFF
                 currentParams.power = false;
                 powerButton.classList.remove('active');
+                
+                if (isPlaying) stopSequencer();
                 if (isTutorialMode) {
                     toggleTutorialMode(); 
                     clearAllNoteHighlights(); 
                 }
                 
+                // Clear audio path gently
                 masterGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.1); 
                 dimensionFeedback.gain.setValueAtTime(0, audioCtx.currentTime); 
                 
