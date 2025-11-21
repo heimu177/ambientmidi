@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Peculiar Deck v3 (Final Logic)</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --panel: #1a1a1a;
+            --border: #333333;
+            --accent: #00ff9d;
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
+            --hatha: #ffaa00;
+            --nidra: #bd5eff;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+            margin: 0; padding: 15px; height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            overflow: hidden; touch-action: manipulation;
+        }
+
+        header {
+            width: 100%; max-width: 450px; margin-bottom: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid #333; padding-bottom: 15px;
+        }
+        h1 { font-size: 1.1rem; margin: 0; color: var(--text-muted); text-transform: uppercase; }
+        #timer-display {
+            font-size: 2rem; font-weight: 900; color: var(--accent);
+            text-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+        }
+
+        .visualizer {
+            width: 100%; max-width: 450px; height: 60px; background: #111;
+            margin-bottom: 20px; border: 2px solid #333; border-radius: 6px;
+        }
+
+        .deck {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+            width: 100%; max-width: 450px;
+        }
+        .full-width { grid-column: span 2; }
+
+        button {
+            background: var(--panel); border: 2px solid var(--border); color: var(--text-main);
+            padding: 18px; font-size: 1.1rem; font-weight: 700; cursor: pointer;
+            text-align: left; border-radius: 8px; position: relative; transition: transform 0.1s;
+        }
+        button:active { transform: scale(0.97); }
+        button .desc {
+            display: block; font-size: 0.85rem; color: var(--text-muted);
+            margin-top: 6px; font-weight: 400;
+        }
+
+        button.active-mood { border-color: var(--accent); background: var(--accent); color: #000; }
+        button.active-mood .desc { color: #000; font-weight: 600; }
+
+        button.active-preset {
+            border-color: #fff; background: #333; color: #fff;
+            box-shadow: 0 0 15px rgba(255,255,255,0.1);
+        }
+        button.active-preset::after {
+            content: '● RUNNING'; position: absolute; right: 15px; top: 15px;
+            font-size: 0.7rem; color: var(--accent); animation: blink 1s infinite;
+        }
+
+        #btn-hatha { border-left: 5px solid var(--hatha); }
+        #btn-nidra { border-left: 5px solid var(--nidra); }
+
+        #stop-btn {
+            background: #300; border-color: #800; text-align: center; color: #ffaaaa;
+            margin-top: 10px;
+        }
+
+        #init-btn {
+            background: var(--accent); color: #000; font-size: 1.2rem; font-weight: 900;
+            padding: 25px; width: 100%; max-width: 450px; border-radius: 8px; border: none;
+        }
+
+        @keyframes blink { 50% {opacity:0.3} }
+        .section-label {
+            grid-column: span 2; font-size: 0.9rem; font-weight: bold;
+            color: var(--text-main); margin-top: 15px; border-bottom: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div><h1>Peculiar Deck v3</h1><div style="font-size:0.7rem; color:#555">FINAL LOGIC</div></div>
+        <div id="timer-display">00:00</div>
+    </header>
+
+    <button id="init-btn">TAP TO START ENGINE</button>
+
+    <div class="deck" id="controls" style="opacity: 0.2; pointer-events: none;">
+        <canvas id="scope" class="visualizer full-width"></canvas>
+
+        <div class="section-label">Auto-Pilot (60 min)</div>
+        <button id="btn-hatha" onclick="startPreset('hatha')">HATHA<span class="desc">Glitch &rarr; Space &rarr; Theta</span></button>
+        <button id="btn-nidra" onclick="startPreset('nidra')">NIDRA<span class="desc">Space &rarr; Theta &rarr; Wake</span></button>
+
+        <div class="section-label">Manual Override</div>
+        <button class="full-width" id="btn-glitch" onclick="manualMood('glitch')">1. GLITCH GARDEN<span class="desc">Nature + Static Rain</span></button>
+        <button class="full-width" id="btn-space" onclick="manualMood('space')">2. DEEP SPACE<span class="desc">Hold Poses (60 BPM Pulse)</span></button>
+        <button class="full-width" id="btn-shutdown" onclick="manualMood('shutdown')">3. SHUTDOWN<span class="desc">Savasana (5Hz Binaural)</span></button>
+
+        <button id="stop-btn" class="full-width" onclick="stopAll()">FADE OUT & STOP</button>
+    </div>
+
+    <script>
+        const PRESETS = {
+            hatha: [{ min: 0, mood: 'glitch' }, { min: 10, mood: 'space' }, { min: 50, mood: 'shutdown' }, { min: 60, mood: 'stop' }],
+            nidra: [{ min: 0, mood: 'space' }, { min: 5, mood: 'shutdown' }, { min: 55, mood: 'glitch' }, { min: 60, mood: 'stop' }]
+        };
+
+        let ctx, masterGain, analyser;
+        
+        // We now track "Layers" instead of raw nodes.
+        // A Layer = { bus: GainNode, nodes: [Oscillators...] }
+        let activeLayers = []; 
+        
+        let currentMood = null;
+        let sequenceInterval = null;
+        let startTime = 0;
+        let currentPreset = null;
+        let schedule = [];
+
+        async function initAudio() {
+            if (!ctx) {
+                ctx = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = ctx.createGain();
+                masterGain.gain.value = 1.0; // Keep Master open, we control volume per layer
+                
+                const limiter = ctx.createDynamicsCompressor();
+                limiter.threshold.value = -10;
+                limiter.ratio.value = 12;
+                
+                masterGain.connect(limiter);
+                limiter.connect(ctx.destination);
+                
+                analyser = ctx.createAnalyser();
+                analyser.fftSize = 1024;
+                limiter.connect(analyser);
+                drawScope();
+                
+                document.getElementById('init-btn').style.display = 'none';
+                document.getElementById('controls').style.opacity = '1';
+                document.getElementById('controls').style.pointerEvents = 'auto';
+            }
+            if (ctx.state === 'suspended') await ctx.resume();
+        }
+
+        function stopAll(fade = true) {
+            clearInterval(sequenceInterval);
+            currentPreset = null;
+            document.querySelectorAll('.active-preset').forEach(b => b.classList.remove('active-preset'));
+            
+            killAllLayers(fade ? 3 : 0.1);
+            
+            currentMood = null;
+            document.querySelectorAll('.active-mood').forEach(b => b.classList.remove('active-mood'));
+        }
+
+        function killAllLayers(fadeTime) {
+            const t = ctx.currentTime;
+            
+            // Iterate through all currently playing layers
+            activeLayers.forEach(layer => {
+                // 1. Fade the BUS, not the oscillator
+                try {
+                    layer.bus.gain.cancelScheduledValues(t);
+                    layer.bus.gain.setValueAtTime(layer.bus.gain.value, t);
+                    layer.bus.gain.linearRampToValueAtTime(0, t + fadeTime);
+                } catch(e) {}
+
+                // 2. Schedule destruction
+                setTimeout(() => {
+                    layer.nodes.forEach(n => { try{n.stop()}catch(e){} try{n.disconnect()}catch(e){} });
+                    try{layer.bus.disconnect()}catch(e){}
+                }, fadeTime * 1000 + 100);
+            });
+
+            // Empty the tracking array immediately so new clicks don't get confused
+            activeLayers = [];
+        }
+
+        function playMood(mood) {
+            if (currentMood === mood) return;
+            if (ctx.state === 'suspended') ctx.resume();
+
+            // 1. Fade out old layers gracefully
+            // We don't call stopAll() because that kills the preset timer. 
+            // We just want to crossfade audio.
+            killAllLayers(2); 
+
+            currentMood = mood;
+
+            // UI Update
+            document.querySelectorAll('.active-mood').forEach(b => b.classList.remove('active-mood'));
+            if(document.getElementById(`btn-${mood}`)) document.getElementById(`btn-${mood}`).classList.add('active-mood');
+
+            // 2. Create a NEW Layer
+            const layerBus = ctx.createGain();
+            layerBus.gain.value = 0;
+            layerBus.connect(masterGain);
+            
+            // Fade In
+            layerBus.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 3);
+
+            // 3. Generate Sound into that Bus
+            let newNodes = [];
+            switch (mood) {
+                case 'glitch': newNodes = startGlitchGarden(layerBus); break;
+                case 'space': newNodes = startDeepSpace(layerBus); break;
+                case 'shutdown': newNodes = startShutdown(layerBus); break;
+            }
+
+            // 4. Register this layer so we can stop it later
+            activeLayers.push({ bus: layerBus, nodes: newNodes });
+        }
+
+        // --- GENERATORS (Now returning node arrays) ---
+        function startGlitchGarden(dest) {
+            let nodes = [];
+            const bSize = ctx.sampleRate * 2;
+            const b = ctx.createBuffer(1, bSize, ctx.sampleRate);
+            const d = b.getChannelData(0);
+            let last = 0;
+            for (let i = 0; i < bSize; i++) {
+                let w = Math.random() * 2 - 1;
+                d[i] = (last + (0.02 * w)) / 1.02; last = d[i]; d[i] *= 3.5; 
+            }
+            const src = ctx.createBufferSource(); src.buffer = b; src.loop = true;
+            const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 300;
+            src.connect(f).connect(dest); src.start();
+            nodes.push(src);
+
+            const id = setInterval(() => {
+                if (currentMood !== 'glitch') { clearInterval(id); return; }
+                if (Math.random() > 0.8) { 
+                    const osc = ctx.createOscillator();
+                    const bg = ctx.createGain();
+                    osc.frequency.value = 1200 + Math.random() * 500;
+                    bg.gain.value = 0.02;
+                    bg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+                    osc.connect(bg).connect(dest);
+                    osc.start(); osc.stop(ctx.currentTime + 0.1);
+                }
+            }, 800);
+            return nodes;
+        }
+
+        function startDeepSpace(dest) {
+            let nodes = [];
+            [110, 110.5, 164.81].forEach(f => {
+                const osc = ctx.createOscillator(); osc.type = 'triangle'; osc.frequency.value = f;
+                const g = ctx.createGain(); g.gain.value = 0.06;
+                osc.connect(g).connect(dest); osc.start();
+                nodes.push(osc);
+            });
+            const sub = ctx.createOscillator(); sub.frequency.value = 55;
+            const subG = ctx.createGain(); subG.gain.value = 0;
+            const lfo = ctx.createOscillator(); lfo.frequency.value = 1;
+            const lfoG = ctx.createGain(); lfoG.gain.value = 0.15;
+            lfo.connect(lfoG).connect(subG.gain);
+            sub.connect(subG).connect(dest);
+            sub.start(); lfo.start();
+            nodes.push(sub, lfo);
+            return nodes;
+        }
+
+        function startShutdown(dest) {
+            let nodes = [];
+            const o1 = ctx.createOscillator(); o1.frequency.value = 100;
+            const p1 = ctx.createStereoPanner(); p1.pan.value = -1;
+            const g1 = ctx.createGain(); g1.gain.value = 0.15;
+            o1.connect(g1).connect(p1).connect(dest); o1.start();
+
+            const o2 = ctx.createOscillator(); o2.frequency.value = 105;
+            const p2 = ctx.createStereoPanner(); p2.pan.value = 1;
+            const g2 = ctx.createGain(); g2.gain.value = 0.15;
+            o2.connect(g2).connect(p2).connect(dest); o2.start();
+            
+            nodes.push(o1, o2);
+            return nodes;
+        }
+
+        // --- SEQUENCER ---
+        function startPreset(type) {
+            stopAll(false); 
+            currentPreset = type;
+            schedule = PRESETS[type];
+            startTime = Date.now();
+            document.getElementById(`btn-${type}`).classList.add('active-preset');
+            clearInterval(sequenceInterval);
+            sequenceInterval = setInterval(checkSequence, 1000);
+            playMood(schedule[0].mood);
+            checkSequence(); 
+        }
+
+        function checkSequence() {
+            const elapsedSecs = (Date.now() - startTime) / 1000;
+            const elapsedMins = elapsedSecs / 60;
+            const m = Math.floor(elapsedSecs / 60).toString().padStart(2, '0');
+            const s = Math.floor(elapsedSecs % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display').innerText = `${m}:${s}`;
+            for (let i = schedule.length - 1; i >= 0; i--) {
+                if (elapsedMins >= schedule[i].min) {
+                    const mood = schedule[i].mood;
+                    if (mood === 'stop') stopAll();
+                    else if (currentMood !== mood) playMood(mood);
+                    break; 
+                }
+            }
+        }
+
+        function manualMood(mood) {
+            clearInterval(sequenceInterval);
+            currentPreset = null;
+            document.querySelectorAll('.active-preset').forEach(b => b.classList.remove('active-preset'));
+            document.getElementById('timer-display').innerText = "MANUAL";
+            playMood(mood);
+        }
+
+        // --- VISUALIZER ---
+        function drawScope() {
+            requestAnimationFrame(drawScope);
+            if (!analyser) return;
+            const canvas = document.getElementById('scope');
+            const c = canvas.getContext('2d');
+            const w = canvas.width; const h = canvas.height;
+            const data = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteTimeDomainData(data);
+            c.fillStyle = '#000'; c.fillRect(0, 0, w, h);
+            c.strokeStyle = '#00ff9d'; c.lineWidth = 3; c.beginPath();
+            const slice = w * 1.0 / data.length; let x = 0;
+            for(let i = 0; i < data.length; i++) {
+                const v = data[i] / 128.0; const y = v * h/2;
+                if(i===0) c.moveTo(x,y); else c.lineTo(x,y); x += slice;
+            }
+            c.stroke();
+        }
+
+        document.getElementById('init-btn').addEventListener('click', initAudio);
+    </script>
+</body>
+</html>
