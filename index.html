@@ -3,161 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yoga Fire | Dev Hub</title>
+    <title>Project Hub</title>
     <style>
+        :root {
+            --bg-dark: #2b2b2b;
+            --bg-panel: #3c3f41;
+            --text-main: #a9b7c6;
+            --text-accent: #cc7832; /* Orange accent */
+            --text-link: #6a8759;   /* Green for links */
+            --border: #555555;
+        }
+
         body {
             margin: 0;
-            background-color: #0a0a0a;
-            color: #fff;
-            font-family: 'Courier New', monospace;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            justify-content: center;
             min-height: 100vh;
         }
 
-        header {
-            margin-top: 50px;
-            text-align: center;
-            border-bottom: 2px solid #333;
-            padding-bottom: 20px;
-            width: 80%;
+        .container {
+            width: 100%;
             max-width: 800px;
+            padding: 40px 20px;
         }
 
         h1 {
-            font-size: 48px;
-            margin: 0;
-            color: #00ffff;
-            text-shadow: 0 0 10px #00ffff;
-            letter-spacing: -2px;
+            font-size: 24px;
+            border-bottom: 2px solid var(--text-accent);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        p.subtitle {
-            color: #888;
-            margin-top: 10px;
-            font-size: 18px;
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #808080;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            width: 80%;
-            max-width: 1000px;
-            margin-top: 50px;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
         }
 
         .card {
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 15px;
-            padding: 30px;
-            transition: all 0.3s ease;
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 20px;
+            transition: transform 0.2s, border-color 0.2s;
             text-decoration: none;
-            color: #fff;
-            position: relative;
-            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            border-color: #00ffff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            transform: translateY(-2px);
+            border-color: var(--text-accent);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        .card h2 {
-            margin: 0 0 10px 0;
-            font-size: 28px;
-            color: #eee;
+        .card-title {
+            color: var(--text-link);
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
         }
 
-        .card p {
-            color: #666;
-            font-size: 14px;
+        .card-desc {
+            color: #888;
+            font-size: 13px;
             line-height: 1.4;
         }
 
-        .tag {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: bold;
-            margin-top: 15px;
-            margin-right: 5px;
-            text-transform: uppercase;
-        }
-
-        .tag.ai { background: #220033; color: #ff00ff; border: 1px solid #550055; }
-        .tag.audio { background: #002233; color: #00ffff; border: 1px solid #005555; }
-        .tag.vis { background: #003300; color: #00ff00; border: 1px solid #005500; }
-
-        /* New Flag */
-        .new-badge {
-            position: absolute;
-            top: 15px;
-            right: -30px;
-            background: #ff0000;
-            color: white;
-            padding: 5px 40px;
-            transform: rotate(45deg);
-            font-size: 12px;
-            font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-
         footer {
-            margin-top: auto;
-            padding: 40px;
-            color: #444;
+            margin-top: 60px;
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+            text-align: center;
             font-size: 12px;
+            color: #666;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Yoga Fire</h1>
-        <p class="subtitle">Experimental Audio/Visual & AI Tools</p>
-    </header>
+    <div class="container">
+        <h1>Project Hub</h1>
 
-    <div class="grid">
-        
-        <!-- THE NEW TOOL -->
-        <a href="meridians.html" class="card" style="border-color: #00ff00;">
-            <div class="new-badge">NEW</div>
-            <h2 style="color:#00ff00">Meridian Tracker</h2>
-            <p>Real-time TCM meridian activation analysis using MediaPipe Holistic AI. Visualizes 14 energy channels overlaid on body pose.</p>
-            <span class="tag ai">AI VISION</span>
-            <span class="tag vis">TCM</span>
-        </a>
+        <!-- SECTION 1: NEW PROTOTYPES -->
+        <div class="section-title">Biomechanics & Research</div>
+        <div class="grid">
+            <a href="meridian_biomechanics.html" class="card">
+                <div class="card-title">Recorder & Biofeedback</div>
+                <div class="card-desc">Real-time pose tracking with meridian activation analysis and data recording.</div>
+            </a>
+            
+            <a href="pose_visualize.html" class="card">
+                <div class="card-title">Session Visualizer</div>
+                <div class="card-desc">Load and replay JSON session files with detailed muscle and meridian graphs.</div>
+            </a>
 
-        <!-- EXISTING TOOLS -->
-        <a href="sequencer.html" class="card">
-            <h2>Sequencer</h2>
-            <p>Browser-based rhythm sequencer and pattern generator. Create beats and loops directly in the interface.</p>
-            <span class="tag audio">AUDIO</span>
-            <span class="tag vis">UI</span>
-        </a>
+            <a href="asana_analyzer.html" class="card">
+                <div class="card-title">Asana Analyzer</div>
+                <div class="card-desc">Upload static images to analyze alignment, generate meridian charts, and export data cards.</div>
+            </a>
+        </div>
 
-        <a href="midi.html" class="card">
-            <h2>MIDI Controller</h2>
-            <p>WebMIDI interface tools for connecting external hardware and visualizing MIDI signal flow.</p>
-            <span class="tag audio">HARDWARE</span>
-        </a>
+        <!-- SECTION 2: EXISTING MIDI TOOLS -->
+        <div class="section-title">Ambient MIDI Tools</div>
+        <div class="grid">
+            <a href="sequencer.html" class="card">
+                <div class="card-title">Sequencer</div>
+                <div class="card-desc">Generative MIDI sequencer interface.</div>
+            </a>
 
-        <a href="deck.html" class="card">
-            <h2>Deck / Visuals</h2>
-            <p>Presentation and visual deck controller for live performance and projection mapping.</p>
-            <span class="tag vis">GRAPHICS</span>
-        </a>
+            <a href="deck.html" class="card">
+                <div class="card-title">Deck</div>
+                <div class="card-desc">DJ/Mixing interface for ambient soundscapes.</div>
+            </a>
 
+            <a href="midi.html" class="card">
+                <div class="card-title">MIDI Controller</div>
+                <div class="card-desc">Direct MIDI input/output controls.</div>
+            </a>
+
+            <a href="meridians.html" class="card">
+                <div class="card-title">Meridians Legacy</div>
+                <div class="card-desc">Original meridian reference tool.</div>
+            </a>
+        </div>
+
+        <footer>
+            &copy; 2025 Project Hub. All rights reserved.
+        </footer>
     </div>
-
-    <footer>
-        &copy; 2025 Yoga Fire. Build v128.
-    </footer>
 
 </body>
 </html>
