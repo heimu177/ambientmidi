@@ -3,61 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Peculiar Apps Portal</title>
+    <title>Peculiar Yogi | Dev Hub</title>
     <style>
         body {
+            margin: 0;
             background-color: #0a0a0a;
-            color: #e0e0e0;
+            color: #fff;
             font-family: 'Courier New', monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
+            min-height: 100vh;
         }
-        h1 { border-bottom: 2px solid #00ff9d; padding-bottom: 10px; margin-bottom: 40px; }
-        .menu-link {
-            display: block;
-            width: 250px;
-            padding: 20px;
-            margin: 10px;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            color: #fff;
-            text-decoration: none;
+
+        header {
+            margin-top: 50px;
             text-align: center;
-            border-radius: 8px;
-            transition: all 0.2s;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            width: 80%;
+            max-width: 800px;
         }
-        .menu-link:hover {
-            background: #00ff9d;
-            color: #000;
-            border-color: #00ff9d;
+
+        h1 {
+            font-size: 48px;
+            margin: 0;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+            letter-spacing: -2px;
+        }
+
+        p.subtitle {
+            color: #888;
+            margin-top: 10px;
+            font-size: 18px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            width: 80%;
+            max-width: 1000px;
+            margin-top: 50px;
+        }
+
+        .card {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 15px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        }
+
+        .card h2 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+            color: #eee;
+        }
+
+        .card p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
             font-weight: bold;
+            margin-top: 15px;
+            margin-right: 5px;
+            text-transform: uppercase;
         }
-        .desc { font-size: 0.7rem; color: #888; margin-top: 5px; display: block;}
-        .menu-link:hover .desc { color: #333; }
+
+        .tag.ai { background: #220033; color: #ff00ff; border: 1px solid #550055; }
+        .tag.audio { background: #002233; color: #00ffff; border: 1px solid #005555; }
+        .tag.vis { background: #003300; color: #00ff00; border: 1px solid #005500; }
+
+        /* New Flag */
+        .new-badge {
+            position: absolute;
+            top: 15px;
+            right: -30px;
+            background: #ff0000;
+            color: white;
+            padding: 5px 40px;
+            transform: rotate(45deg);
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 40px;
+            color: #444;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>PECULIAR PORTAL</h1>
+    <header>
+        <h1>PECULIAR LABS</h1>
+        <p class="subtitle">Experimental Audio/Visual & AI Tools</p>
+    </header>
 
-    <a href="sequencer.html" class="menu-link">
-        SEQUENCER (v18)
-        <span class="desc">Drag & Drop Class Planner</span>
-    </a>
+    <div class="grid">
+        
+        <!-- THE NEW TOOL -->
+        <a href="meridians.html" class="card" style="border-color: #00ff00;">
+            <div class="new-badge">NEW</div>
+            <h2 style="color:#00ff00">Meridian Tracker</h2>
+            <p>Real-time TCM meridian activation analysis using MediaPipe Holistic AI. Visualizes 14 energy channels overlaid on body pose.</p>
+            <span class="tag ai">AI VISION</span>
+            <span class="tag vis">TCM</span>
+        </a>
 
-    <a href="deck.html" class="menu-link">
-        DECK (v3)
-        <span class="desc">One-Tap Atmosphere</span>
-    </a>
+        <!-- EXISTING TOOLS -->
+        <a href="sequencer.html" class="card">
+            <h2>Sequencer</h2>
+            <p>Browser-based rhythm sequencer and pattern generator. Create beats and loops directly in the interface.</p>
+            <span class="tag audio">AUDIO</span>
+            <span class="tag vis">UI</span>
+        </a>
 
-    <a href="midi.html" class="menu-link">
-        AMBIENT MIDI
-        <span class="desc">Your Original App</span>
-    </a>
+        <a href="midi.html" class="card">
+            <h2>MIDI Controller</h2>
+            <p>WebMIDI interface tools for connecting external hardware and visualizing MIDI signal flow.</p>
+            <span class="tag audio">HARDWARE</span>
+        </a>
+
+        <a href="deck.html" class="card">
+            <h2>Deck / Visuals</h2>
+            <p>Presentation and visual deck controller for live performance and projection mapping.</p>
+            <span class="tag vis">GRAPHICS</span>
+        </a>
+
+    </div>
+
+    <footer>
+        &copy; 2025 Peculiar Yogi. Build v128.
+    </footer>
 
 </body>
 </html>
