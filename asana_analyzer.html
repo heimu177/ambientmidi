@@ -1,408 +1,335 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stage 11: Refined Core</title>
-    <style>
-        :root { --bg: #000; --accent: #00ff9d; --panel: rgba(5,5,8,0.8); }
-        body { margin: 0; overflow: hidden; background: var(--bg); font-family: monospace; color: #fff; }
-        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asana Meridian Analyzer (Resizble Text)</title>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<style>
+  /* DARCULA THEME */
+  :root { --bg-dark: #2b2b2b; --bg-panel: #3c3f41; --bg-input: #45494a; --text-main: #a9b7c6; --text-accent: #cc7832; --border: #555; --green: #6a8759; }
+  body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: var(--text-main); height: 100vh; overflow: hidden; }
+  #app { display: flex; height: 100%; }
 
-        #hud {
-            position: absolute; top: 20px; left: 20px; z-index: 5; pointer-events: none;
-            border-left: 3px solid var(--accent); padding-left: 15px;
-        }
-        .hud-title { font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; }
-        .hud-sub { font-size: 0.8rem; color: #888; margin-top: 5px;}
+  /* VIEWER */
+  #viewer-container { flex: 1; display: flex; flex-direction: column; background: #1e1e1e; overflow: hidden; }
+  
+  #toolbar { 
+    height: 50px; background: #2a2a2a; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 15px;
+  }
+  
+  #viewer { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; position: relative; overflow: hidden; }
+  
+  canvas { max-width: 100%; max-height: 100%; box-shadow: 0 0 20px rgba(0,0,0,0.5); border-radius: 4px; transition: filter 0.1s; }
+  
+  /* TOOLBAR CONTROLS */
+  .toggle-btn {
+    background: #444; color: #aaa; border: 1px solid #666; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; user-select: none;
+  }
+  .toggle-btn.active { background: var(--text-accent); color: #fff; border-color: var(--text-accent); }
+  
+  .slider-group { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #888; border-left: 1px solid #444; padding-left: 15px; }
+  input[type=range] { width: 80px; accent-color: var(--text-accent); }
 
-        #ui-layer {
-            position: absolute; bottom: 40px; width: 100%; display: flex;
-            justify-content: center; gap: 15px; z-index: 10;
-        }
-        .world-btn {
-            background: rgba(0,0,0,0.6); border: 1px solid #444; color: #aaa;
-            padding: 15px 25px; border-radius: 12px; cursor: pointer;
-            font-family: inherit; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;
-            backdrop-filter: blur(5px); transition: all 0.3s;
-        }
-        .world-btn:hover { border-color: #fff; color: #fff; transform: translateY(-2px); }
-        .world-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,255,157,0.1); box-shadow: 0 0 20px rgba(0,255,157,0.2); }
-        .stop-btn { border-color: #822; color: #f55; }
+  /* SIDEBAR */
+  #sidebar { width: 420px; background: var(--bg-panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; overflow-y: auto; box-shadow: -5px 0 20px rgba(0,0,0,0.3); }
+  h1 { margin: 0 0 20px 0; color: var(--text-accent); font-size: 20px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+  h2 { margin: 20px 0 10px 0; font-size: 14px; color: var(--text-main); font-weight: bold; text-transform: uppercase; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+  
+  .input-group { margin-bottom: 15px; }
+  label { display: block; font-size: 12px; color: #808080; margin-bottom: 5px; font-weight:bold; }
+  input[type="text"] { width: 100%; padding: 10px; background: var(--bg-input); border: 1px solid var(--border); color: #fff; border-radius: 4px; font-size: 14px; }
+  
+  #drop-zone { border: 2px dashed var(--border); padding: 20px; text-align: center; color: #888; cursor: pointer; border-radius: 6px; margin-bottom: 10px; }
+  #drop-zone:hover { border-color: var(--text-accent); color: var(--text-accent); background: rgba(255,255,255,0.05); }
 
-        #start-overlay {
-            position: absolute; inset: 0; background: #000; z-index: 20;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: opacity 1s;
-        }
-        #init-btn {
-            background: transparent; color: var(--accent);
-            border: 2px solid var(--accent); padding: 20px 50px;
-            font-size: 1.5rem; letter-spacing: 8px; font-weight: 900;
-            cursor: pointer; transition: 0.3s; text-transform: uppercase;
-            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
-        }
-        #init-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 60px var(--accent); }
-    </style>
+  #meridian-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .meridian-row { display: flex; align-items: center; margin-bottom: 4px; }
+  .m-label { width: 30px; font-size: 11px; font-weight: bold; color: #bbb; }
+  .m-track { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
+  .m-fill { height: 100%; border-radius: 3px; width: 0%; }
+  .m-val { width: 30px; text-align: right; font-size: 10px; color: #888; margin-left: 5px; }
+  
+  #muscle-tags { display: flex; flex-wrap: wrap; gap: 5px; min-height: 20px; }
+  .tag { background: #222; border: 1px solid #555; color: var(--green); padding: 3px 8px; border-radius: 4px; font-size: 11px; }
 
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
+  button.main-btn { width: 100%; padding: 12px; margin-top: 10px; background: #4a88c7; color: #fff; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+  button.main-btn:hover { background: #3a70a8; }
+  
+  #json-preview { font-family: 'Consolas', monospace; font-size: 10px; background: #222; color: #a9b7c6; padding: 10px; border-radius: 4px; height: 80px; overflow-y: auto; border: 1px solid var(--border); }
+</style>
 </head>
 <body>
 
-    <div id="start-overlay">
-        <button id="init-btn">IGNITE ENGINE</button>
-        <p style="color:#444; margin-top:20px;">NEURAL SYNC READY</p>
+<div id="app">
+  
+  <div id="viewer-container">
+    <!-- TOOLBAR -->
+    <div id="toolbar">
+      <div class="toggle-btn active" id="btn-skeleton" onclick="toggle('skeleton')">Skeleton</div>
+      <div class="toggle-btn active" id="btn-muscles" onclick="toggle('muscles')">Muscle Labels</div>
+      <div class="toggle-btn active" id="btn-meridians" onclick="toggle('meridians')">Meridian Lines</div>
+      
+      <div class="slider-group">
+        <span>Image Brightness</span>
+        <input type="range" min="0" max="100" value="100" oninput="adjustBrightness(this.value)">
+      </div>
+      
+      <!-- NEW: Text Size Slider -->
+      <div class="slider-group">
+        <span>Text Size</span>
+        <input type="range" min="12" max="40" value="18" oninput="adjustTextSize(this.value)">
+      </div>
     </div>
 
-    <div id="hud">
-        <div class="hud-title" id="world-title">VOID</div>
-        <div class="hud-sub">SIMULATION: <span id="geo-status">NULL</span></div>
+    <div id="viewer">
+      <canvas id="output"></canvas>
+      <div id="placeholder-text" style="color:#555; position:absolute;">Upload Image</div>
     </div>
+  </div>
 
-    <div id="canvas-container"></div>
-
-    <div id="ui-layer">
-        <button class="world-btn" onclick="engine.switchWorld(0)">MIST</button>
-        <button class="world-btn" onclick="engine.switchWorld(1)">ABYSS</button>
-        <button class="world-btn" onclick="engine.switchWorld(2)">WOMB</button>
-        <button class="world-btn" onclick="engine.switchWorld(3)">SPACE</button>
-        <button class="world-btn stop-btn" onclick="engine.stop()">HALT</button>
+  <div id="sidebar">
+    <h1>Asana Analyzer</h1>
+    <div id="drop-zone" onclick="document.getElementById('fileInput').click()">
+      Click to Upload Photo
+      <input type="file" id="fileInput" accept="image/*" style="display:none">
     </div>
+    <div class="input-group"><label>POSE NAME</label><input type="text" id="poseName" placeholder="e.g., Downward Dog"></div>
+    <h2>Meridian Profile</h2><div id="meridian-grid"></div>
+    <h2>Active Muscles</h2><div id="muscle-tags"><span style="color:#555; font-size:12px;">--</span></div>
+    <h2>Export</h2><div id="json-preview">// JSON Data...</div>
+    <button class="main-btn" onclick="downloadJSON()">Save Asana Card</button>
+  </div>
+</div>
 
-    <script type="x-shader/x-vertex" id="vertexShader">
-        uniform float iTime;
-        uniform float iBass;
-        uniform int iScene;
-        
-        attribute float scale;
-        varying vec3 vColor;
-        varying float vAlpha;
+<script>
+const canvas = document.getElementById('output');
+const ctx = canvas.getContext('2d');
+const fileInput = document.getElementById('fileInput');
+const jsonPreview = document.getElementById('json-preview');
+const muscleTagsDiv = document.getElementById('muscle-tags');
+const meridianGrid = document.getElementById('meridian-grid');
+const poseNameInput = document.getElementById('poseName');
+const placeholder = document.getElementById('placeholder-text');
 
-        // Simplex Noise
-        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-        vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-        vec4 permute(vec4 x) { return mod289(((x * 34.0) + 1.0) * x); }
-        vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
-        float snoise(vec3 v) {
-            const vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0);
-            const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-            vec3 i  = floor(v + dot(v, C.yyy));
-            vec3 x0 = v - i + dot(i, C.xxx);
-            vec3 g = step(x0.yzx, x0.xyz);
-            vec3 l = 1.0 - g;
-            vec3 i1 = min(g.xyz, l.zxy);
-            vec3 i2 = max(g.xyz, l.zxy);
-            vec3 x1 = x0 - i1 + C.xxx;
-            vec3 x2 = x0 - i2 + C.yyy;
-            vec3 x3 = x0 - D.yyy;
-            i = mod289(i);
-            vec4 p = permute(permute(permute(
-                     i.z + vec4(0.0, i1.z, i2.z, 1.0))
-                   + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-                   + i.x + vec4(0.0, i1.x, i2.x, 1.0));
-            float n_ = 0.142857142857;
-            vec3 ns = n_ * D.wyz - D.xzx;
-            vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-            vec4 x_ = floor(j * ns.z);
-            vec4 y_ = floor(j - 7.0 * x_);
-            vec4 x = x_ *ns.x + ns.yyyy;
-            vec4 y = y_ *ns.x + ns.yyyy;
-            vec4 h = 1.0 - abs(x) - abs(y);
-            vec4 b0 = vec4(x.xy, y.xy);
-            vec4 b1 = vec4(x.zw, y.zw);
-            vec4 s0 = floor(b0) * 2.0 + 1.0;
-            vec4 s1 = floor(b1) * 2.0 + 1.0;
-            vec4 sh = -step(h, vec4(0.0));
-            vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
-            vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
-            vec3 p0 = vec3(a0.xy, h.x);
-            vec3 p1 = vec3(a0.zw, h.y);
-            vec3 p2 = vec3(a1.xy, h.z);
-            vec3 p3 = vec3(a1.zw, h.w);
-            vec4 norm = taylorInvSqrt(vec4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));
-            p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
-            vec4 m = max(0.6 - vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3)), 0.0);
-            m = m * m;
-            return 42.0 * dot(m*m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
+let currentAnalysis = null;
+let poseEstimator = null;
+let currentImage = null; 
+let lastResults = null;
+
+// UI STATE
+const show = { skeleton: true, muscles: true, meridians: true };
+let brightness = 100;
+let fontSize = 18; // User adjustable
+
+const MERIDIANS = [
+  {id:'LU', name:'LU', color:'#fff', muscles:['Pectoralis', 'Biceps'], anchor: 11}, 
+  {id:'LI', name:'LI', color:'#ccc', muscles:['Deltoid', 'Triceps'], anchor: 13}, 
+  {id:'ST', name:'ST', color:'#fc0', muscles:['Quadriceps'], anchor: 23}, 
+  {id:'SP', name:'SP', color:'#f90', muscles:['Adductors', 'Abs'], anchor: 23},
+  {id:'HT', name:'HT', color:'#f00', muscles:['Pec Minor'], anchor: 11},
+  {id:'SI', name:'SI', color:'#f55', muscles:['Trapezius', 'Scapula'], anchor: 12},
+  {id:'BL', name:'BL', color:'#06f', muscles:['Hamstrings', 'Calves'], anchor: 25}, 
+  {id:'KD', name:'KD', color:'#00f', muscles:['Soleus'], anchor: 27}, 
+  {id:'PC', name:'PC', color:'#f0a', muscles:['Chest'], anchor: 12},
+  {id:'TB', name:'TB', color:'#ff0', muscles:['Deltoid'], anchor: 14},
+  {id:'GB', name:'GB', color:'#0f0', muscles:['IT Band', 'Glutes'], anchor: 23},
+  {id:'LV', name:'LV', color:'#393', muscles:['Deep Core'], anchor: 24},
+  {id:'GV', name:'GV', color:'#eee', muscles:['Spine'], anchor: 0}, 
+  {id:'CV', name:'CV', color:'#888', muscles:['Rectus Abs'], anchor: 24}
+];
+
+function initUI() {
+  meridianGrid.innerHTML = '';
+  MERIDIANS.forEach(m => {
+    meridianGrid.innerHTML += `
+      <div class="meridian-row">
+        <div class="m-label" style="color:${m.color}">${m.name}</div>
+        <div class="m-track"><div class="m-fill" id="bar-${m.id}" style="background:${m.color}"></div></div>
+        <div class="m-val" id="val-${m.id}">0%</div>
+      </div>`;
+  });
+}
+initUI();
+
+function toggle(layer) {
+  show[layer] = !show[layer];
+  document.getElementById(`btn-${layer}`).classList.toggle('active');
+  if(lastResults) drawFrame(lastResults);
+}
+
+function adjustBrightness(val) {
+  brightness = val;
+  if(lastResults) drawFrame(lastResults);
+}
+
+function adjustTextSize(val) {
+  fontSize = parseInt(val);
+  if(lastResults) drawFrame(lastResults);
+}
+
+async function processImage(imgElement) {
+  if (poseEstimator) await poseEstimator.close();
+  poseEstimator = new Pose({locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
+  poseEstimator.setOptions({ modelComplexity: 1, smoothLandmarks: true });
+  poseEstimator.onResults((results) => {
+    lastResults = results;
+    canvas.width = imgElement.naturalWidth;
+    canvas.height = imgElement.naturalHeight;
+    drawFrame(results);
+    
+    if(results.poseLandmarks) {
+      const analysis = analyzePose(results.poseLandmarks);
+      currentAnalysis = { timestamp: new Date().toISOString(), data: analysis };
+      updateSidebar(analysis);
+      updateJSON();
+    }
+  });
+  await poseEstimator.send({image: imgElement});
+}
+
+function drawFrame(results) {
+  if(!currentImage) return;
+  
+  // 1. Draw Base Image
+  ctx.filter = `brightness(${brightness}%)`;
+  ctx.drawImage(currentImage, 0, 0);
+  ctx.filter = 'none';
+
+  if (!results.poseLandmarks) return;
+  const pose = results.poseLandmarks;
+
+  // 2. Draw Skeleton
+  if(show.skeleton) {
+    drawConnectors(ctx, pose, POSE_CONNECTIONS, {color:'rgba(255,255,255,0.5)', lineWidth:8});
+    drawLandmarks(ctx, pose, {color:'#00d2ff', lineWidth:3, radius:6});
+  }
+
+  // 3. Draw Meridian Lines
+  if(show.meridians) {
+    ctx.shadowBlur = 20; 
+    drawNeonLine(pose[11], pose[13], '#00d2ff'); 
+    drawNeonLine(pose[12], pose[14], '#00d2ff');
+    drawNeonLine(pose[23], pose[25], '#00ff00'); 
+    drawNeonLine(pose[24], pose[26], '#00ff00');
+    drawNeonLine(pose[11], pose[23], '#ffaa00'); 
+    drawNeonLine(pose[12], pose[24], '#ffaa00');
+    ctx.shadowBlur = 0;
+  }
+
+  // 4. Draw Adjustable Text
+  if(show.muscles && currentAnalysis) {
+    const drawnAnchors = new Set();
+    MERIDIANS.forEach(m => {
+      if(currentAnalysis.data.meridians[m.id] > 60) {
+        const anchorIdx = m.anchor;
+        const anchorPoint = pose[anchorIdx];
+        if(anchorPoint && !drawnAnchors.has(anchorIdx)) {
+          drawnAnchors.add(anchorIdx);
+          const x = anchorPoint.x * canvas.width;
+          const y = anchorPoint.y * canvas.height;
+          const offset = (anchorPoint.x > 0.5) ? 30 : -180; 
+          
+          // Responsive Box Width based on font size
+          const boxW = fontSize * 8; 
+          const boxH = fontSize * 1.8;
+
+          ctx.fillStyle = "rgba(0,0,0,0.9)";
+          ctx.fillRect(x + offset, y - (boxH/2), boxW, boxH);
+          
+          ctx.fillStyle = m.color;
+          ctx.font = `bold ${fontSize}px Arial`;
+          ctx.fillText(m.muscles[0], x + offset + 10, y + (fontSize/3));
+          
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + offset + (offset > 0 ? 0 : boxW), y);
+          ctx.strokeStyle = m.color;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          
+          ctx.beginPath();
+          ctx.arc(x, y, 6, 0, 2*Math.PI);
+          ctx.fillStyle = m.color;
+          ctx.fill();
         }
+      }
+    });
+  }
+}
 
-        void main() {
-            vec3 pos = position;
-            float t = iTime;
-            vAlpha = 1.0;
-            float sizeMult = 1.0;
+function drawNeonLine(p1, p2, color) {
+  ctx.beginPath();
+  ctx.moveTo(p1.x * canvas.width, p1.y * canvas.height);
+  ctx.lineTo(p2.x * canvas.width, p2.y * canvas.height);
+  ctx.strokeStyle = color;
+  ctx.shadowColor = color;
+  ctx.lineWidth = 6; // Thicker Lines
+  ctx.stroke();
+}
 
-            // SCENE 0: MIST (Matrix Bullet Time)
-            if (iScene == 0) {
-                t *= 0.1; // Super slow
-                float n = snoise(vec3(pos.x*0.05, pos.y*0.05 + t, pos.z*0.05));
-                pos.y += t * 5.0;
-                pos.y = mod(pos.y + 50.0, 100.0) - 50.0;
-                
-                float dist = length(pos);
-                float ripple = sin(dist * 0.2 - iTime * 2.0) * iBass * 5.0;
-                pos += normalize(pos) * ripple;
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  placeholder.style.display = 'none';
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => { currentImage = img; processImage(img); };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  fileInput.value = ''; 
+});
 
-                vColor = mix(vec3(0.6, 0.8, 1.0), vec3(1.0), n);
-                sizeMult = 15.0;
-            }
+function analyzePose(pose) {
+  const v = {}; 
+  const ang = (a,b,c) => {
+    if(!pose[a] || !pose[b] || !pose[c]) return 0;
+    const rad = Math.atan2(pose[c].y-pose[b].y, pose[c].x-pose[b].x) - Math.atan2(pose[a].y-pose[b].y, pose[a].x-pose[b].x);
+    return Math.abs(rad * 180/Math.PI);
+  };
 
-            // SCENE 1: ABYSS (Deep Fade)
-            else if (iScene == 1) {
-                pos.y += t * 2.0; 
-                pos.y = mod(pos.y + 50.0, 100.0) - 50.0;
-                pos.x += sin(t + pos.y * 0.1) * 2.0;
-                
-                float depth = (pos.y + 50.0) / 100.0;
-                vAlpha = smoothstep(0.0, 0.3, depth) * smoothstep(1.0, 0.7, depth);
-                
-                vColor = vec3(0.0, 1.0, 0.6);
-                sizeMult = 25.0;
-            }
+  const lElbow = ang(11,13,15); const rElbow = ang(12,14,16);
+  v.LU = map((lElbow + rElbow)/2, 90, 180, 30, 90); v.HT = map(pose[15].y, pose[11].y, pose[0].y, 20, 100);
+  v.PC = (v.LU + v.HT) / 2; v.LI = 100 - v.LU; v.SI = 100 - v.HT; v.TB = 100 - v.PC;
+  const hipFlex = ang(11,23,25); v.ST = map(hipFlex, 180, 90, 20, 100); v.SP = v.ST * 1.1;
+  const isFold = pose[0].y > pose[23].y; v.BL = isFold ? 95 : 30;
+  const width = Math.abs(pose[27].x - pose[28].x); v.KD = map(width, 0.1, 0.5, 20, 100);
+  v.LV = v.KD * 0.9 + (isFold ? 20 : 0); const tilt = Math.abs(pose[11].y - pose[12].y);
+  v.GB = map(tilt, 0, 0.2, 10, 100); v.GV = (hipFlex > 190) ? 90 : 40; v.CV = (hipFlex < 160) ? 80 : 30;
+  const muscles = new Set(); MERIDIANS.forEach(m => { if(v[m.id] > 60) m.muscles.forEach(mus => muscles.add(mus)); });
+  return { meridians: v, activeMuscles: Array.from(muscles) };
+}
 
-            // SCENE 2: WOMB (Neural Network - Brain Synapses)
-            else if (iScene == 2) {
-                // Create a fibrous web structure
-                float noiseScale = 0.05;
-                vec3 noisePos = pos * noiseScale;
-                
-                // Flow along connections
-                float flow = snoise(noisePos + t * 0.2);
-                
-                // Snap particles to "veins"
-                // If noise is close to 0, it's a vein
-                float vein = 1.0 - abs(flow);
-                vein = pow(vein, 8.0); // Sharpen contrast
-                
-                // Pulse travel
-                float signal = sin(pos.x * 0.1 + pos.y * 0.1 + t * 3.0);
-                signal = smoothstep(0.8, 1.0, signal); // Only bright spikes
-                
-                // Bass expand
-                pos += normalize(pos) * iBass * 5.0;
+function updateSidebar(data) {
+  for(const [k, val] of Object.entries(data.meridians)) {
+    document.getElementById(`bar-${k}`).style.width = val + '%';
+    document.getElementById(`val-${k}`).textContent = Math.round(val) + '%';
+  }
+  muscleTagsDiv.innerHTML = '';
+  data.activeMuscles.forEach(m => muscleTagsDiv.innerHTML += `<span class="tag">${m}</span>`);
+}
 
-                vAlpha = vein * 0.8 + signal; // Veins are dim, signals are bright
-                vColor = mix(vec3(0.5, 0.0, 0.2), vec3(1.0, 0.8, 0.5), signal); // Dark red to Gold
-                sizeMult = 20.0 + (signal * 30.0);
-            }
+function updateJSON() {
+  if(!currentAnalysis) return;
+  const exportData = { name: poseNameInput.value, ...currentAnalysis };
+  jsonPreview.textContent = JSON.stringify(exportData, null, 2);
+}
 
-            // SCENE 3: SPACE (Layered Deep Field)
-            else {
-                // Layering based on particle ID (using scale as random ID)
-                float layer = floor(scale * 3.0); // 0, 1, or 2
-                
-                if (layer == 0.0) { // Dust (Fast, Foreground)
-                    pos.z += t * 20.0;
-                    pos.z = mod(pos.z, 100.0) - 50.0;
-                    vColor = vec3(0.4, 0.6, 0.8);
-                    sizeMult = 5.0;
-                } else if (layer == 1.0) { // Stars (Slow, Mid)
-                    pos.z += t * 5.0;
-                    pos.z = mod(pos.z, 200.0) - 100.0;
-                    vColor = vec3(1.0);
-                    sizeMult = 15.0;
-                } else { // Nebula (Static, Far)
-                    float n = snoise(pos * 0.02);
-                    vColor = mix(vec3(0.1, 0.0, 0.2), vec3(0.0, 0.1, 0.3), n);
-                    vAlpha = 0.3;
-                    sizeMult = 60.0;
-                }
-                
-                // Rotation
-                float rotSpeed = 0.05 * (layer + 1.0);
-                float ang = t * rotSpeed;
-                float x = pos.x * cos(ang) - pos.y * sin(ang);
-                float y = pos.x * sin(ang) + pos.y * cos(ang);
-                pos.x = x; pos.y = y;
-            }
+function map(val, s1, e1, s2, e2) { return Math.min(e2, Math.max(s2, s2 + (e2 - s2) * ((val - s1) / (e1 - s1)))); }
 
-            vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-            gl_Position = projectionMatrix * mvPosition;
-            gl_PointSize = scale * sizeMult * (1.0 + iBass * 0.5) * (30.0 / -mvPosition.z);
-        }
-    </script>
-
-    <script type="x-shader/x-fragment" id="fragmentShader">
-        varying vec3 vColor;
-        varying float vAlpha;
-        void main() {
-            vec2 uv = gl_PointCoord.xy - 0.5;
-            float r = length(uv);
-            if (r > 0.5) discard;
-            float glow = 1.0 - (r * 2.0);
-            glow = pow(glow, 2.0);
-            gl_FragColor = vec4(vColor, glow * vAlpha);
-        }
-    </script>
-
-    <script type="module">
-        import * as THREE from 'three';
-        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-
-        const engine = {
-            scene: null, camera: null, renderer: null, composer: null,
-            particles: null, uniforms: null,
-            analyser: null, dataArray: null, clock: new THREE.Clock(),
-
-            init(analyser) {
-                this.analyser = analyser;
-                this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
-
-                this.scene = new THREE.Scene();
-                this.scene.fog = new THREE.FogExp2(0x000000, 0.02);
-
-                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-                this.camera.position.set(0, 0, 80);
-
-                this.renderer = new THREE.WebGLRenderer({powerPreference:'high-performance', antialias:false});
-                this.renderer.setSize(window.innerWidth, window.innerHeight);
-                document.getElementById('canvas-container').appendChild(this.renderer.domElement);
-
-                this.createParticles();
-
-                this.composer = new EffectComposer(this.renderer);
-                this.composer.addPass(new RenderPass(this.scene, this.camera));
-                
-                // REFINED BLOOM: Subtler
-                const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.6, 0.5, 0.3);
-                this.composer.addPass(bloom);
-
-                this.animate();
-                window.addEventListener('resize', () => this.onResize());
-                this.switchWorld(3); 
-            },
-
-            createParticles() {
-                const count = 80000;
-                const geo = new THREE.BufferGeometry();
-                const pos = [];
-                const scale = [];
-
-                for(let i=0; i<count; i++) {
-                    pos.push((Math.random()-0.5)*200, (Math.random()-0.5)*200, (Math.random()-0.5)*200);
-                    scale.push(Math.random());
-                }
-
-                geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-                geo.setAttribute('scale', new THREE.Float32BufferAttribute(scale, 1));
-
-                this.uniforms = {
-                    iTime: { value: 0 },
-                    iBass: { value: 0 },
-                    iScene: { value: 3 }
-                };
-
-                const mat = new THREE.ShaderMaterial({
-                    uniforms: this.uniforms,
-                    vertexShader: document.getElementById('vertexShader').textContent,
-                    fragmentShader: document.getElementById('fragmentShader').textContent,
-                    transparent: true,
-                    depthWrite: false,
-                    blending: THREE.AdditiveBlending
-                });
-
-                this.particles = new THREE.Points(geo, mat);
-                this.scene.add(this.particles);
-            },
-
-            switchWorld(id) {
-                this.uniforms.iScene.value = id;
-                const names = ['MIST', 'ABYSS', 'WOMB', 'SPACE'];
-                const desc = ['FROZEN RAIN', 'DEEP FADE', 'NEURAL WEB', 'DEEP FIELD'];
-                
-                document.getElementById('world-title').innerText = names[id];
-                document.getElementById('geo-status').innerText = desc[id];
-                
-                document.querySelectorAll('.world-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.world-btn')[id].classList.add('active');
-                
-                audio.play(names[id].toLowerCase());
-            },
-
-            stop() {
-                audio.stopAll();
-                this.uniforms.iBass.value = 0.0;
-                document.getElementById('geo-status').innerText = "HALTED";
-                document.querySelectorAll('.world-btn').forEach(b => b.classList.remove('active'));
-            },
-
-            animate() {
-                requestAnimationFrame(() => this.animate());
-                const t = this.clock.getElapsedTime();
-                this.uniforms.iTime.value = t;
-
-                if (this.analyser) {
-                    this.analyser.getByteFrequencyData(this.dataArray);
-                    let bass = 0; for(let i=0; i<10; i++) bass += this.dataArray[i];
-                    this.uniforms.iBass.value = THREE.MathUtils.lerp(this.uniforms.iBass.value, bass/10/255, 0.2);
-                }
-
-                this.composer.render();
-            },
-
-            onResize() {
-                this.renderer.setSize(window.innerWidth, window.innerHeight);
-                this.composer.setSize(window.innerWidth, window.innerHeight);
-            }
-        };
-
-        const audio = {
-            ctx: null, master: null, activeNodes: [], analyser: null,
-            init() {
-                const AC = window.AudioContext || window.webkitAudioContext;
-                this.ctx = new AC();
-                this.master = this.ctx.createGain();
-                this.master.gain.value = 0.7;
-                this.analyser = this.ctx.createAnalyser();
-                this.analyser.fftSize = 512;
-                this.master.connect(this.analyser);
-                this.analyser.connect(this.ctx.destination);
-                if (this.ctx.state === 'suspended') this.ctx.resume();
-                return this.analyser;
-            },
-            stopAll() {
-                this.activeNodes.forEach(n => { try{n.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.5); setTimeout(()=>n.stop(),600);}catch(e){} });
-                this.activeNodes = [];
-            },
-            play(key) {
-                this.stopAll();
-                const bus = this.ctx.createGain();
-                bus.gain.value=0; bus.gain.linearRampToValueAtTime(1, this.ctx.currentTime+1.5);
-                bus.connect(this.master);
-                const nodes = this.route(key, bus);
-                this.activeNodes.push({stop:()=>nodes.forEach(n=>n.stop()), gain:bus.gain});
-            },
-            route(key, d) {
-                if(key==='mist') return this.genMist(d);
-                if(key==='abyss') return this.genAbyss(d);
-                if(key==='womb') return this.genWomb(d);
-                if(key==='space') return this.genPad(d);
-                return [];
-            },
-            genMist(d){ const b=this.ctx.createBuffer(1,this.ctx.sampleRate*2,this.ctx.sampleRate); const da=b.getChannelData(0); for(let i=0;i<b.length;i++)da[i]=Math.random()*2-1; const s=this.ctx.createBufferSource();s.buffer=b;s.loop=true; const f=this.ctx.createBiquadFilter();f.type='highpass';f.frequency.value=1200; const g=this.ctx.createGain();g.gain.value=0.25; s.connect(f).connect(g).connect(d);s.start(); return[s]; },
-            genAbyss(d){ const b=this.ctx.createBuffer(1,this.ctx.sampleRate*2,this.ctx.sampleRate); const da=b.getChannelData(0); let l=0; for(let i=0;i<b.length;i++){let w=Math.random()*2-1; da[i]=(l+(0.02*w))/1.02; l=da[i]; da[i]*=3.5;} const s=this.ctx.createBufferSource();s.buffer=b;s.loop=true; const f=this.ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=180; const g=this.ctx.createGain();g.gain.value=0.5; s.connect(f).connect(g).connect(d);s.start(); return[s]; },
-            genWomb(d){ const o=this.ctx.createOscillator();o.frequency.value=40; const g=this.ctx.createGain();g.gain.value=0; const l=this.ctx.createOscillator();l.frequency.value=1; const lg=this.ctx.createGain();lg.gain.value=0.4; l.connect(lg).connect(g.gain);o.connect(g).connect(d); o.start();l.start(); return[o,l]; },
-            genPad(d){ const o=this.ctx.createOscillator();o.frequency.value=110; const g=this.ctx.createGain();g.gain.value=0.12; o.connect(g).connect(d);o.start(); return[o]; }
-        };
-
-        window.engine = engine;
-        window.audio = audio;
-
-        document.getElementById('init-btn').addEventListener('click', () => {
-            document.getElementById('start-overlay').style.opacity = 0;
-            setTimeout(() => document.getElementById('start-overlay').style.display = 'none', 800);
-            const analyser = audio.init();
-            engine.init(analyser);
-        });
-    </script>
+function downloadJSON() {
+  if(!currentAnalysis) return alert("No data!");
+  updateJSON();
+  const blob = new Blob([jsonPreview.textContent], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (poseNameInput.value||'pose')+".json";
+  a.click();
+}
+poseNameInput.addEventListener('input', updateJSON);
+</script>
 </body>
 </html>
