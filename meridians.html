@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stage 137: Meridian Tracker with Progress Bars</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+
+<style>
+  body {
+    margin: 0;
+    background: #000;
+    overflow: hidden;
+    font-family: 'Arial Black', 'Microsoft YaHei', 'SimHei', sans-serif;
+    color: #0ff;
+  }
+  #container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  #video-layer {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+    opacity: 0.5;
+    z-index: 1;
+  }
+  #canvas-layer {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+    z-index: 2;
+  }
+  #dashboard {
+    position: absolute;
+    left: 40px;
+    top: 10px;
+    width: 400px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    border-radius: 15px;
+    border-left: 6px solid #0ff;
+    z-index: 5;
+    max-height: 60vh;
+    overflow-y: auto;
+    font-size: 20px;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    height: 28px;
+    font-weight: 900;
+    color: #fff;
+  }
+  .lbl {
+    width: 140px;
+    padding-right: 12px;
+    white-space: nowrap;
+  }
+  .bar-bg {
+    flex-grow: 1;
+    height: 16px;
+    background: #222;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    width: 0%;
+    background: #0ff;
+    box-shadow: 0 0 12px #0ff;
+    transition: width 0.15s ease-out;
+  }
+  #header {
+    position: absolute;
+    top: 20px;
+    width: 100%;
+    text-align: center;
+    font-size: 36px;
+    letter-spacing: 5px;
+    text-shadow: 0 0 20px #0ff;
+    z-index: 5;
+  }
+  button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 12px 22px;
+    font-size: 18px;
+    background: #0ff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+
+<div id="container">
+  <video id="video-layer" playsinline muted></video>
+  <canvas id="canvas-layer"></canvas>
+  <div id="header">MERIDIAN TRACKER</div>
+  <div id="dashboard"></div>
+  <button id="start-btn">Start</button>
+</div>
+
+<script>
+  const MERIDIANS = [
+    {id:'LU',n:'LU肺经',c:'#ffffff'},
+    {id:'LI',n:'LI大肠',c:'#cccccc'},
+    {id:'ST',n:'ST胃经',c:'#ddaa00'},
+    {id:'SP',n:'SP脾经',c:'#ffaa00'},
+    {id:'HT',n:'HT心经',c:'#ff0000'},
+    {id:'SI',n:'SI小肠',c:'#ff5555'},
+    {id:'BL',n:'BL膀胱',c:'#0055ff'},
+    {id:'KD',n:'KD肾经',c:'#0000ff'},
+    {id:'PC',n:'PC心包',c:'#ff00aa'},
+    {id:'TB',n:'TB三焦',c:'#ffff00'},
+    {id:'GB',n:'GB胆经',c:'#00dd00'},
+    {id:'LV',n:'LV肝经',c:'#00ff00'},
+    {id:'GV',n:'DU督脉',c:'#eee'},
+    {id:'CV',n:'RN任脉',c:'#eee'}
+  ];
+
+  const video = document.getElementById('video-layer');
+  const canvas = document.getElementById('canvas-layer');
+  const ctx = canvas.getContext('2d');
+  const dashboard = document.getElementById('dashboard');
+  const header = document.getElementById('header');
+  const startBtn = document.getElementById('start-btn');
+  const meters = {};
+
+  MERIDIANS.forEach(m=>{
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `
+      <div class="lbl" style="color:${m.c}">${m.n}</div>
+      <div class="bar-bg">
+        <div class="bar-fill" id="m-${m.id}" style="background:${m.c}"></div>
+      </div>
+    `;
+    dashboard.appendChild(row);
+    meters[m.id] = row.querySelector('.bar-fill');
+  });
+
+  function getAngle(a,b,c){
+    if(!a||!b||!c) return 0;
+    const rad = Math.atan2(c.y-b.y,c.x-b.x) - Math.atan2(a.y-b.y,a.x-b.x);
+    return Math.abs(rad * 180 / Math.PI);
+  }
+
+  function estimateMeridiansNormalized(pose) {
+    const v = {};
+    if(!pose) return v;
+
+    const lArm = getAngle(pose[11], pose[13], pose[15]);
+    const rArm = getAngle(pose[12], pose[14], pose[16]);
+    const armExt = (lArm+rArm)/2;
+    v.LU = Math.min(100, (armExt / 180) * 100);
+    v.LI = v.LU * 0.9;
+
+    const shoulderTilt = Math.abs(pose[11].y - pose[12].y);
+    v.GB = Math.min(100, shoulderTilt * 1000);
+
+    const hipAngle = getAngle(pose[11], pose[23], pose[25]);
+    v.BL = (hipAngle < 130) ? 100 : 10;
+    v.ST = (hipAngle > 160) ? 100 : 20;
+    v.SP = v.ST;
+
+    const handsUp = (pose[15].y < pose[11].y && pose[16].y < pose[12].y);
+    v.HT = handsUp ? 100 : 10;
+    v.PC = handsUp ? 100 : 10;
+
+    v.GV = v.ST;
+    v.CV = v.BL;
+
+    const footDist = Math.abs(pose[27].x - pose[28].x);
+    v.LV = Math.min(100, footDist * 500);
+    v.KD = v.LV;
+
+    v.TB = v.SI = 90;  // Set to constant values as hands presence assumed tracked
+
+    return v;
+  }
+
+  function applyValuesToMeters(vals){
+    for(const key in vals){
+      if(meters[key]){
+        meters[key].style.width = vals[key] + '%';
+        meters[key].style.boxShadow = vals[key] > 80 ? `0 0 15px ${MERIDIANS.find(m => m.id === key).c}` : 'none';
+      }
+    }
+  }
+
+  function onResults(results){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    if(results.poseLandmarks){
+      drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {color: 'white', lineWidth: 4});
+      drawLandmarks(ctx, results.poseLandmarks, {color: '#0ff', lineWidth: 2, radius: 6});
+    } else {
+      header.innerText = 'No Body Detected';
+      header.style.color = 'red';
+      return;
+    }
+
+    if(results.leftHandLandmarks){
+      drawConnectors(ctx, results.leftHandLandmarks, HAND_CONNECTIONS, {color: '#ff0', lineWidth: 3});
+    }
+    if(results.rightHandLandmarks){
+      drawConnectors(ctx, results.rightHandLandmarks, HAND_CONNECTIONS, {color: '#ff0', lineWidth: 3});
+    }
+
+    if(results.poseLandmarks){
+      const vals = estimateMeridiansNormalized(results.poseLandmarks);
+      applyValuesToMeters(vals);
+      header.innerText = 'MERIDIAN TRACKER';
+      header.style.color = '#0ff';
+    }
+  }
+
+  async function startSystem(){
+    startBtn.disabled = true;
+    const stream = await navigator.mediaDevices.getUserMedia({video:{width:1280,height:720}});
+    video.srcObject = stream;
+    await video.play();
+
+    const holistic = new Holistic({
+      locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${f}`
+    });
+    holistic.setOptions({
+      modelComplexity: 2,
+      smoothLandmarks: true,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+    holistic.onResults(onResults);
+
+    (async function frameLoop(){
+      if(!video.paused) await holistic.send({image: video});
+      requestAnimationFrame(frameLoop);
+    })();
+  }
+
+  function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  startBtn.addEventListener('click', () => {
+    startSystem();
+  });
+</script>
+
+</body>
+</html>
