@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Meridian Biomechanics - Darcula Recorder</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
+<style>
+  :root {
+    --bg-dark: #2b2b2b;
+    --bg-panel: #3c3f41;
+    --bg-input: #45494a;
+    --text-main: #a9b7c6;
+    --text-accent: #cc7832; /* Orange-ish */
+    --text-green: #6a8759;
+    --border: #555555;
+    --btn-bg: #4a88c7; /* Soft blue button */
+    --btn-hover: #3a70a8;
+    --btn-disabled: #555;
+  }
+
+  body, html {
+    margin: 0; padding: 0; height: 100%; overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-main);
+  }
+  
+  #app {
+    display: flex; height: 100%;
+    flex-direction: row;
+  }
+
+  #viewer {
+    flex: 1;
+    position: relative;
+    background: #1e1e1e; /* Darker canvas bg */
+    border-right: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  video, canvas {
+    position: absolute;
+    width: 100%; height: 100%;
+    top: 0; left: 0;
+    object-fit: cover;
+    transform: scaleX(-1);
+  }
+
+  #sidebar {
+    width: 360px;
+    background: var(--bg-panel);
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+    z-index: 10;
+  }
+
+  h1 {
+    margin: 0 0 20px 0;
+    color: var(--text-main);
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--text-accent);
+    padding-bottom: 10px;
+  }
+
+  .section {
+    margin-bottom: 20px;
+    background: var(--bg-input);
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+  
+  .section h2 {
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 5px;
+    text-transform: uppercase;
+    color: var(--text-accent);
+    font-weight: bold;
+  }
+
+  button {
+    padding: 12px;
+    background-color: var(--btn-bg);
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 10px;
+    width: 100%;
+    font-size: 13px;
+    transition: background 0.2s;
+  }
+  button:hover { background-color: var(--btn-hover); }
+  button:disabled { background-color: var(--btn-disabled); color: #888; cursor: not-allowed; }
+
+  #log {
+    height: 100px;
+    overflow-y: auto;
+    font-family: 'Consolas', monospace;
+    font-size: 11px;
+    background: #2b2b2b;
+    padding: 10px;
+    border-radius: 4px;
+    color: var(--text-green);
+    white-space: pre-wrap;
+    border: 1px solid var(--border);
+  }
+
+  /* Angles Text */
+  #angles div {
+    margin-bottom: 4px;
+    font-size: 13px;
+    color: #bbb;
+  }
+
+  /* Meridian Bars */
+  .meridian-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .m-label {
+    width: 100px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #bbb;
+  }
+  .m-track {
+    flex: 1;
+    height: 8px;
+    background: #2b2b2b;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #555;
+  }
+  .m-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.1s;
+  }
+  .m-val {
+    width: 35px;
+    text-align: right;
+    font-size: 11px;
+    margin-left: 8px;
+    color: #888;
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="viewer">
+    <video id="video" autoplay muted playsinline></video>
+    <canvas id="output"></canvas>
+  </div>
+  <div id="sidebar">
+    <h1>Meridian Biomechanics</h1>
+
+    <div class="section">
+      <button id="startSystem">Start Camera & Detection</button>
+    </div>
+
+    <div class="section">
+      <h2>Joint Angles</h2>
+      <div id="angles">Waiting for pose...</div>
+    </div>
+
+    <div class="section">
+      <h2>Meridian Activations</h2>
+      <div id="meridians"></div>
+    </div>
+
+    <div class="section">
+      <h2>Session Capture</h2>
+      <button id="startCapture" disabled>Start Recording</button>
+      <button id="stopCapture" disabled>Stop & Export JSON</button>
+      <div id="log">Ready.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('output');
+  const ctx = canvas.getContext('2d');
+  const anglesDiv = document.getElementById('angles');
+  const meridiansDiv = document.getElementById('meridians');
+  const logDiv = document.getElementById('log');
+  const startSystemBtn = document.getElementById('startSystem');
+  const startCaptureBtn = document.getElementById('startCapture');
+  const stopCaptureBtn = document.getElementById('stopCapture');
+
+  let captureData = [];
+  let capturing = false;
+  let holistic;
+
+  const MERIDIANS = [
+    {id:'LU',name:'Lung',color:'#a9b7c6'},
+    {id:'LI',name:'Large Int.',color:'#cc7832'},
+    {id:'ST',name:'Stomach',color:'#ffc66d'},
+    {id:'SP',name:'Spleen',color:'#a5c261'},
+    {id:'HT',name:'Heart',color:'#e06c75'},
+    {id:'SI',name:'Small Int.',color:'#d19a66'},
+    {id:'BL',name:'Bladder',color:'#61afef'},
+    {id:'KD',name:'Kidney',color:'#56b6c2'},
+    {id:'PC',name:'Pericardium',color:'#c678dd'},
+    {id:'TB',name:'Triple Burner',color:'#e5c07b'},
+    {id:'GB',name:'Gall Bladder',color:'#98c379'},
+    {id:'LV',name:'Liver',color:'#5c6370'},
+    {id:'GV',name:'Gov. Vessel',color:'#abb2bf'},
+    {id:'CV',name:'Con. Vessel',color:'#888888'}
+  ];
+
+  function log(msg){
+    const t = new Date().toLocaleTimeString();
+    logDiv.textContent += `[${t}] ${msg}\n`;
+    logDiv.scrollTop = logDiv.scrollHeight;
+  }
+
+  function getAngle(a,b,c){
+    if(!a||!b||!c) return 0;
+    const rad = Math.atan2(c.y-b.y,c.x-b.x) - Math.atan2(a.y-b.y,a.x-b.x);
+    return Math.abs(rad*180/Math.PI);
+  }
+
+  function estimateMeridians(pose){
+    const v = {};
+    if(!pose) return v;
+    
+    // Simple Mock Logic for Demo
+    const lArm = getAngle(pose[11], pose[13], pose[15]);
+    const rArm = getAngle(pose[12], pose[14], pose[16]);
+    const armExt = (lArm + rArm)/2;
+    v.LU = Math.min(100, (armExt/170)*100);
+    v.LI = v.LU*0.9;
+
+    const shoulderTilt = Math.abs(pose[11].y - pose[12].y);
+    v.GB = Math.min(100, shoulderTilt*800);
+
+    const hipAngle = getAngle(pose[11], pose[23], pose[25]);
+    v.BL = (hipAngle < 130) ? 100 : 10;
+    v.ST = (hipAngle > 160) ? 100 : 20;
+    v.SP = v.ST;
+
+    const handsUp = (pose[15].y < pose[11].y && pose[16].y < pose[12].y);
+    v.HT = handsUp ? 100 : 10;
+    v.PC = handsUp ? 100 : 10;
+    v.GV = v.ST; v.CV = v.BL;
+
+    const footDist = Math.abs(pose[27].x - pose[28].x);
+    v.LV = Math.min(100, footDist*400);
+    v.KD = v.LV;
+    v.TB = v.SI = 50; // Placeholder
+
+    return v;
+  }
+
+  function initUI(){
+    meridiansDiv.innerHTML = '';
+    MERIDIANS.forEach(m=>{
+      const div = document.createElement('div');
+      div.className = 'meridian-row';
+      div.innerHTML = `
+        <div class="m-label" style="color:${m.color}">${m.name}</div>
+        <div class="m-track">
+          <div class="m-fill" id="bar-${m.id}" style="background:${m.color}; width:0%"></div>
+        </div>
+        <div class="m-val" id="val-${m.id}">0%</div>
+      `;
+      meridiansDiv.appendChild(div);
+    });
+  }
+
+  function updateUI(vals){
+    MERIDIANS.forEach(m=>{
+      const val = vals[m.id] || 0;
+      const bar = document.getElementById(`bar-${m.id}`);
+      const txt = document.getElementById(`val-${m.id}`);
+      if(bar) bar.style.width = val + '%';
+      if(txt) txt.textContent = val.toFixed(0) + '%';
+    });
+  }
+
+  function renderAngles(pose){
+    if(!pose) return;
+    const list = [
+      ["L Arm", 11,13,15], ["R Arm", 12,14,16],
+      ["L Hip", 11,23,25], ["R Hip", 12,24,26]
+    ];
+    anglesDiv.innerHTML = '';
+    list.forEach(([n,a,b,c])=>{
+      const ang = getAngle(pose[a],pose[b],pose[c]);
+      const el = document.createElement('div');
+      el.textContent = `${n}: ${ang.toFixed(1)}°`;
+      anglesDiv.appendChild(el);
+    });
+  }
+
+  function onResults(results){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(results.image, 0,0,canvas.width,canvas.height);
+
+    if(results.poseLandmarks){
+      drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {color:'rgba(255,255,255,0.3)',lineWidth:2});
+      drawLandmarks(ctx, results.poseLandmarks, {color:'#a9b7c6',lineWidth:1,radius:3});
+
+      const vals = estimateMeridians(results.poseLandmarks);
+      updateUI(vals);
+      renderAngles(results.poseLandmarks);
+
+      if(capturing){
+        captureData.push({
+          time: Date.now(),
+          meridians: vals,
+          pose: results.poseLandmarks
+        });
+      }
+    }
+  }
+
+  async function startDetection(){
+    startSystemBtn.disabled = true;
+    log('Requesting camera access...');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({video:{width:1280,height:720}});
+      video.srcObject = stream;
+      await video.play();
+      log('Camera active.');
+
+      holistic = new Holistic({locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${f}`});
+      holistic.setOptions({modelComplexity: 1, smoothLandmarks: true});
+      holistic.onResults(onResults);
+
+      async function loop(){
+        if(!video.paused && !video.ended) await holistic.send({image:video});
+        requestAnimationFrame(loop);
+      }
+      loop();
+
+      startCaptureBtn.disabled = false;
+      log('Detection started. Ready to record.');
+    } catch(e) {
+      log('Error: ' + e.message);
+      startSystemBtn.disabled = false;
+    }
+  }
+
+  startSystemBtn.addEventListener('click', startDetection);
+
+  startCaptureBtn.addEventListener('click', ()=>{
+    captureData = [];
+    capturing = true;
+    startCaptureBtn.disabled = true;
+    stopCaptureBtn.disabled = false;
+    log('Recording started...');
+  });
+
+  stopCaptureBtn.addEventListener('click', ()=>{
+    capturing = false;
+    startCaptureBtn.disabled = false;
+    stopCaptureBtn.disabled = true;
+    log(`Recording stopped. ${captureData.length} frames captured.`);
+    downloadJSON(captureData, 'meridian_session.json');
+  });
+
+  function downloadJSON(data, filename){
+    const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function resize(){
+    const viewer = document.getElementById('viewer');
+    canvas.width = viewer.clientWidth;
+    canvas.height = viewer.clientHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+  initUI();
+</script>
+
+</body>
+</html>

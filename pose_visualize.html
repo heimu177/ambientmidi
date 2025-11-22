@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Meridian Visualizer - Swapped Layout</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --bg-dark: #2b2b2b;
+    --bg-panel: #3c3f41;
+    --bg-input: #45494a;
+    --text-main: #a9b7c6;
+    --text-accent: #cc7832;
+    --border: #555555;
+  }
+
+  body, html {
+    margin: 0; padding: 0; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: var(--bg-dark); 
+    color: var(--text-main); 
+    height: 100vh; 
+    overflow: hidden; 
+  }
+  
+  #container { display: flex; flex-direction: row; height: 100vh; width: 100vw; }
+
+  #left-panel { flex: 1; display: flex; flex-direction: column; padding: 15px; min-width: 0; }
+  
+  #canvas-wrapper {
+    flex: 1; 
+    position: relative;
+    background: #1e1e1e;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  canvas#poseCanvas { width: 100%; height: 100%; object-fit: contain; }
+
+  #controls {
+    height: 60px; 
+    flex-shrink: 0;
+    background: var(--bg-panel);
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+  
+  #frameSlider { width: 100%; cursor: pointer; display: block; }
+
+  #right-panel {
+    width: 400px;
+    flex-shrink: 0;
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    overflow-y: auto;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+  }
+
+  h2 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 20px 0 10px 0;
+    border-bottom: 2px solid var(--text-accent);
+    padding-bottom: 5px;
+    color: var(--text-main);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+  }
+
+  .input-group {
+    background: var(--bg-input);
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  
+  label { display: block; font-size: 12px; color: #808080; margin-bottom: 8px; font-weight:bold; }
+  
+  /* Progress Bars */
+  #meridianProgressBars { 
+    flex-shrink: 0; 
+    margin-bottom: 15px; /* Spacing after section */
+  }
+  .bar-row { display: flex; align-items: center; margin-bottom: 6px; }
+  .bar-label { width: 90px; font-size: 12px; font-weight: bold; white-space: nowrap; color: #bbb; }
+  .bar-track { flex: 1; background: #2b2b2b; height: 10px; border-radius: 5px; overflow: hidden; border:1px solid #555; }
+  .bar-fill { height: 100%; border-radius: 5px; width: 0%; transition: width 0.1s linear; }
+  .bar-val { width: 35px; font-size: 11px; text-align: right; margin-left: 8px; color: #aaa; }
+
+  #chartContainer {
+    height: 180px;
+    position: relative;
+    margin-bottom: 15px;
+    background: var(--bg-input);
+    border-radius: 6px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    cursor: crosshair;
+    flex-shrink: 0;
+  }
+
+  #activeMuscles {
+    background: var(--bg-input);
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px; 
+    min-height: 40px;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    flex-shrink: 0;
+  }
+
+  .muscle-tag {
+    background: #2b2b2b;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: #a5c261; 
+    border: 1px solid #555;
+    font-size: 11px;
+    white-space: nowrap;
+    flex-grow: 0;
+  }
+
+  #debugLog {
+    font-family: 'Consolas', monospace;
+    font-size: 11px;
+    height: 80px;
+    overflow-y: auto;
+    background: #2b2b2b;
+    padding: 10px;
+    border: 1px solid var(--border);
+    color: #6a8759;
+    white-space: pre-wrap;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  
+  input[type=range] { accent-color: var(--text-accent); }
+</style>
+</head>
+<body>
+
+<div id="container">
+  <div id="left-panel">
+    <div style="margin-bottom:10px; font-weight:bold; color:var(--text-main); font-size:18px;">SESSION VIEWER</div>
+    <div id="canvas-wrapper">
+      <canvas id="poseCanvas"></canvas>
+    </div>
+    <div id="controls">
+      <input type="range" id="frameSlider" min="0" max="0" value="0" disabled />
+      <div style="display:flex; justify-content:space-between; font-size:13px; margin-top:8px; color:#888;">
+        <span>FRAME: <span id="frameNum" style="color:var(--text-main)">0</span></span>
+        <span>TOTAL: <span id="totalFrames" style="color:var(--text-main)">0</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="right-panel">
+    <div class="input-group">
+      <label>Load Session File</label>
+      <input type="file" id="fileLoad" accept=".json,application/json" style="color:#bbb; font-size:13px;"/>
+    </div>
+
+    <h2>Analysis Chart</h2>
+    <div class="input-group">
+      <label>Smoothing (Avg): <span id="smoothVal" style="color:var(--text-main)">5</span></label>
+      <input type="range" id="smoothSlider" min="0" max="30" value="5" style="width:100%" disabled />
+    </div>
+    <div id="chartContainer">
+      <canvas id="meridianChart"></canvas>
+    </div>
+
+    <!-- SWAPPED: Meridian Levels First -->
+    <h2>Meridian Levels</h2>
+    <div id="meridianProgressBars">Waiting for data...</div>
+
+    <!-- SWAPPED: Active Muscles Second -->
+    <h2>Active Muscles (>70%)</h2>
+    <div id="activeMuscles">
+      <span style="color:#777; font-size:12px; padding:2px;">None</span>
+    </div>
+
+    <h2>Console</h2>
+    <div id="debugLog">System Ready.</div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const poseCanvas = document.getElementById('poseCanvas');
+  const ctx = poseCanvas.getContext('2d');
+  
+  function resizeCanvas() {
+    const wrapper = document.getElementById('canvas-wrapper');
+    poseCanvas.width = wrapper.clientWidth;
+    poseCanvas.height = wrapper.clientHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  const frameSlider = document.getElementById('frameSlider');
+  const frameNumLabel = document.getElementById('frameNum');
+  const totalFramesLabel = document.getElementById('totalFrames');
+  const progressContainer = document.getElementById('meridianProgressBars');
+  const activeMusclesDiv = document.getElementById('activeMuscles');
+  const fileLoadInput = document.getElementById('fileLoad');
+  const debugLog = document.getElementById('debugLog');
+  const smoothSlider = document.getElementById('smoothSlider');
+  const smoothValLabel = document.getElementById('smoothVal');
+  
+  let meridianChart = null;
+  let sessionData = [];
+  let rawMeridianData = {};
+  let currentFrameIndex = 0;
+
+  const MERIDIANS = [
+    {id:'LU',name:'Lung',color:'#a9b7c6', muscles:['Pectoralis', 'Biceps'], landmark: 11},
+    {id:'LI',name:'Large Int.',color:'#cc7832', muscles:['Deltoid', 'Triceps'], landmark: 13},
+    {id:'ST',name:'Stomach',color:'#ffc66d', muscles:['Quadriceps', 'Tibialis'], landmark: 23},
+    {id:'SP',name:'Spleen',color:'#a5c261', muscles:['Adductors', 'Abs'], landmark: 24},
+    {id:'HT',name:'Heart',color:'#e06c75', muscles:['Pec Minor', 'Flexors'], landmark: 11},
+    {id:'SI',name:'Small Int.',color:'#d19a66', muscles:['Trapezius', 'Scapula'], landmark: 12},
+    {id:'BL',name:'Bladder',color:'#61afef', muscles:['Erector Spinae', 'Hamstrings'], landmark: 23},
+    {id:'KD',name:'Kidney',color:'#56b6c2', muscles:['Psoas', 'Soleus'], landmark: 27},
+    {id:'PC',name:'Pericardium',color:'#c678dd', muscles:['Chest', 'Forearm'], landmark: 12},
+    {id:'TB',name:'Triple Burner',color:'#e5c07b', muscles:['Deltoid', 'Extensors'], landmark: 14},
+    {id:'GB',name:'Gall Bladder',color:'#98c379', muscles:['IT Band', 'Glutes'], landmark: 23},
+    {id:'LV',name:'Liver',color:'#5c6370', muscles:['Adductors', 'Deep Core'], landmark: 25},
+    {id:'GV',name:'Gov. Vessel',color:'#abb2bf', muscles:['Spine'], landmark: 11},
+    {id:'CV',name:'Con. Vessel',color:'#888888', muscles:['Rectus Abs'], landmark: 23}
+  ];
+
+  function log(msg) {
+    debugLog.textContent += `> ${msg}\n`;
+    debugLog.scrollTop = debugLog.scrollHeight;
+  }
+
+  function movingAverage(data, windowSize) {
+    if (windowSize <= 0) return data;
+    const result = [];
+    for (let i = 0; i < data.length; i++) {
+      const start = Math.max(0, i - windowSize);
+      const end = Math.min(data.length, i + windowSize + 1);
+      const subset = data.slice(start, end);
+      result.push(subset.reduce((a, b) => a + b, 0) / subset.length);
+    }
+    return result;
+  }
+
+  const verticalLinePlugin = {
+    id: 'verticalLine',
+    afterDraw: (chart) => {
+      if (chart.tooltip?._active?.length) return;
+      const ctx = chart.ctx;
+      const x = chart.scales.x.getPixelForValue(currentFrameIndex);
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(x, chart.scales.y.top);
+      ctx.lineTo(x, chart.scales.y.bottom);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#a9b7c6'; 
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.restore();
+    }
+  };
+
+  function initChart() {
+    const ctxChart = document.getElementById('meridianChart').getContext('2d');
+    meridianChart = new Chart(ctxChart, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: MERIDIANS.map(m => ({
+          label: m.name,
+          data: [],
+          borderColor: m.color,
+          borderWidth: 1,
+          pointRadius: 0,
+          tension: 0.4,
+          fill: false
+        }))
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        scales: {
+          y: { min: 0, max: 100, grid: { color: '#444' }, ticks: { display: false } },
+          x: { display: false }
+        },
+        plugins: { legend: { display: false } },
+        onClick: (e, elements, chart) => {
+            const canvasPosition = Chart.helpers.getRelativePosition(e, chart);
+            const index = chart.scales.x.getValueForPixel(canvasPosition.x);
+            if(index >= 0 && index < sessionData.length){
+                frameSlider.value = Math.round(index);
+                updateFrame(Math.round(index));
+            }
+        }
+      },
+      plugins: [verticalLinePlugin]
+    });
+  }
+
+  function updateChartData() {
+    if (!sessionData.length) return;
+    const smoothing = parseInt(smoothSlider.value);
+    smoothValLabel.textContent = smoothing;
+    MERIDIANS.forEach((m, i) => {
+      const raw = rawMeridianData[m.id];
+      meridianChart.data.datasets[i].data = movingAverage(raw, smoothing);
+    });
+    meridianChart.data.labels = sessionData.map((_, i) => i);
+    meridianChart.update();
+  }
+
+  function createBars() {
+    progressContainer.innerHTML = '';
+    MERIDIANS.forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'bar-row';
+      div.innerHTML = `
+        <div class="bar-label">${m.name}</div>
+        <div class="bar-track">
+          <div class="bar-fill" id="bar-${m.id}" style="background:${m.color}"></div>
+        </div>
+        <div class="bar-val" id="val-${m.id}">0%</div>
+      `;
+      progressContainer.appendChild(div);
+    });
+  }
+
+  function resolveRectangularCollisions(labels) {
+    const iterations = 20; 
+    labels.forEach(l => { l.w = 100; l.h = 20; });
+
+    for(let iter=0; iter<iterations; iter++) {
+        labels.sort((a,b) => a.y - b.y);
+        let moved = false;
+        for(let i=0; i<labels.length; i++) {
+            for(let j=i+1; j<labels.length; j++) {
+                const a = labels[i];
+                const b = labels[j];
+                if(Math.abs(a.x - b.x) < (a.w + b.w)/2 - 10) { 
+                    const dy = b.y - a.y;
+                    if(Math.abs(dy) < a.h) {
+                        const overlap = a.h - Math.abs(dy) + 2; 
+                        a.y -= overlap * 0.5;
+                        b.y += overlap * 0.5;
+                        moved = true;
+                    }
+                }
+            }
+        }
+        if(!moved) break;
+    }
+    return labels;
+  }
+
+  function updateFrame(index) {
+    if (!sessionData[index]) return;
+    currentFrameIndex = index;
+    frameNumLabel.textContent = index + 1;
+    
+    const frame = sessionData[index];
+    const activeMuscleSet = new Set();
+    let rawLabels = [];
+
+    // Clear
+    ctx.fillStyle = '#1e1e1e';
+    ctx.fillRect(0, 0, poseCanvas.width, poseCanvas.height);
+    
+    // Draw Skeleton
+    if (frame.pose) {
+      const CONNECTIONS = [[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[24,26],[25,27],[26,28],[11,12],[23,24]];
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#444';
+      
+      CONNECTIONS.forEach(([a, b]) => {
+        const p1 = frame.pose[a];
+        const p2 = frame.pose[b];
+        if (p1 && p2) {
+          ctx.beginPath();
+          ctx.moveTo(p1.x * poseCanvas.width, p1.y * poseCanvas.height);
+          ctx.lineTo(p2.x * poseCanvas.width, p2.y * poseCanvas.height);
+          ctx.stroke();
+        }
+      });
+    }
+
+    // Collect Labels
+    if (frame.meridians) {
+      MERIDIANS.forEach(m => {
+        const val = frame.meridians[m.id] || 0;
+        const bar = document.getElementById(`bar-${m.id}`);
+        const txt = document.getElementById(`val-${m.id}`);
+        if (bar) bar.style.width = `${val}%`;
+        if (txt) txt.textContent = `${Math.round(val)}%`;
+
+        if (val > 70) {
+            m.muscles.forEach(mus => activeMuscleSet.add(mus));
+            const idx = m.landmark;
+            if (frame.pose && frame.pose[idx]) {
+                const jx = frame.pose[idx].x * poseCanvas.width;
+                const jy = frame.pose[idx].y * poseCanvas.height;
+                const offsetX = (frame.pose[idx].x > 0.5) ? 40 : -40;
+
+                rawLabels.push({
+                    text: m.muscles[0],
+                    x: jx + offsetX, 
+                    y: jy, 
+                    anchorX: jx,
+                    anchorY: jy,
+                    color: m.color
+                });
+            }
+        }
+      });
+    }
+
+    const finalLabels = resolveRectangularCollisions(rawLabels);
+
+    ctx.font = "bold 11px 'Segoe UI', sans-serif";
+    ctx.textAlign = "center";
+    
+    finalLabels.forEach(lbl => {
+        ctx.beginPath();
+        ctx.moveTo(lbl.anchorX, lbl.anchorY);
+        ctx.lineTo(lbl.x, lbl.y);
+        ctx.strokeStyle = lbl.color;
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.6;
+        ctx.stroke();
+        ctx.globalAlpha = 1.0;
+
+        const textW = ctx.measureText(lbl.text).width + 10;
+        ctx.fillStyle = 'rgba(30,30,30,0.9)';
+        ctx.fillRect(lbl.x - textW/2, lbl.y - 8, textW, 16);
+
+        ctx.fillStyle = lbl.color;
+        ctx.fillText(lbl.text, lbl.x, lbl.y + 4);
+
+        ctx.beginPath();
+        ctx.arc(lbl.anchorX, lbl.anchorY, 3, 0, Math.PI*2);
+        ctx.fillStyle = lbl.color;
+        ctx.fill();
+    });
+
+    activeMusclesDiv.innerHTML = activeMuscleSet.size > 0 
+        ? Array.from(activeMuscleSet).map(m => `<span class="muscle-tag">${m}</span>`).join('')
+        : "<span style='color:#777; font-size:12px; padding:2px;'>None</span>";
+
+    if(meridianChart) meridianChart.update('none');
+  }
+
+  function handleFileSelect(evt) {
+    const file = evt.target.files[0];
+    if (!file) return;
+
+    log(`Loading ${file.name}...`);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const json = JSON.parse(e.target.result);
+        if (!Array.isArray(json)) throw new Error("Invalid JSON");
+        sessionData = json;
+        log(`Success. ${sessionData.length} frames.`);
+        MERIDIANS.forEach(m => {
+          rawMeridianData[m.id] = sessionData.map(d => (d.meridians && d.meridians[m.id]) ? d.meridians[m.id] : 0);
+        });
+        totalFramesLabel.textContent = sessionData.length;
+        frameSlider.max = sessionData.length - 1;
+        frameSlider.disabled = false;
+        smoothSlider.disabled = false;
+        updateChartData();
+        updateFrame(0);
+      } catch (err) {
+        log("Error: " + err.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  createBars();
+  initChart();
+  fileLoadInput.addEventListener('change', handleFileSelect);
+  frameSlider.addEventListener('input', (e) => updateFrame(parseInt(e.target.value)));
+  smoothSlider.addEventListener('input', updateChartData);
+});
+</script>
+
+</body>
+</html>
