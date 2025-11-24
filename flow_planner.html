@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flow Planner v14 | Studio Manager</title>
+    <title>Flow Planner v15 | iOS Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
@@ -170,10 +170,21 @@
         <aside class="w-64 bg-[#21222c] border-r border-[#6272a4] flex flex-col overflow-y-auto z-20 shadow-xl shrink-0">
             <div class="p-4 border-b border-[#6272a4]">
                 <h3 class="text-[10px] font-bold text-[#6272a4] uppercase mb-2">Atmosphere</h3>
-                <input type="file" id="bgmInput" accept="audio/*" @change="loadBGM" class="hidden">
-                <button onclick="document.getElementById('bgmInput').click()" class="w-full bg-[#282a36] hover:bg-[#44475a] text-xs py-2 rounded mb-2 border border-[#6272a4] text-[#f8f8f2]">
+                
+                <!-- iOS-compatible file input -->
+                <input type="file" 
+                       id="bgmInput" 
+                       accept="audio/mp3,audio/mpeg,audio/wav,audio/m4a,audio/aac,audio/ogg" 
+                       @change="loadBGM($event)" 
+                       class="hidden">
+                
+                <button @click="$refs.bgmInputTrigger.click()" 
+                        x-ref="bgmInputTrigger"
+                        onclick="document.getElementById('bgmInput').click()"
+                        class="w-full bg-[#282a36] hover:bg-[#44475a] text-xs py-2 rounded mb-2 border border-[#6272a4] text-[#f8f8f2]">
                     <i class="fa-solid fa-music mr-2"></i> Load MP3
                 </button>
+                
                 <div x-show="bgmLoaded" class="bg-[#191a21] p-2 rounded border border-[#6272a4] mt-2">
                     <div class="flex justify-between items-center text-xs text-[#8be9fd] mb-2">
                         <span class="truncate w-16" x-text="bgmName"></span>
@@ -294,15 +305,15 @@
                 importString: '', savedPresets: {}, currentPresetName: '', newPresetName: '', blocks: [],
 
                 init() {
-                    const presetDB = localStorage.getItem('flowPlannerPresets_v14');
+                    const presetDB = localStorage.getItem('flowPlannerPresets_v15');
                     if(presetDB) this.savedPresets = JSON.parse(presetDB);
-                    const activeSession = localStorage.getItem('flowPlannerActive_v14');
+                    const activeSession = localStorage.getItem('flowPlannerActive_v15');
                     if(activeSession) this.blocks = JSON.parse(activeSession); 
                     else this.blocks = [{id:1, title:"Arrival", duration:5, cue:"Welcome.", instruments:["Ocean Drum"], autoGong:false}];
-                    const settings = localStorage.getItem('flowPlannerSettings_v14');
+                    const settings = localStorage.getItem('flowPlannerSettings_v15');
                     if(settings) { const s = JSON.parse(settings); this.useDyslexicFont = s.dyslexic; this.cueTextSize = s.size; }
 
-                    this.$watch('blocks', (val) => localStorage.setItem('flowPlannerActive_v14', JSON.stringify(val)));
+                    this.$watch('blocks', (val) => localStorage.setItem('flowPlannerActive_v15', JSON.stringify(val)));
                     this.$watch('cueTextSize', () => this.saveSettings());
                     this.$watch('useDyslexicFont', () => this.saveSettings());
                     
@@ -317,14 +328,14 @@
                     });
                 },
                 saveSettings() {
-                    localStorage.setItem('flowPlannerSettings_v14', JSON.stringify({ dyslexic: this.useDyslexicFont, size: this.cueTextSize }));
+                    localStorage.setItem('flowPlannerSettings_v15', JSON.stringify({ dyslexic: this.useDyslexicFont, size: this.cueTextSize }));
                 },
 
                 // PRESETS
                 savePreset() { 
                     if(!this.newPresetName) return; 
                     this.savedPresets = { ...this.savedPresets, [this.newPresetName]: JSON.parse(JSON.stringify(this.blocks)) };
-                    localStorage.setItem('flowPlannerPresets_v14', JSON.stringify(this.savedPresets)); 
+                    localStorage.setItem('flowPlannerPresets_v15', JSON.stringify(this.savedPresets)); 
                     this.currentPresetName = this.newPresetName; 
                     this.newPresetName = ''; 
                 },
@@ -340,7 +351,7 @@
                         const newPresets = {...this.savedPresets};
                         delete newPresets[name];
                         this.savedPresets = newPresets;
-                        localStorage.setItem('flowPlannerPresets_v14', JSON.stringify(this.savedPresets)); 
+                        localStorage.setItem('flowPlannerPresets_v15', JSON.stringify(this.savedPresets)); 
                         if(this.currentPresetName === name) this.currentPresetName = ''; 
                     } 
                 },
@@ -359,7 +370,7 @@
                             const d = JSON.parse(ev.target.result); 
                             if(d.presets) this.savedPresets = {...this.savedPresets, ...d.presets}; 
                             if(d.current) this.blocks = d.current; 
-                            localStorage.setItem('flowPlannerPresets_v14', JSON.stringify(this.savedPresets)); 
+                            localStorage.setItem('flowPlannerPresets_v15', JSON.stringify(this.savedPresets)); 
                             alert("Backup restored."); 
                         } catch(err) { alert("Invalid JSON"); } 
                     }; 
@@ -380,25 +391,40 @@
                     } catch(e) { alert("Invalid code"); }
                 },
 
-                // AUDIO
+                // AUDIO - iOS FIX
                 loadBGM(e) { 
-                    const f = e.target.files[0]; if(!f) return; 
+                    const f = e.target.files[0]; 
+                    if(!f) return; 
                     this.bgmName = f.name; 
                     const p = document.getElementById('bgmPlayer');
-                    p.src = URL.createObjectURL(f); 
-                    p.loop = this.bgmLoop;   // apply loop state on load
-                    this.bgmLoaded = true; 
+                    
+                    // iOS Safari needs createObjectURL
+                    const url = URL.createObjectURL(f);
+                    p.src = url;
+                    p.loop = this.bgmLoop;
+                    this.bgmLoaded = true;
+                    
+                    // Force load on iOS
+                    p.load();
                 },
                 toggleBGMPlay() { 
                     const p = document.getElementById('bgmPlayer'); 
-                    this.bgmPlaying ? p.pause() : p.play(); 
+                    if(this.bgmPlaying) {
+                        p.pause();
+                    } else {
+                        // iOS requires user gesture - this is triggered by click
+                        p.play().catch(err => {
+                            console.error('Play failed:', err);
+                            alert('Please tap the play button again.');
+                        });
+                    }
                     this.bgmPlaying = !this.bgmPlaying; 
                 },
                 updateVolume() { document.getElementById('bgmPlayer').volume = this.bgmVolume; },
                 toggleBGMLoop() {
                     const p = document.getElementById('bgmPlayer');
                     this.bgmLoop = !this.bgmLoop;
-                    p.loop = this.bgmLoop;  // HTMLMediaElement.loop property
+                    p.loop = this.bgmLoop;
                 },
                 bgmFadeOut() { 
                     const p = document.getElementById('bgmPlayer'); 
