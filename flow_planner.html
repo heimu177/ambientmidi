@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flow Planner v17 | iPad Local File Fix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flow Planner v19 | Desktop/Mobile Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
@@ -31,20 +31,37 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: var(--purple); margin-top: -5px; cursor: pointer; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: var(--comment); border-radius: 2px; }
 
-        .big-mode-overlay { position: fixed; inset: 0; background: #191a21; z-index: 100; padding: 40px; display: flex; flex-col; align-items: center; justify-content: center; }
-        .big-text-cue { max-width: 90%; text-align: center; line-height: 1.5; white-space: pre-wrap; }
+        .big-mode-overlay { position: fixed; inset: 0; background: #191a21; z-index: 100; padding: 20px; display: flex; flex-col; align-items: center; justify-content: center; }
+        .big-text-cue { max-width: 100%; text-align: center; line-height: 1.4; white-space: pre-wrap; font-size: 5vw; }
+
+        /* FIXED RESPONSIVE RULES */
+        .desktop-sidebar { display: flex !important; } /* Force show on desktop */
+        .mobile-nav { display: none !important; } /* Force hide on desktop */
+        .mobile-drawer { display: none !important; }
+        
+        @media (max-width: 1024px) {
+            .desktop-sidebar { display: none !important; }
+            .mobile-nav { display: flex !important; }
+            .mobile-drawer { display: block !important; }
+            .main-content { padding-bottom: 100px !important; }
+            .hide-on-mobile { display: none !important; }
+        }
+        
+        .drawer { transition: transform 0.3s ease-in-out; }
+        .drawer-open { transform: translateY(0); }
+        .drawer-closed { transform: translateY(100%); }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden" x-data="app()" x-init="init()" :class="useDyslexicFont ? 'font-dyslexic' : 'font-std'">
 
-    <!-- BIG MODE (Teacher View) -->
+    <!-- BIG MODE -->
     <div x-show="bigMode" class="big-mode-overlay" x-transition.opacity style="display: none;">
         <button @click="bigMode=false" class="absolute top-4 right-4 text-[#6272a4] hover:text-white text-3xl"><i class="fa-solid fa-xmark"></i></button>
-        <div x-show="isRunning && activeIndex < blocks.length" class="flex flex-col items-center w-full">
-            <h1 class="text-[#bd93f9] font-bold mb-8 text-center" :style="`font-size: ${cueTextSize * 2.5}px`" x-text="blocks[activeIndex].title"></h1>
-            <p class="big-text-cue text-[#f8f8f2]" :style="`font-size: ${cueTextSize * 2}px`" x-text="blocks[activeIndex].cue"></p>
-            <div class="text-[#50fa7b] font-mono mt-12 font-bold" :style="`font-size: ${cueTextSize * 4}px`" x-text="formatTime(currentBlockTime)"></div>
-            <button @click="skipBlock()" class="mt-12 px-8 py-4 bg-[#44475a] text-[#8be9fd] text-2xl font-bold rounded border border-[#6272a4] hover:bg-[#6272a4] hover:text-white transition">
+        <div x-show="isRunning && activeIndex < blocks.length" class="flex flex-col items-center w-full h-full justify-center">
+            <h1 class="text-[#bd93f9] font-bold mb-4 text-center text-3xl md:text-5xl" x-text="blocks[activeIndex].title"></h1>
+            <p class="big-text-cue text-[#f8f8f2] flex-1 overflow-y-auto" x-text="blocks[activeIndex].cue"></p>
+            <div class="text-[#50fa7b] font-mono mt-4 font-bold text-6xl md:text-8xl" x-text="formatTime(currentBlockTime)"></div>
+            <button @click="skipBlock()" class="mt-8 px-8 py-4 bg-[#44475a] text-[#8be9fd] text-xl font-bold rounded border border-[#6272a4] hover:bg-[#6272a4] hover:text-white transition">
                 NEXT <i class="fa-solid fa-forward"></i>
             </button>
         </div>
@@ -61,51 +78,48 @@
                     <h1 class="font-bold text-lg tracking-wide text-[#f8f8f2]">FLOW <span class="text-[#ff79c6]">PLANNER</span></h1>
                 </div>
                 
-                <!-- PRESETS & SHARE -->
-                <div class="flex gap-2">
-                    <!-- Preset Dropdown -->
-                    <div class="relative" x-data="{open:false}">
-                        <button @click="open=!open" class="bg-[#282a36] hover:bg-[#44475a] px-3 py-1 rounded text-xs text-[#f8f8f2] border border-[#6272a4] transition min-w-[160px] text-left flex justify-between items-center">
-                            <span><i class="fa-solid fa-folder-open mr-2"></i> <span x-text="currentPresetName || 'Unsaved Session'"></span></span>
-                            <i class="fa-solid fa-caret-down ml-2 text-[#6272a4]"></i>
-                        </button>
-                        <div x-show="open" @click.away="open=false" class="absolute top-full left-0 mt-1 w-72 bg-[#282a36] border border-[#6272a4] rounded shadow-xl z-50 p-2">
-                            <div class="text-[10px] text-[#6272a4] uppercase font-bold mb-2 px-1">My Library</div>
-                            <div class="max-h-48 overflow-y-auto custom-scroll mb-2">
-                                <template x-for="(data, name) in savedPresets" :key="name">
-                                    <div class="flex justify-between items-center hover:bg-[#44475a] p-1 rounded group">
-                                        <button @click="loadPreset(name); open=false" class="text-xs text-left flex-1 text-[#f8f8f2]" x-text="name"></button>
-                                        <button @click="deletePreset(name)" class="text-[#ff5555] opacity-0 group-hover:opacity-100 text-xs px-2"><i class="fa-solid fa-trash"></i></button>
-                                    </div>
-                                </template>
-                                <div x-show="Object.keys(savedPresets).length === 0" class="text-xs text-[#6272a4] p-1 italic">No saved sessions.</div>
-                            </div>
-                            <div class="border-t border-[#6272a4] pt-2">
-                                <input type="text" x-model="newPresetName" placeholder="Name this session..." class="w-full bg-[#191a21] text-[#f8f8f2] text-xs p-1.5 mb-1 border border-[#6272a4] rounded">
-                                <button @click="savePreset(); open=false" class="w-full bg-[#50fa7b] text-[#282a36] text-xs font-bold py-1.5 rounded hover:bg-[#6bfb8e]">Save Session</button>
-                            </div>
+                <!-- Preset Dropdown -->
+                <div class="relative" x-data="{open:false}">
+                    <button @click="open=!open" class="bg-[#282a36] hover:bg-[#44475a] px-3 py-1 rounded text-xs text-[#f8f8f2] border border-[#6272a4] transition min-w-[160px] text-left flex justify-between items-center">
+                        <span><i class="fa-solid fa-folder-open mr-2"></i> <span x-text="currentPresetName || 'Unsaved Session'"></span></span>
+                        <i class="fa-solid fa-caret-down ml-2 text-[#6272a4]"></i>
+                    </button>
+                    <div x-show="open" @click.away="open=false" class="absolute top-full left-0 mt-1 w-72 bg-[#282a36] border border-[#6272a4] rounded shadow-xl z-50 p-2">
+                        <div class="text-[10px] text-[#6272a4] uppercase font-bold mb-2 px-1">My Library</div>
+                        <div class="max-h-48 overflow-y-auto custom-scroll mb-2">
+                            <template x-for="(data, name) in savedPresets" :key="name">
+                                <div class="flex justify-between items-center hover:bg-[#44475a] p-1 rounded group">
+                                    <button @click="loadPreset(name); open=false" class="text-xs text-left flex-1 text-[#f8f8f2]" x-text="name"></button>
+                                    <button @click="deletePreset(name)" class="text-[#ff5555] opacity-0 group-hover:opacity-100 text-xs px-2"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </template>
+                            <div x-show="Object.keys(savedPresets).length === 0" class="text-xs text-[#6272a4] p-1 italic">No saved sessions.</div>
                         </div>
-                    </div>
-
-                    <!-- Share -->
-                    <div class="relative" x-data="{open:false}">
-                        <button @click="open=!open" class="bg-[#282a36] hover:bg-[#44475a] px-2 py-1 rounded text-xs text-[#8be9fd] border border-[#6272a4] transition" title="Share">
-                            <i class="fa-solid fa-share-nodes"></i>
-                        </button>
-                        <div x-show="open" @click.away="open=false" class="absolute top-full left-0 mt-1 w-72 bg-[#282a36] border border-[#6272a4] rounded shadow-xl z-50 p-3">
-                            <label class="text-[10px] uppercase text-[#6272a4] font-bold block mb-1">Share Current Flow</label>
-                            <button @click="copyShareLink" class="w-full bg-[#44475a] hover:bg-[#6272a4] text-[#f8f8f2] text-xs py-2 rounded mb-3 border border-[#6272a4]">
-                                <i class="fa-regular fa-copy mr-1"></i> Copy Code to Clipboard
-                            </button>
-                            <hr class="border-[#6272a4] mb-3">
-                            <label class="text-[10px] uppercase text-[#6272a4] font-bold block mb-1">Load Shared Flow</label>
-                            <textarea x-model="importString" class="w-full bg-[#191a21] text-[10px] text-[#f8f8f2] p-2 rounded border border-[#6272a4] mb-2 h-16" placeholder="Paste code here..."></textarea>
-                            <button @click="loadFromShare" class="w-full bg-[#50fa7b] text-[#282a36] text-xs font-bold py-1.5 rounded hover:bg-[#6bfb8e]">Load</button>
+                        <div class="border-t border-[#6272a4] pt-2">
+                            <input type="text" x-model="newPresetName" placeholder="Name this session..." class="w-full bg-[#191a21] text-[#f8f8f2] text-xs p-1.5 mb-1 border border-[#6272a4] rounded">
+                            <button @click="savePreset(); open=false" class="w-full bg-[#50fa7b] text-[#282a36] text-xs font-bold py-1.5 rounded hover:bg-[#6bfb8e]">Save Session</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- SETTINGS -->
+                <!-- Share -->
+                <div class="relative" x-data="{open:false}">
+                    <button @click="open=!open" class="bg-[#282a36] hover:bg-[#44475a] px-2 py-1 rounded text-xs text-[#8be9fd] border border-[#6272a4] transition" title="Share">
+                        <i class="fa-solid fa-share-nodes"></i>
+                    </button>
+                    <div x-show="open" @click.away="open=false" class="absolute top-full left-0 mt-1 w-72 bg-[#282a36] border border-[#6272a4] rounded shadow-xl z-50 p-3">
+                        <label class="text-[10px] uppercase text-[#6272a4] font-bold block mb-1">Share Current Flow</label>
+                        <button @click="copyShareLink" class="w-full bg-[#44475a] hover:bg-[#6272a4] text-[#f8f8f2] text-xs py-2 rounded mb-3 border border-[#6272a4]">
+                            <i class="fa-regular fa-copy mr-1"></i> Copy Code to Clipboard
+                        </button>
+                        <hr class="border-[#6272a4] mb-3">
+                        <label class="text-[10px] uppercase text-[#6272a4] font-bold block mb-1">Load Shared Flow</label>
+                        <textarea x-model="importString" class="w-full bg-[#191a21] text-[10px] text-[#f8f8f2] p-2 rounded border border-[#6272a4] mb-2 h-16" placeholder="Paste code here..."></textarea>
+                        <button @click="loadFromShare" class="w-full bg-[#50fa7b] text-[#282a36] text-xs font-bold py-1.5 rounded hover:bg-[#6bfb8e]">Load</button>
+                    </div>
+                </div>
+
+                <!-- Settings -->
                 <div class="relative" x-data="{open:false}">
                     <button @click="open=!open" class="text-[#6272a4] hover:text-[#f8f8f2] text-sm px-2"><i class="fa-solid fa-gear"></i></button>
                     <div x-show="open" @click.away="open=false" class="absolute top-full left-0 mt-1 w-64 bg-[#282a36] border border-[#6272a4] rounded shadow-xl z-50 p-4">
@@ -127,10 +141,10 @@
                          </div>
                          <hr class="border-[#6272a4] mb-2">
                          <div class="space-y-1">
-                             <button @click="exportJSON" class="w-full text-left text-xs py-2 px-2 hover:bg-[#44475a] text-[#8be9fd] rounded"><i class="fa-solid fa-file-export mr-2"></i> Backup</button>
+                             <button @click="exportJSON" class="w-full text-left text-xs py-2 px-2 hover:bg-[#44475a] text-[#8be9fd] rounded"><i class="fa-solid fa-file-export mr-2"></i> Backup (JSON)</button>
                              <div class="relative">
                                 <input type="file" id="importFile" accept=".json" @change="importJSON" class="hidden">
-                                <button onclick="document.getElementById('importFile').click()" class="w-full text-left text-xs py-2 px-2 hover:bg-[#44475a] text-[#50fa7b] rounded"><i class="fa-solid fa-file-import mr-2"></i> Restore</button>
+                                <button onclick="document.getElementById('importFile').click()" class="w-full text-left text-xs py-2 px-2 hover:bg-[#44475a] text-[#50fa7b] rounded"><i class="fa-solid fa-file-import mr-2"></i> Restore (JSON)</button>
                             </div>
                          </div>
                     </div>
@@ -143,13 +157,15 @@
 
             <div class="flex items-center gap-3">
                 <button @click="bigMode=true" class="text-[#f1fa8c] hover:text-white text-sm px-2" title="Big Mode"><i class="fa-solid fa-expand"></i></button>
-                <div class="bg-[#282a36] rounded flex border border-[#6272a4] p-0.5">
+                
+                <div class="bg-[#282a36] rounded flex border border-[#6272a4] p-0.5 hide-on-mobile">
                     <button @click="columns=1" :class="columns===1 ? 'bg-[#bd93f9] text-[#282a36]' : 'text-[#6272a4]'" class="px-2 py-1 rounded text-xs"><i class="fa-solid fa-list"></i></button>
                     <button @click="columns=2" :class="columns===2 ? 'bg-[#bd93f9] text-[#282a36]' : 'text-[#6272a4]'" class="px-2 py-1 rounded text-xs"><i class="fa-solid fa-border-all"></i></button>
                     <button @click="columns=3" :class="columns===3 ? 'bg-[#bd93f9] text-[#282a36]' : 'text-[#6272a4]'" class="px-2 py-1 rounded text-xs"><i class="fa-solid fa-table-columns"></i></button>
                 </div>
-                <button @click="toggleEditMode" class="px-3 py-1 rounded text-xs uppercase font-bold border border-[#6272a4]" :class="editMode ? 'bg-[#ff79c6] text-[#282a36]' : 'bg-[#282a36] text-[#f8f8f2]'">Edit</button>
-                <button @click="togglePlay" class="px-6 py-1 rounded font-bold min-w-[100px]" :class="isRunning ? 'bg-[#ff5555] text-white' : 'bg-[#50fa7b] text-[#282a36]'">
+                
+                <button @click="toggleEditMode" class="hide-on-mobile px-3 py-1 rounded text-xs uppercase font-bold border border-[#6272a4]" :class="editMode ? 'bg-[#ff79c6] text-[#282a36]' : 'bg-[#282a36] text-[#f8f8f2]'">Edit</button>
+                <button @click="togglePlay" class="hide-on-mobile px-6 py-1 rounded font-bold min-w-[100px]" :class="isRunning ? 'bg-[#ff5555] text-white' : 'bg-[#50fa7b] text-[#282a36]'">
                     <span x-text="isRunning ? 'STOP' : 'PLAY'"></span>
                 </button>
             </div>
@@ -159,39 +175,30 @@
         </div>
     </header>
 
-    <div class="flex flex-1 overflow-hidden" :class="editMode ? 'edit-mode' : ''" x-show="!bigMode">
+    <div class="flex flex-1 overflow-hidden relative" :class="editMode ? 'edit-mode' : ''" x-show="!bigMode">
         
-        <!-- SIDEBAR -->
-        <aside class="w-64 bg-[#21222c] border-r border-[#6272a4] flex flex-col overflow-y-auto z-20 shadow-xl shrink-0">
+        <!-- DESKTOP SIDEBAR -->
+        <aside class="desktop-sidebar w-64 bg-[#21222c] border-r border-[#6272a4] flex-col overflow-y-auto z-20 shadow-xl shrink-0">
             <div class="p-4 border-b border-[#6272a4]">
                 <h3 class="text-[10px] font-bold text-[#6272a4] uppercase mb-2">Atmosphere</h3>
-                
-                <!-- DIRECT FILE INPUT (iOS FIX) -->
                 <div class="relative w-full mb-2">
                     <div class="absolute inset-0 w-full h-full opacity-0 overflow-hidden cursor-pointer">
-                        <input type="file" id="bgmInput" accept="audio/*" @change="loadBGMFile($event)" class="w-full h-full cursor-pointer">
+                        <input type="file" id="bgmInputDesktop" accept="audio/*" @change="loadBGMFile($event)" class="w-full h-full cursor-pointer">
                     </div>
-                    <button class="w-full bg-[#282a36] hover:bg-[#44475a] text-xs py-2 rounded border border-[#6272a4] text-[#f8f8f2] pointer-events-none">
-                        <i class="fa-solid fa-folder-open mr-2"></i> Load Local File (iOS Safe)
+                    <button class="w-full bg-[#282a36] hover:bg-[#44475a] text-xs py-2 rounded mb-2 border border-[#6272a4] text-[#f8f8f2] pointer-events-none">
+                        <i class="fa-solid fa-folder-open mr-2"></i> Load Local File
                     </button>
                 </div>
-                
-                <!-- URL Fallback -->
                 <div class="mb-2">
-                    <input type="url" x-model="bgmURL" placeholder="Or paste URL (Dropbox/Drive)" class="w-full bg-[#191a21] text-[#f8f8f2] text-xs p-1.5 border border-[#6272a4] rounded mb-1">
-                    <button @click="loadBGMURL" class="w-full bg-[#282a36] hover:bg-[#44475a] text-xs py-1.5 rounded border border-[#6272a4] text-[#8be9fd]">
-                        <i class="fa-solid fa-link mr-1"></i> Load URL
-                    </button>
+                    <input type="url" x-model="bgmURL" placeholder="Or paste MP3 URL..." class="w-full bg-[#191a21] text-[#f8f8f2] text-xs p-1.5 border border-[#6272a4] rounded mb-1">
+                    <button @click="loadBGMURL" class="w-full bg-[#282a36] hover:bg-[#44475a] text-xs py-1.5 rounded border border-[#6272a4] text-[#8be9fd]"><i class="fa-solid fa-link mr-1"></i> Load from URL</button>
                 </div>
-                
-                <!-- Status & Controls -->
-                <div x-show="isLoading" class="text-xs text-[#e0af68] text-center animate-pulse my-2">Processing Audio File...</div>
-
+                <div x-show="isLoading" class="text-xs text-[#e0af68] text-center animate-pulse my-2">Processing...</div>
                 <div x-show="bgmLoaded" class="bg-[#191a21] p-2 rounded border border-[#6272a4] mt-2">
                     <div class="flex justify-between items-center text-xs text-[#8be9fd] mb-2">
                         <span class="truncate w-16" x-text="bgmName"></span>
-                        <div class="flex items-center gap-1">
-                            <button @click="toggleBGMLoop" class="text-[9px] px-1 py-0.5 rounded border" :class="bgmLoop ? 'text-[#50fa7b] border-[#50fa7b]' : 'text-[#6272a4] border-[#6272a4]'" title="Toggle Loop"><i class="fa-solid fa-infinity"></i></button>
+                        <div class="flex gap-1">
+                            <button @click="toggleBGMLoop" class="text-[9px] px-1 py-0.5 rounded border" :class="bgmLoop ? 'text-[#50fa7b] border-[#50fa7b]' : 'text-[#6272a4] border-[#6272a4]'" title="Loop"><i class="fa-solid fa-infinity"></i></button>
                             <button @click="bgmFadeOut" class="text-[#ff5555] hover:text-white text-[9px] border border-[#ff5555] px-1 rounded">FADE</button>
                         </div>
                     </div>
@@ -219,7 +226,7 @@
         </aside>
 
         <!-- MAIN TIMELINE -->
-        <main class="flex-1 overflow-y-auto p-6 bg-[#282a36] relative">
+        <main class="main-content flex-1 overflow-y-auto p-6 bg-[#282a36] relative">
             <div id="timeline" class="grid gap-4 mx-auto pb-24 transition-all max-w-2xl" :class="{ 'grid-cols-1': columns===1, '!max-w-5xl grid-cols-2': columns===2, '!max-w-7xl grid-cols-3': columns===3 }">
                 <template x-for="(block, index) in blocks" :key="block.id">
                     <div :data-id="block.id" class="dracula-card rounded-lg p-3 relative flex flex-col gap-3 min-h-[160px]" :class="{ 'active-block': activeIndex === index && isRunning, 'inactive-block': !editMode && ((activeIndex !== index && isRunning) || (!isRunning && activeIndex !== index)), 'completed-block': !editMode && activeIndex > index && isRunning }">
@@ -260,6 +267,44 @@
                 </button>
             </div>
         </main>
+
+        <!-- MOBILE BOTTOM BAR (Only on screens <1024px) -->
+        <div class="mobile-nav fixed bottom-0 left-0 w-full bg-[#191a21] border-t border-[#6272a4] p-3 flex justify-between items-center z-40">
+            <button @click="toggleEditMode" class="flex flex-col items-center text-xs" :class="editMode ? 'text-[#ff79c6]' : 'text-[#6272a4]'">
+                <i class="fa-solid fa-pen-to-square text-xl mb-1"></i> Edit
+            </button>
+            <button @click="togglePlay" class="flex flex-col items-center justify-center w-14 h-14 bg-[#282a36] rounded-full -mt-8 border-4 border-[#191a21] shadow-lg" :class="isRunning ? 'text-[#ff5555]' : 'text-[#50fa7b]'">
+                <i class="fa-solid text-2xl" :class="isRunning ? 'fa-stop' : 'fa-play'"></i>
+            </button>
+            <button @click="mobileDrawerOpen = !mobileDrawerOpen" class="flex flex-col items-center text-xs" :class="mobileDrawerOpen ? 'text-[#8be9fd]' : 'text-[#6272a4]'">
+                <i class="fa-solid fa-music text-xl mb-1"></i> Sounds
+            </button>
+        </div>
+
+        <!-- MOBILE DRAWER (Only on screens <1024px) -->
+        <div class="mobile-drawer fixed bottom-[70px] left-0 w-full bg-[#21222c] border-t border-[#6272a4] rounded-t-xl z-30 p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] drawer transform" 
+             :class="mobileDrawerOpen ? 'drawer-open' : 'drawer-closed'">
+            <div class="flex justify-center mb-2"><div class="w-10 h-1 bg-[#6272a4] rounded-full"></div></div>
+            <div class="mb-4 border-b border-[#6272a4] pb-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="relative flex-1">
+                        <div class="absolute inset-0 w-full h-full opacity-0 overflow-hidden cursor-pointer"><input type="file" accept="audio/*" @change="loadBGMFile($event)" class="w-full h-full"></div>
+                        <button class="w-full bg-[#282a36] text-[10px] py-2 rounded border border-[#6272a4] text-[#f8f8f2]"><i class="fa-solid fa-folder-open mr-1"></i> Load MP3</button>
+                    </div>
+                    <button @click="toggleBGMPlay" class="w-10 h-8 bg-[#282a36] rounded border border-[#6272a4]" :class="bgmPlaying ? 'text-[#50fa7b]' : 'text-[#f8f8f2]'"><i class="fa-solid" :class="bgmPlaying ? 'fa-pause' : 'fa-play'"></i></button>
+                </div>
+                <input type="range" min="0" max="1" step="0.01" x-model="bgmVolume" @input="updateVolume" class="w-full">
+            </div>
+            <div class="grid grid-cols-4 gap-2">
+                <button @mousedown="playSound('koshi_earth')" class="p-2 bg-[#282a36] text-[#ffb86c] text-[10px] border border-[#6272a4] rounded">Earth</button>
+                <button @mousedown="playSound('koshi_fire')" class="p-2 bg-[#282a36] text-[#ff5555] text-[10px] border border-[#6272a4] rounded">Fire</button>
+                <button @mousedown="playSound('koshi_water')" class="p-2 bg-[#282a36] text-[#8be9fd] text-[10px] border border-[#6272a4] rounded">Water</button>
+                <button @mousedown="playSound('koshi_air')" class="p-2 bg-[#282a36] text-[#f1fa8c] text-[10px] border border-[#6272a4] rounded">Air</button>
+                <button @mousedown="playSound('rainstick')" class="col-span-2 p-2 bg-[#282a36] text-[#50fa7b] text-[10px] border border-[#6272a4] rounded">Rainstick</button>
+                <button @mousedown="playSound('ocean')" class="col-span-2 p-2 bg-[#282a36] text-[#bd93f9] text-[10px] border border-[#6272a4] rounded">Ocean Drum</button>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -267,37 +312,36 @@
         const ctx = new AudioContext();
         function app() {
             return {
-                isRunning: false, editMode: false, columns: 3, bigMode: false,
+                isRunning: false, editMode: false, columns: 3, bigMode: false, mobileDrawerOpen: false,
                 totalElapsed: 0, activeIndex: 0, currentBlockTime: 0, timerInterval: null, globalProgress: 0,
                 bgmLoaded: false, bgmName: '', bgmPlaying: false, bgmVolume: 0.5, bgmLoop: true, bgmURL: '', isLoading: false,
                 useDyslexicFont: false, cueTextSize: 14,
                 importString: '', savedPresets: {}, currentPresetName: '', newPresetName: '', blocks: [],
 
                 init() {
-                    const presetDB = localStorage.getItem('flowPlannerPresets_v17');
+                    const presetDB = localStorage.getItem('flowPlannerPresets_v19');
                     if(presetDB) this.savedPresets = JSON.parse(presetDB);
-                    const activeSession = localStorage.getItem('flowPlannerActive_v17');
+                    const activeSession = localStorage.getItem('flowPlannerActive_v19');
                     if(activeSession) this.blocks = JSON.parse(activeSession); 
                     else this.blocks = [{id:1, title:"Arrival", duration:5, cue:"Welcome.", instruments:["Ocean Drum"], autoGong:false}];
-                    const settings = localStorage.getItem('flowPlannerSettings_v17');
+                    const settings = localStorage.getItem('flowPlannerSettings_v19');
                     if(settings) { const s = JSON.parse(settings); this.useDyslexicFont = s.dyslexic; this.cueTextSize = s.size; }
-                    this.$watch('blocks', (val) => localStorage.setItem('flowPlannerActive_v17', JSON.stringify(val)));
+                    this.$watch('blocks', (val) => localStorage.setItem('flowPlannerActive_v19', JSON.stringify(val)));
                     this.$watch('cueTextSize', () => this.saveSettings());
                     this.$watch('useDyslexicFont', () => this.saveSettings());
                     this.$nextTick(() => { new Sortable(document.getElementById('timeline'), { handle: '.drag-handle', animation: 150, onEnd: (evt) => { const item = this.blocks.splice(evt.oldIndex, 1)[0]; this.blocks.splice(evt.newIndex, 0, item); } }); });
                 },
-                saveSettings() { localStorage.setItem('flowPlannerSettings_v17', JSON.stringify({ dyslexic: this.useDyslexicFont, size: this.cueTextSize })); },
+                saveSettings() { localStorage.setItem('flowPlannerSettings_v19', JSON.stringify({ dyslexic: this.useDyslexicFont, size: this.cueTextSize })); },
 
-                // AUDIO: FILE READER (iOS SAFARI FIX)
+                // AUDIO
                 loadBGMFile(e) { 
                     const f = e.target.files[0]; if(!f) return; 
                     this.bgmName = f.name; 
                     this.isLoading = true;
-                    
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         const p = document.getElementById('bgmPlayer');
-                        p.src = e.target.result; // DATA URI
+                        p.src = e.target.result;
                         p.loop = this.bgmLoop;
                         this.bgmLoaded = true;
                         this.isLoading = false;
@@ -305,16 +349,17 @@
                     reader.readAsDataURL(f);
                 },
                 loadBGMURL() {
-                    if(!this.bgmURL) return alert("Paste valid URL");
+                    if(!this.bgmURL) return alert("Paste a valid MP3 URL");
                     const p = document.getElementById('bgmPlayer');
-                    p.src = this.bgmURL; p.loop = this.bgmLoop;
+                    p.src = this.bgmURL;
+                    p.loop = this.bgmLoop;
                     this.bgmName = "Streamed URL";
                     this.bgmLoaded = true;
                 },
                 toggleBGMPlay() { 
                     const p = document.getElementById('bgmPlayer'); 
                     if(this.bgmPlaying) { p.pause(); } 
-                    else { p.play().catch(err => { alert('Tap play again (iOS restriction)'); }); }
+                    else { p.play().catch(err => { alert('Tap play again'); }); }
                     this.bgmPlaying = !this.bgmPlaying; 
                 },
                 updateVolume() { document.getElementById('bgmPlayer').volume = this.bgmVolume; },
@@ -331,13 +376,13 @@
                 playGong() { if(ctx.state === 'suspended') ctx.resume(); const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = 220; o.connect(g); g.connect(ctx.destination); o.start(); g.gain.setValueAtTime(0, ctx.currentTime); g.gain.linearRampToValueAtTime(0.2, ctx.currentTime+0.05); g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 3); o.stop(ctx.currentTime + 3); },
                 getInstrumentCode(n) { if(n.includes("Earth")) return 'koshi_earth'; if(n.includes("Fire")) return 'koshi_fire'; if(n.includes("Water")) return 'koshi_water'; if(n.includes("Air")) return 'koshi_air'; if(n.includes("Rain")) return 'rainstick'; if(n.includes("Ocean")) return 'ocean'; if(n.includes("Angel")) return 'angel'; return ''; },
 
-                // PRESETS & DATA
-                savePreset() { if(!this.newPresetName) return; this.savedPresets = { ...this.savedPresets, [this.newPresetName]: JSON.parse(JSON.stringify(this.blocks)) }; localStorage.setItem('flowPlannerPresets_v17', JSON.stringify(this.savedPresets)); this.currentPresetName = this.newPresetName; this.newPresetName = ''; },
+                // PRESETS
+                savePreset() { if(!this.newPresetName) return; this.savedPresets = { ...this.savedPresets, [this.newPresetName]: JSON.parse(JSON.stringify(this.blocks)) }; localStorage.setItem('flowPlannerPresets_v19', JSON.stringify(this.savedPresets)); this.currentPresetName = this.newPresetName; this.newPresetName = ''; },
                 loadPreset(name) { if(this.savedPresets[name]) { this.blocks = JSON.parse(JSON.stringify(this.savedPresets[name])); this.currentPresetName = name; this.resetTimer(); } },
-                deletePreset(name) { if(confirm(`Delete ${name}?`)) { const newPresets = {...this.savedPresets}; delete newPresets[name]; this.savedPresets = newPresets; localStorage.setItem('flowPlannerPresets_v17', JSON.stringify(this.savedPresets)); if(this.currentPresetName === name) this.currentPresetName = ''; } },
+                deletePreset(name) { if(confirm(`Delete ${name}?`)) { const newPresets = {...this.savedPresets}; delete newPresets[name]; this.savedPresets = newPresets; localStorage.setItem('flowPlannerPresets_v19', JSON.stringify(this.savedPresets)); if(this.currentPresetName === name) this.currentPresetName = ''; } },
                 exportJSON() { const backup = { presets: this.savedPresets, current: this.blocks }; const url = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'})); const a = document.createElement('a'); a.href = url; a.download = 'flow_planner_backup.json'; a.click(); },
-                importJSON(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = (ev) => { try { const d = JSON.parse(ev.target.result); if(d.presets) this.savedPresets = {...this.savedPresets, ...d.presets}; if(d.current) this.blocks = d.current; localStorage.setItem('flowPlannerPresets_v17', JSON.stringify(this.savedPresets)); alert("Restored."); } catch(err) { alert("Invalid JSON"); } }; r.readAsText(f); },
-                copyShareLink() { const str = btoa(JSON.stringify(this.blocks)); navigator.clipboard.writeText(str).then(() => alert("Copied.")); },
+                importJSON(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = (ev) => { try { const d = JSON.parse(ev.target.result); if(d.presets) this.savedPresets = {...this.savedPresets, ...d.presets}; if(d.current) this.blocks = d.current; localStorage.setItem('flowPlannerPresets_v19', JSON.stringify(this.savedPresets)); alert("Restored."); } catch(err) { alert("Invalid JSON"); } }; r.readAsText(f); },
+                copyShareLink() { const str = btoa(JSON.stringify(this.blocks)); navigator.clipboard.writeText(str).then(() => alert("Copied code.")); },
                 loadFromShare() { try { const json = atob(this.importString.trim()); this.blocks = JSON.parse(json); this.importString = ''; alert("Loaded."); } catch(e) { alert("Invalid code"); } },
 
                 // CORE
