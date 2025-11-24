@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flow Planner v15 | iOS Fix</title>
+    <title>Flow Planner v17 | iPad Local File Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
@@ -127,10 +127,10 @@
                          </div>
                          <hr class="border-[#6272a4] mb-2">
                          <div class="space-y-1">
-                             <button @click="exportJSON" class="w-full text-left text-xs py-2 px-2 hover:bg-[#44475a] text-[#8be9fd] rounded"><i class="fa-solid fa-file-export mr-2"></i> Backup (JSON)</button>
+                             <button @click="exportJSON" class="w-full text-left text-xs py-2 px-2 hover:bg-[#44475a] text-[#8be9fd] rounded"><i class="fa-solid fa-file-export mr-2"></i> Backup</button>
                              <div class="relative">
                                 <input type="file" id="importFile" accept=".json" @change="importJSON" class="hidden">
-                                <button onclick="document.getElementById('importFile').click()" class="w-full text-left text-xs py-2 px-2 hover:bg-[#44475a] text-[#50fa7b] rounded"><i class="fa-solid fa-file-import mr-2"></i> Restore (JSON)</button>
+                                <button onclick="document.getElementById('importFile').click()" class="w-full text-left text-xs py-2 px-2 hover:bg-[#44475a] text-[#50fa7b] rounded"><i class="fa-solid fa-file-import mr-2"></i> Restore</button>
                             </div>
                          </div>
                     </div>
@@ -143,18 +143,13 @@
 
             <div class="flex items-center gap-3">
                 <button @click="bigMode=true" class="text-[#f1fa8c] hover:text-white text-sm px-2" title="Big Mode"><i class="fa-solid fa-expand"></i></button>
-
                 <div class="bg-[#282a36] rounded flex border border-[#6272a4] p-0.5">
                     <button @click="columns=1" :class="columns===1 ? 'bg-[#bd93f9] text-[#282a36]' : 'text-[#6272a4]'" class="px-2 py-1 rounded text-xs"><i class="fa-solid fa-list"></i></button>
                     <button @click="columns=2" :class="columns===2 ? 'bg-[#bd93f9] text-[#282a36]' : 'text-[#6272a4]'" class="px-2 py-1 rounded text-xs"><i class="fa-solid fa-border-all"></i></button>
                     <button @click="columns=3" :class="columns===3 ? 'bg-[#bd93f9] text-[#282a36]' : 'text-[#6272a4]'" class="px-2 py-1 rounded text-xs"><i class="fa-solid fa-table-columns"></i></button>
                 </div>
-                
-                <button @click="toggleEditMode" class="px-3 py-1 rounded text-xs uppercase font-bold border border-[#6272a4]" 
-                    :class="editMode ? 'bg-[#ff79c6] text-[#282a36]' : 'bg-[#282a36] text-[#f8f8f2]'">Edit</button>
-
-                <button @click="togglePlay" class="px-6 py-1 rounded font-bold min-w-[100px]" 
-                    :class="isRunning ? 'bg-[#ff5555] text-white' : 'bg-[#50fa7b] text-[#282a36]'">
+                <button @click="toggleEditMode" class="px-3 py-1 rounded text-xs uppercase font-bold border border-[#6272a4]" :class="editMode ? 'bg-[#ff79c6] text-[#282a36]' : 'bg-[#282a36] text-[#f8f8f2]'">Edit</button>
+                <button @click="togglePlay" class="px-6 py-1 rounded font-bold min-w-[100px]" :class="isRunning ? 'bg-[#ff5555] text-white' : 'bg-[#50fa7b] text-[#282a36]'">
                     <span x-text="isRunning ? 'STOP' : 'PLAY'"></span>
                 </button>
             </div>
@@ -171,29 +166,32 @@
             <div class="p-4 border-b border-[#6272a4]">
                 <h3 class="text-[10px] font-bold text-[#6272a4] uppercase mb-2">Atmosphere</h3>
                 
-                <!-- iOS-compatible file input -->
-                <input type="file" 
-                       id="bgmInput" 
-                       accept="audio/mp3,audio/mpeg,audio/wav,audio/m4a,audio/aac,audio/ogg" 
-                       @change="loadBGM($event)" 
-                       class="hidden">
+                <!-- DIRECT FILE INPUT (iOS FIX) -->
+                <div class="relative w-full mb-2">
+                    <div class="absolute inset-0 w-full h-full opacity-0 overflow-hidden cursor-pointer">
+                        <input type="file" id="bgmInput" accept="audio/*" @change="loadBGMFile($event)" class="w-full h-full cursor-pointer">
+                    </div>
+                    <button class="w-full bg-[#282a36] hover:bg-[#44475a] text-xs py-2 rounded border border-[#6272a4] text-[#f8f8f2] pointer-events-none">
+                        <i class="fa-solid fa-folder-open mr-2"></i> Load Local File (iOS Safe)
+                    </button>
+                </div>
                 
-                <button @click="$refs.bgmInputTrigger.click()" 
-                        x-ref="bgmInputTrigger"
-                        onclick="document.getElementById('bgmInput').click()"
-                        class="w-full bg-[#282a36] hover:bg-[#44475a] text-xs py-2 rounded mb-2 border border-[#6272a4] text-[#f8f8f2]">
-                    <i class="fa-solid fa-music mr-2"></i> Load MP3
-                </button>
+                <!-- URL Fallback -->
+                <div class="mb-2">
+                    <input type="url" x-model="bgmURL" placeholder="Or paste URL (Dropbox/Drive)" class="w-full bg-[#191a21] text-[#f8f8f2] text-xs p-1.5 border border-[#6272a4] rounded mb-1">
+                    <button @click="loadBGMURL" class="w-full bg-[#282a36] hover:bg-[#44475a] text-xs py-1.5 rounded border border-[#6272a4] text-[#8be9fd]">
+                        <i class="fa-solid fa-link mr-1"></i> Load URL
+                    </button>
+                </div>
                 
+                <!-- Status & Controls -->
+                <div x-show="isLoading" class="text-xs text-[#e0af68] text-center animate-pulse my-2">Processing Audio File...</div>
+
                 <div x-show="bgmLoaded" class="bg-[#191a21] p-2 rounded border border-[#6272a4] mt-2">
                     <div class="flex justify-between items-center text-xs text-[#8be9fd] mb-2">
                         <span class="truncate w-16" x-text="bgmName"></span>
                         <div class="flex items-center gap-1">
-                            <button @click="toggleBGMLoop" class="text-[9px] px-1 py-0.5 rounded border"
-                                    :class="bgmLoop ? 'text-[#50fa7b] border-[#50fa7b]' : 'text-[#6272a4] border-[#6272a4]'"
-                                    title="Toggle Loop">
-                                <i class="fa-solid fa-infinity"></i>
-                            </button>
+                            <button @click="toggleBGMLoop" class="text-[9px] px-1 py-0.5 rounded border" :class="bgmLoop ? 'text-[#50fa7b] border-[#50fa7b]' : 'text-[#6272a4] border-[#6272a4]'" title="Toggle Loop"><i class="fa-solid fa-infinity"></i></button>
                             <button @click="bgmFadeOut" class="text-[#ff5555] hover:text-white text-[9px] border border-[#ff5555] px-1 rounded">FADE</button>
                         </div>
                     </div>
@@ -222,28 +220,17 @@
 
         <!-- MAIN TIMELINE -->
         <main class="flex-1 overflow-y-auto p-6 bg-[#282a36] relative">
-            <div id="timeline" class="grid gap-4 mx-auto pb-24 transition-all max-w-2xl"
-                 :class="{ 'grid-cols-1': columns===1, '!max-w-5xl grid-cols-2': columns===2, '!max-w-7xl grid-cols-3': columns===3 }">
-                
+            <div id="timeline" class="grid gap-4 mx-auto pb-24 transition-all max-w-2xl" :class="{ 'grid-cols-1': columns===1, '!max-w-5xl grid-cols-2': columns===2, '!max-w-7xl grid-cols-3': columns===3 }">
                 <template x-for="(block, index) in blocks" :key="block.id">
-                    <div :data-id="block.id" 
-                         class="dracula-card rounded-lg p-3 relative flex flex-col gap-3 min-h-[160px]"
-                         :class="{
-                            'active-block': activeIndex === index && isRunning,
-                            'inactive-block': !editMode && ((activeIndex !== index && isRunning) || (!isRunning && activeIndex !== index)),
-                            'completed-block': !editMode && activeIndex > index && isRunning
-                         }">
-                        
+                    <div :data-id="block.id" class="dracula-card rounded-lg p-3 relative flex flex-col gap-3 min-h-[160px]" :class="{ 'active-block': activeIndex === index && isRunning, 'inactive-block': !editMode && ((activeIndex !== index && isRunning) || (!isRunning && activeIndex !== index)), 'completed-block': !editMode && activeIndex > index && isRunning }">
                         <div x-show="editMode" class="bg-[#191a21] border-b border-[#6272a4] p-1 -mx-3 -mt-3 mb-2 rounded-t flex justify-end gap-2">
                              <div class="drag-handle cursor-grab text-[#6272a4] hover:text-white px-2 text-xs py-1"><i class="fa-solid fa-grip-vertical"></i> Move</div>
                              <button @click="removeBlock(index)" class="text-[#ff5555] hover:text-white px-2 text-xs border-l border-[#6272a4]"><i class="fa-solid fa-trash"></i> Del</button>
                         </div>
-
                         <div class="flex justify-between items-start border-b border-[#6272a4]/30 pb-2">
                             <div class="flex flex-col">
                                 <div class="flex items-baseline gap-2">
-                                    <span class="text-xl font-mono font-bold" 
-                                          :class="activeIndex === index && isRunning ? 'text-[#50fa7b]' : 'text-[#f8f8f2]'">
+                                    <span class="text-xl font-mono font-bold" :class="activeIndex === index && isRunning ? 'text-[#50fa7b]' : 'text-[#f8f8f2]'">
                                         <span x-show="!editMode && activeIndex === index && isRunning" x-text="formatTime(currentBlockTime)"></span>
                                         <span x-show="editMode || activeIndex !== index || !isRunning" x-text="block.duration + 'm'"></span>
                                     </span>
@@ -251,40 +238,23 @@
                                 </div>
                                 <span class="text-[10px] text-[#6272a4] font-mono">@ <span x-text="formatTime(getAccumulatedTime(index))"></span></span>
                             </div>
-                            
                             <div class="flex-1 pl-4 flex flex-col items-end">
-                                <input x-model="block.title" :readonly="!editMode" 
-                                       class="editable-input font-bold text-[#ff79c6] w-full text-right" 
-                                       :style="`font-size: ${cueTextSize * 1.2}px`"
-                                       placeholder="Title">
-                                <button @click="toggleGong(index)" class="text-xs mt-1 px-2 py-0.5 rounded border" 
-                                        :class="block.autoGong ? 'bg-[#ffb86c] text-[#282a36] border-[#ffb86c]' : 'text-[#6272a4] border-transparent'">
+                                <input x-model="block.title" :readonly="!editMode" class="editable-input font-bold text-[#ff79c6] w-full text-right" :style="`font-size: ${cueTextSize * 1.2}px`" placeholder="Title">
+                                <button @click="toggleGong(index)" class="text-xs mt-1 px-2 py-0.5 rounded border" :class="block.autoGong ? 'bg-[#ffb86c] text-[#282a36] border-[#ffb86c]' : 'text-[#6272a4] border-transparent'">
                                     <i class="fa-solid fa-bell"></i> <span x-text="block.autoGong ? 'Gong ON' : 'Gong OFF'"></span>
                                 </button>
                             </div>
                         </div>
-
                         <div class="flex-1 flex flex-col gap-2">
-                            <textarea x-model="block.cue" :readonly="!editMode" 
-                                      class="editable-input editable-textarea text-[#f8f8f2] leading-relaxed p-1 w-full resize-none" 
-                                      :style="`font-size: ${cueTextSize}px; min-height: ${cueTextSize * 4}px`"
-                                      placeholder="Cues..."></textarea>
-                            
-                            <button x-show="isRunning && activeIndex === index" @click="skipBlock()" 
-                                    class="w-full bg-[#44475a] hover:bg-[#6272a4] text-[#8be9fd] text-xs font-bold py-2 rounded mt-2 border border-[#6272a4] animate-pulse">
-                                NEXT SEGMENT <i class="fa-solid fa-forward ml-1"></i>
-                            </button>
-
+                            <textarea x-model="block.cue" :readonly="!editMode" class="editable-input editable-textarea text-[#f8f8f2] leading-relaxed p-1 w-full resize-none" :style="`font-size: ${cueTextSize}px; min-height: ${cueTextSize * 4}px`" placeholder="Cues..."></textarea>
+                            <button x-show="isRunning && activeIndex === index" @click="skipBlock()" class="w-full bg-[#44475a] hover:bg-[#6272a4] text-[#8be9fd] text-xs font-bold py-2 rounded mt-2 border border-[#6272a4] animate-pulse">NEXT SEGMENT <i class="fa-solid fa-forward ml-1"></i></button>
                             <div class="flex flex-wrap gap-1 mt-auto pt-2">
-                                <template x-for="inst in block.instruments">
-                                    <button @click="playSound(getInstrumentCode(inst))" class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded border border-[#6272a4] text-[#8be9fd] hover:bg-[#8be9fd] hover:text-[#282a36] transition"><span x-text="inst"></span></button>
-                                </template>
+                                <template x-for="inst in block.instruments"><button @click="playSound(getInstrumentCode(inst))" class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded border border-[#6272a4] text-[#8be9fd] hover:bg-[#8be9fd] hover:text-[#282a36] transition"><span x-text="inst"></span></button></template>
                                 <button x-show="editMode" @click="addInstrumentPrompt(index)" class="text-[10px] px-2 border border-dashed border-[#6272a4] text-[#6272a4] rounded hover:text-white">+</button>
                             </div>
                         </div>
                     </div>
                 </template>
-
                 <button x-show="editMode" @click="addBlock" class="min-h-[160px] border-2 border-dashed border-[#44475a] rounded-lg flex flex-col items-center justify-center text-[#6272a4] hover:border-[#bd93f9] hover:text-[#bd93f9] transition">
                     <i class="fa-solid fa-plus text-2xl mb-1"></i> <span class="text-xs font-bold">ADD SEGMENT</span>
                 </button>
@@ -295,257 +265,93 @@
     <script>
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         const ctx = new AudioContext();
-
         function app() {
             return {
                 isRunning: false, editMode: false, columns: 3, bigMode: false,
                 totalElapsed: 0, activeIndex: 0, currentBlockTime: 0, timerInterval: null, globalProgress: 0,
-                bgmLoaded: false, bgmName: '', bgmPlaying: false, bgmVolume: 0.5, bgmLoop: true,
+                bgmLoaded: false, bgmName: '', bgmPlaying: false, bgmVolume: 0.5, bgmLoop: true, bgmURL: '', isLoading: false,
                 useDyslexicFont: false, cueTextSize: 14,
                 importString: '', savedPresets: {}, currentPresetName: '', newPresetName: '', blocks: [],
 
                 init() {
-                    const presetDB = localStorage.getItem('flowPlannerPresets_v15');
+                    const presetDB = localStorage.getItem('flowPlannerPresets_v17');
                     if(presetDB) this.savedPresets = JSON.parse(presetDB);
-                    const activeSession = localStorage.getItem('flowPlannerActive_v15');
+                    const activeSession = localStorage.getItem('flowPlannerActive_v17');
                     if(activeSession) this.blocks = JSON.parse(activeSession); 
                     else this.blocks = [{id:1, title:"Arrival", duration:5, cue:"Welcome.", instruments:["Ocean Drum"], autoGong:false}];
-                    const settings = localStorage.getItem('flowPlannerSettings_v15');
+                    const settings = localStorage.getItem('flowPlannerSettings_v17');
                     if(settings) { const s = JSON.parse(settings); this.useDyslexicFont = s.dyslexic; this.cueTextSize = s.size; }
-
-                    this.$watch('blocks', (val) => localStorage.setItem('flowPlannerActive_v15', JSON.stringify(val)));
+                    this.$watch('blocks', (val) => localStorage.setItem('flowPlannerActive_v17', JSON.stringify(val)));
                     this.$watch('cueTextSize', () => this.saveSettings());
                     this.$watch('useDyslexicFont', () => this.saveSettings());
-                    
-                    this.$nextTick(() => {
-                        new Sortable(document.getElementById('timeline'), {
-                            handle: '.drag-handle', animation: 150,
-                            onEnd: (evt) => {
-                                const item = this.blocks.splice(evt.oldIndex, 1)[0];
-                                this.blocks.splice(evt.newIndex, 0, item);
-                            }
-                        });
-                    });
+                    this.$nextTick(() => { new Sortable(document.getElementById('timeline'), { handle: '.drag-handle', animation: 150, onEnd: (evt) => { const item = this.blocks.splice(evt.oldIndex, 1)[0]; this.blocks.splice(evt.newIndex, 0, item); } }); });
                 },
-                saveSettings() {
-                    localStorage.setItem('flowPlannerSettings_v15', JSON.stringify({ dyslexic: this.useDyslexicFont, size: this.cueTextSize }));
-                },
+                saveSettings() { localStorage.setItem('flowPlannerSettings_v17', JSON.stringify({ dyslexic: this.useDyslexicFont, size: this.cueTextSize })); },
 
-                // PRESETS
-                savePreset() { 
-                    if(!this.newPresetName) return; 
-                    this.savedPresets = { ...this.savedPresets, [this.newPresetName]: JSON.parse(JSON.stringify(this.blocks)) };
-                    localStorage.setItem('flowPlannerPresets_v15', JSON.stringify(this.savedPresets)); 
-                    this.currentPresetName = this.newPresetName; 
-                    this.newPresetName = ''; 
-                },
-                loadPreset(name) { 
-                    if(this.savedPresets[name]) { 
-                        this.blocks = JSON.parse(JSON.stringify(this.savedPresets[name])); 
-                        this.currentPresetName = name; 
-                        this.resetTimer(); 
-                    } 
-                },
-                deletePreset(name) { 
-                    if(confirm(`Delete ${name}?`)) { 
-                        const newPresets = {...this.savedPresets};
-                        delete newPresets[name];
-                        this.savedPresets = newPresets;
-                        localStorage.setItem('flowPlannerPresets_v15', JSON.stringify(this.savedPresets)); 
-                        if(this.currentPresetName === name) this.currentPresetName = ''; 
-                    } 
-                },
-
-                // EXPORT / IMPORT
-                exportJSON() { 
-                    const backup = { presets: this.savedPresets, current: this.blocks };
-                    const url = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'}));
-                    const a = document.createElement('a'); a.href = url; a.download = 'flow_planner_backup.json'; a.click(); 
-                },
-                importJSON(e) { 
+                // AUDIO: FILE READER (iOS SAFARI FIX)
+                loadBGMFile(e) { 
                     const f = e.target.files[0]; if(!f) return; 
-                    const r = new FileReader(); 
-                    r.onload = (ev) => { 
-                        try { 
-                            const d = JSON.parse(ev.target.result); 
-                            if(d.presets) this.savedPresets = {...this.savedPresets, ...d.presets}; 
-                            if(d.current) this.blocks = d.current; 
-                            localStorage.setItem('flowPlannerPresets_v15', JSON.stringify(this.savedPresets)); 
-                            alert("Backup restored."); 
-                        } catch(err) { alert("Invalid JSON"); } 
-                    }; 
-                    r.readAsText(f); 
-                },
-
-                // SHARE
-                copyShareLink() {
-                    const str = btoa(JSON.stringify(this.blocks));
-                    navigator.clipboard.writeText(str).then(() => alert("Copied code to clipboard."));
-                },
-                loadFromShare() {
-                    try {
-                        const json = atob(this.importString.trim());
-                        this.blocks = JSON.parse(json);
-                        this.importString = '';
-                        alert("Shared flow loaded.");
-                    } catch(e) { alert("Invalid code"); }
-                },
-
-                // AUDIO - iOS FIX
-                loadBGM(e) { 
-                    const f = e.target.files[0]; 
-                    if(!f) return; 
                     this.bgmName = f.name; 
+                    this.isLoading = true;
+                    
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const p = document.getElementById('bgmPlayer');
+                        p.src = e.target.result; // DATA URI
+                        p.loop = this.bgmLoop;
+                        this.bgmLoaded = true;
+                        this.isLoading = false;
+                    };
+                    reader.readAsDataURL(f);
+                },
+                loadBGMURL() {
+                    if(!this.bgmURL) return alert("Paste valid URL");
                     const p = document.getElementById('bgmPlayer');
-                    
-                    // iOS Safari needs createObjectURL
-                    const url = URL.createObjectURL(f);
-                    p.src = url;
-                    p.loop = this.bgmLoop;
+                    p.src = this.bgmURL; p.loop = this.bgmLoop;
+                    this.bgmName = "Streamed URL";
                     this.bgmLoaded = true;
-                    
-                    // Force load on iOS
-                    p.load();
                 },
                 toggleBGMPlay() { 
                     const p = document.getElementById('bgmPlayer'); 
-                    if(this.bgmPlaying) {
-                        p.pause();
-                    } else {
-                        // iOS requires user gesture - this is triggered by click
-                        p.play().catch(err => {
-                            console.error('Play failed:', err);
-                            alert('Please tap the play button again.');
-                        });
-                    }
+                    if(this.bgmPlaying) { p.pause(); } 
+                    else { p.play().catch(err => { alert('Tap play again (iOS restriction)'); }); }
                     this.bgmPlaying = !this.bgmPlaying; 
                 },
                 updateVolume() { document.getElementById('bgmPlayer').volume = this.bgmVolume; },
-                toggleBGMLoop() {
-                    const p = document.getElementById('bgmPlayer');
-                    this.bgmLoop = !this.bgmLoop;
-                    p.loop = this.bgmLoop;
-                },
-                bgmFadeOut() { 
-                    const p = document.getElementById('bgmPlayer'); 
-                    const fade = setInterval(() => { 
-                        if(p.volume > 0.05) { p.volume -= 0.05; this.bgmVolume = p.volume; } 
-                        else { p.volume = 0; this.bgmVolume = 0; p.pause(); this.bgmPlaying = false; clearInterval(fade); } 
-                    }, 250); 
-                },
+                toggleBGMLoop() { const p = document.getElementById('bgmPlayer'); this.bgmLoop = !this.bgmLoop; p.loop = this.bgmLoop; },
+                bgmFadeOut() { const p = document.getElementById('bgmPlayer'); const fade = setInterval(() => { if(p.volume > 0.05) { p.volume -= 0.05; this.bgmVolume = p.volume; } else { p.volume = 0; this.bgmVolume = 0; p.pause(); this.bgmPlaying = false; clearInterval(fade); } }, 250); },
+                
                 playSound(type) {
                     if(ctx.state === 'suspended') ctx.resume();
-                    const synth = (freq, vol, sus) => {
-                        const o = ctx.createOscillator(); const g = ctx.createGain();
-                        o.frequency.value = freq; o.connect(g); g.connect(ctx.destination);
-                        o.start(); g.gain.setValueAtTime(0, ctx.currentTime);
-                        g.gain.linearRampToValueAtTime(vol, ctx.currentTime+0.05);
-                        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (sus?4:2));
-                        o.stop(ctx.currentTime + (sus?4:2));
-                    };
-                    if(type.startsWith('koshi')) { 
-                        const s = {'koshi_earth':[392,523,659], 'koshi_fire':[392,493,587], 'koshi_water':[440,587,698], 'koshi_air':[440,523,659]}; 
-                        s[type].forEach((n,i) => setTimeout(()=>synth(n, 0.1, true), i*120)); 
-                    } else if(type==='angel') { 
-                        synth(4096, 0.05, true); 
-                        synth(4160, 0.05, true); 
-                    } else {
-                        const b = ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate); 
-                        const d = b.getChannelData(0); 
-                        for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
-                        const n = ctx.createBufferSource(); n.buffer=b; 
-                        const f = ctx.createBiquadFilter(); 
-                        f.type = type==='ocean' ? 'lowpass' : 'highpass'; 
-                        f.frequency.value = type==='ocean' ? 300 : 800;
-                        const g = ctx.createGain(); 
-                        n.connect(f); f.connect(g); g.connect(ctx.destination); 
-                        n.start(); 
-                        g.gain.setValueAtTime(0.05, ctx.currentTime); 
-                        g.gain.linearRampToValueAtTime(0, ctx.currentTime+2);
-                    }
+                    const synth = (freq, vol, sus) => { const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = freq; o.connect(g); g.connect(ctx.destination); o.start(); g.gain.setValueAtTime(0, ctx.currentTime); g.gain.linearRampToValueAtTime(vol, ctx.currentTime+0.05); g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (sus?4:2)); o.stop(ctx.currentTime + (sus?4:2)); };
+                    if(type.startsWith('koshi')) { const s = {'koshi_earth':[392,523,659], 'koshi_fire':[392,493,587], 'koshi_water':[440,587,698], 'koshi_air':[440,523,659]}; s[type].forEach((n,i) => setTimeout(()=>synth(n, 0.1, true), i*120)); } 
+                    else if(type==='angel') { synth(4096, 0.05, true); synth(4160, 0.05, true); }
+                    else { const b = ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate); const d = b.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; const n = ctx.createBufferSource(); n.buffer=b; const f = ctx.createBiquadFilter(); f.type = type==='ocean' ? 'lowpass' : 'highpass'; f.frequency.value = type==='ocean' ? 300 : 800; const g = ctx.createGain(); n.connect(f); f.connect(g); g.connect(ctx.destination); n.start(); g.gain.setValueAtTime(0.05, ctx.currentTime); g.gain.linearRampToValueAtTime(0, ctx.currentTime+2); }
                 },
-                playGong() { 
-                    if(ctx.state === 'suspended') ctx.resume(); 
-                    const o = ctx.createOscillator(); const g = ctx.createGain(); 
-                    o.frequency.value = 220; o.connect(g); g.connect(ctx.destination); 
-                    o.start(); g.gain.setValueAtTime(0, ctx.currentTime); 
-                    g.gain.linearRampToValueAtTime(0.2, ctx.currentTime+0.05); 
-                    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 3); 
-                    o.stop(ctx.currentTime + 3); 
-                },
-                getInstrumentCode(n) { 
-                    if(n.includes("Earth")) return 'koshi_earth'; 
-                    if(n.includes("Fire")) return 'koshi_fire'; 
-                    if(n.includes("Water")) return 'koshi_water'; 
-                    if(n.includes("Air")) return 'koshi_air'; 
-                    if(n.includes("Rain")) return 'rainstick'; 
-                    if(n.includes("Ocean")) return 'ocean'; 
-                    if(n.includes("Angel")) return 'angel'; 
-                    return ''; 
-                },
+                playGong() { if(ctx.state === 'suspended') ctx.resume(); const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = 220; o.connect(g); g.connect(ctx.destination); o.start(); g.gain.setValueAtTime(0, ctx.currentTime); g.gain.linearRampToValueAtTime(0.2, ctx.currentTime+0.05); g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 3); o.stop(ctx.currentTime + 3); },
+                getInstrumentCode(n) { if(n.includes("Earth")) return 'koshi_earth'; if(n.includes("Fire")) return 'koshi_fire'; if(n.includes("Water")) return 'koshi_water'; if(n.includes("Air")) return 'koshi_air'; if(n.includes("Rain")) return 'rainstick'; if(n.includes("Ocean")) return 'ocean'; if(n.includes("Angel")) return 'angel'; return ''; },
 
-                // CORE FLOW
-                togglePlay() { 
-                    if(this.isRunning) { clearInterval(this.timerInterval); this.isRunning=false; } 
-                    else { 
-                        this.isRunning=true; 
-                        if(this.currentBlockTime===0) this.currentBlockTime = this.blocks[this.activeIndex].duration*60; 
-                        this.timerInterval = setInterval(()=>this.tick(), 1000); 
-                    } 
-                },
-                tick() {
-                    this.totalElapsed++;
-                    const totalDur = this.blocks.reduce((a,b)=>a+(b.duration*60),0);
-                    let done = 0; 
-                    for(let i=0;i<this.activeIndex;i++) done+=(this.blocks[i].duration*60);
-                    this.globalProgress = ((done + (this.blocks[this.activeIndex].duration*60 - this.currentBlockTime)) / totalDur) * 100;
-                    if(this.currentBlockTime === 10 && this.blocks[this.activeIndex].autoGong) { this.playGong(); }
-                    if(this.currentBlockTime>0) this.currentBlockTime--;
-                    else if(this.activeIndex<this.blocks.length-1) { 
-                        this.activeIndex++; 
-                        this.currentBlockTime = this.blocks[this.activeIndex].duration*60; 
-                    } else { 
-                        this.isRunning=false; 
-                        clearInterval(this.timerInterval); 
-                        alert("Flow Complete"); 
-                    }
-                },
-                skipBlock() { 
-                    if(this.activeIndex < this.blocks.length - 1) { 
-                        this.currentBlockTime = 0; 
-                        this.tick(); 
-                    } else { 
-                        this.isRunning = false; 
-                        clearInterval(this.timerInterval); 
-                        alert("Session Finished Early"); 
-                    } 
-                },
-                resetTimer() { 
-                    this.isRunning=false; 
-                    clearInterval(this.timerInterval); 
-                    this.totalElapsed=0; 
-                    this.activeIndex=0; 
-                    this.currentBlockTime=0; 
-                    this.globalProgress=0; 
-                },
-                getAccumulatedTime(idx) { 
-                    let s=0; 
-                    for(let i=0; i<idx; i++) s+=this.blocks[i].duration*60; 
-                    return s; 
-                },
-                formatTime(s) { 
-                    const m=Math.floor(s/60).toString().padStart(2,'0'); 
-                    const sc=(s%60).toString().padStart(2,'0'); 
-                    return `${m}:${sc}`; 
-                },
+                // PRESETS & DATA
+                savePreset() { if(!this.newPresetName) return; this.savedPresets = { ...this.savedPresets, [this.newPresetName]: JSON.parse(JSON.stringify(this.blocks)) }; localStorage.setItem('flowPlannerPresets_v17', JSON.stringify(this.savedPresets)); this.currentPresetName = this.newPresetName; this.newPresetName = ''; },
+                loadPreset(name) { if(this.savedPresets[name]) { this.blocks = JSON.parse(JSON.stringify(this.savedPresets[name])); this.currentPresetName = name; this.resetTimer(); } },
+                deletePreset(name) { if(confirm(`Delete ${name}?`)) { const newPresets = {...this.savedPresets}; delete newPresets[name]; this.savedPresets = newPresets; localStorage.setItem('flowPlannerPresets_v17', JSON.stringify(this.savedPresets)); if(this.currentPresetName === name) this.currentPresetName = ''; } },
+                exportJSON() { const backup = { presets: this.savedPresets, current: this.blocks }; const url = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'})); const a = document.createElement('a'); a.href = url; a.download = 'flow_planner_backup.json'; a.click(); },
+                importJSON(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = (ev) => { try { const d = JSON.parse(ev.target.result); if(d.presets) this.savedPresets = {...this.savedPresets, ...d.presets}; if(d.current) this.blocks = d.current; localStorage.setItem('flowPlannerPresets_v17', JSON.stringify(this.savedPresets)); alert("Restored."); } catch(err) { alert("Invalid JSON"); } }; r.readAsText(f); },
+                copyShareLink() { const str = btoa(JSON.stringify(this.blocks)); navigator.clipboard.writeText(str).then(() => alert("Copied.")); },
+                loadFromShare() { try { const json = atob(this.importString.trim()); this.blocks = JSON.parse(json); this.importString = ''; alert("Loaded."); } catch(e) { alert("Invalid code"); } },
+
+                // CORE
+                togglePlay() { if(this.isRunning) { clearInterval(this.timerInterval); this.isRunning=false; } else { this.isRunning=true; if(this.currentBlockTime===0) this.currentBlockTime = this.blocks[this.activeIndex].duration*60; this.timerInterval = setInterval(()=>this.tick(), 1000); } },
+                tick() { this.totalElapsed++; const totalDur = this.blocks.reduce((a,b)=>a+(b.duration*60),0); let done = 0; for(let i=0;i<this.activeIndex;i++) done+=(this.blocks[i].duration*60); this.globalProgress = ((done + (this.blocks[this.activeIndex].duration*60 - this.currentBlockTime)) / totalDur) * 100; if(this.currentBlockTime === 10 && this.blocks[this.activeIndex].autoGong) { this.playGong(); } if(this.currentBlockTime>0) this.currentBlockTime--; else if(this.activeIndex<this.blocks.length-1) { this.activeIndex++; this.currentBlockTime = this.blocks[this.activeIndex].duration*60; } else { this.isRunning=false; clearInterval(this.timerInterval); alert("Complete"); } },
+                skipBlock() { if(this.activeIndex < this.blocks.length - 1) { this.currentBlockTime = 0; this.tick(); } else { this.isRunning = false; clearInterval(this.timerInterval); alert("Finished"); } },
+                resetTimer() { this.isRunning=false; clearInterval(this.timerInterval); this.totalElapsed=0; this.activeIndex=0; this.currentBlockTime=0; this.globalProgress=0; },
+                getAccumulatedTime(idx) { let s=0; for(let i=0; i<idx; i++) s+=this.blocks[i].duration*60; return s; },
+                formatTime(s) { const m=Math.floor(s/60).toString().padStart(2,'0'); const sc=(s%60).toString().padStart(2,'0'); return `${m}:${sc}`; },
                 addBlock() { this.blocks.push({id:Date.now(), title:"New Segment", duration:5, cue:"", instruments:[], autoGong:false}); },
                 removeBlock(i) { this.blocks.splice(i,1); },
                 toggleEditMode() { this.editMode=!this.editMode; },
                 toggleGong(i) { this.blocks[i].autoGong = !this.blocks[i].autoGong; },
-                addInstrumentPrompt(i) { 
-                    const o=prompt("Add: Koshi Earth/Fire/Water/Air, Rainstick, Ocean, Angel"); 
-                    if(o) this.blocks[i].instruments.push(o); 
-                }
+                addInstrumentPrompt(i) { const o=prompt("Add: Koshi Earth/Fire/Water/Air, Rainstick, Ocean, Angel"); if(o) this.blocks[i].instruments.push(o); }
             }
         }
     </script>
