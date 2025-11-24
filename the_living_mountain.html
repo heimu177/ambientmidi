@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Living Mountain v24 | Perfect Geometry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;600&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0f172a; color: #e2e8f0; font-family: 'Inter', sans-serif; overflow: hidden; }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+        
+        /* UI Layers */
+        .ui-element { transition: opacity 0.8s ease, transform 0.8s ease; }
+        .immersive-hidden { opacity: 0 !important; pointer-events: none !important; transform: translateY(10px); }
+        .ui-overlay { position: absolute; pointer-events: none; width: 100%; height: 100%; z-index: 10; }
+        .controls { pointer-events: auto; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-top: 1px solid rgba(255,255,255,0.1); }
+        
+        /* Breath Tags */
+        .breath-tag { transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: pointer; user-select: none; }
+        .breath-tag.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; font-weight: bold; }
+        
+        /* Modal */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 60; display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: #1e293b; border: 1px solid #475569; border-radius: 12px; padding: 24px; max-width: 400px; width: 90%; }
+        
+        /* Range Input */
+        input[type=range] { -webkit-appearance: none; background: transparent; width: 100%; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: #38bdf8; margin-top: -5px; cursor: pointer; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: #475569; border-radius: 2px; }
+        
+        /* Animations */
+        .start-btn { pointer-events: auto; transition: all 0.3s; animation: pulse-glow 3s infinite; }
+        @keyframes pulse-glow { 0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); } 70% { box-shadow: 0 0 0 30px rgba(56, 189, 248, 0); } 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); } }
+        
+        .settings-panel { pointer-events: auto; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); }
+        body.immersive-mode { cursor: none; }
+
+        /* Toggle Switch */
+        .toggle-btn { width: 44px; height: 24px; background-color: #475569; border-radius: 9999px; position: relative; transition: background-color 0.3s; cursor: pointer; }
+        .toggle-btn.active { background-color: #38bdf8; }
+        .toggle-circle { width: 18px; height: 18px; background-color: white; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: transform 0.3s ease; }
+        .toggle-btn.active .toggle-circle { transform: translateX(20px); }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col">
+
+    <div id="start-overlay" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center transition-opacity duration-700">
+        <div class="text-center">
+            <i class="fa-solid fa-mountain-sun text-6xl text-cyan-400 mb-6 animate-pulse"></i>
+            <h1 class="text-4xl font-light text-white tracking-[0.2em] mb-2">THE LIVING MOUNTAIN</h1>
+            <p class="text-slate-500 text-sm uppercase tracking-widest mb-8">Therapeutic Breathwork Companion</p>
+            <button onclick="enterStudio()" class="px-10 py-4 border border-cyan-500/50 hover:bg-cyan-500 hover:text-slate-900 text-cyan-400 font-bold rounded-full transition duration-300 shadow-lg hover:shadow-cyan-500/20">
+                ENTER SANCTUARY
+            </button>
+        </div>
+    </div>
+
+    <div id="settingsPanel" class="fixed top-16 right-4 settings-panel rounded-lg p-4 w-72 z-50 hidden ui-element shadow-2xl">
+        <div class="flex justify-between items-center mb-6"><h3 class="text-white font-bold text-sm uppercase tracking-wider">Atmosphere</h3><button onclick="closeSettings()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="space-y-5 text-sm">
+            <div><label class="text-slate-400 text-xs uppercase tracking-wide block mb-2">Season</label><select id="seasonSelect" onchange="changeSeason()" class="w-full bg-slate-800 text-white px-3 py-2 rounded border border-slate-600 outline-none focus:border-cyan-500 transition"><option value="auto">Auto-Flow (Cycle)</option><option value="spring">Spring</option><option value="summer">Summer</option><option value="autumn">Autumn</option><option value="winter">Winter</option></select></div>
+            <div><label class="text-slate-400 text-xs uppercase tracking-wide block mb-2">Time of Day</label><select id="dayNightSpeed" onchange="changeDaySpeed()" class="w-full bg-slate-800 text-white px-3 py-2 rounded border border-slate-600 outline-none focus:border-cyan-500 transition"><option value="normal" selected>Real-Time Flow</option><option value="fast">Fast (Demo)</option><option value="off">Frozen Moment</option></select></div>
+            <div class="flex items-center justify-between"><span class="text-white text-sm">Show Pilgrim</span><div onclick="togglePilgrim()" id="pilgrimToggle" class="toggle-btn active"><div class="toggle-circle"></div></div></div>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal" style="display: none;"><div class="modal-content"><div class="flex justify-between items-center mb-4"><h2 class="text-lg font-bold text-cyan-50">Edit Rhythm</h2><button onclick="closeEditModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button></div><div class="grid grid-cols-2 gap-4 text-sm"><div><label class="text-slate-400">Inhale (s)</label><input type="number" id="edit-inhale" class="w-full bg-slate-800 text-white px-3 py-2 rounded border border-slate-600 mt-1"></div><div><label class="text-slate-400">Hold (s)</label><input type="number" id="edit-hold1" class="w-full bg-slate-800 text-white px-3 py-2 rounded border border-slate-600 mt-1"></div><div><label class="text-slate-400">Exhale (s)</label><input type="number" id="edit-exhale" class="w-full bg-slate-800 text-white px-3 py-2 rounded border border-slate-600 mt-1"></div><div><label class="text-slate-400">Sustain (s)</label><input type="number" id="edit-hold2" class="w-full bg-slate-800 text-white px-3 py-2 rounded border border-slate-600 mt-1"></div></div><button onclick="savePattern()" class="w-full mt-6 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold py-2 rounded transition">Save Changes</button></div></div>
+
+    <div id="toast" class="fixed top-8 left-1/2 transform -translate-x-1/2 bg-black/60 backdrop-blur text-white px-6 py-2 rounded-full text-sm opacity-0 transition-opacity duration-500 pointer-events-none z-50 shadow-lg border border-white/10">Double-tap to restore controls</div>
+
+    <div class="relative flex-1 overflow-hidden bg-slate-900" ondblclick="exitImmersive()">
+        <canvas id="output_canvas"></canvas>
+        <div id="top-controls" class="absolute top-4 right-4 z-20 flex gap-2 ui-element" style="pointer-events: auto;">
+            <button onclick="toggleImmersive()" class="w-10 h-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition hover:scale-105" title="Immersive Mode"><i class="fa-regular fa-eye"></i></button>
+            <button onclick="toggleSettings()" class="w-10 h-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition hover:scale-105" title="Settings"><i class="fa-solid fa-gear"></i></button>
+        </div>
+        <div class="ui-overlay flex flex-col items-center justify-center">
+            <div id="idle-ui" class="flex flex-col items-center transition-opacity duration-500 ui-element">
+                <div class="text-slate-300/80 tracking-[0.2em] uppercase text-xs mb-32">Begin Your Journey</div>
+                <button onclick="startPractice()" class="start-btn w-24 h-24 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm text-white flex items-center justify-center text-3xl hover:bg-white/20 transition hover:scale-105"><i class="fa-solid fa-play ml-1"></i></button>
+            </div>
+            <div id="active-ui" class="hidden flex flex-col items-center mb-20 ui-element">
+                <div id="instructionText" class="text-6xl md:text-8xl font-bold text-white/90 tracking-widest uppercase drop-shadow-2xl transition-all duration-1000 select-none">Prepare</div>
+                <div id="timerText" class="text-3xl font-light text-cyan-100 mt-4 drop-shadow-md select-none">0s</div>
+                <div id="sessionTimer" class="text-xs text-slate-300 mt-4 font-mono tracking-widest uppercase opacity-0 transition-opacity duration-1000 select-none"></div>
+                <div id="finishingText" class="text-xs text-amber-300 mt-4 font-bold uppercase tracking-widest hidden animate-pulse">Completing Journey</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="bottom-controls" class="controls p-4 flex flex-col md:flex-row items-center justify-between gap-4 z-20 text-sm ui-element">
+        <div class="flex gap-2 bg-slate-800/50 p-1 rounded-lg">
+            <div class="relative"><button onclick="switchPattern('balance')" class="breath-tag active px-4 py-2 rounded text-xs" id="btn-balance">Balance</button><button onclick="openEditModal('balance')" class="absolute -top-2 -right-2 w-5 h-5 bg-slate-700 rounded-full flex items-center justify-center text-[9px] text-slate-300 hover:bg-cyan-500 hover:text-slate-900 transition"><i class="fa-solid fa-pen"></i></button></div>
+            <div class="relative"><button onclick="switchPattern('relax')" class="breath-tag px-4 py-2 rounded text-xs" id="btn-relax">Relax</button><button onclick="openEditModal('relax')" class="absolute -top-2 -right-2 w-5 h-5 bg-slate-700 rounded-full flex items-center justify-center text-[9px] text-slate-300 hover:bg-cyan-500 hover:text-slate-900 transition"><i class="fa-solid fa-pen"></i></button></div>
+            <div class="relative"><button onclick="switchPattern('nadi')" class="breath-tag px-4 py-2 rounded text-xs" id="btn-nadi">Nadi Shodhana</button><button onclick="openEditModal('nadi')" class="absolute -top-2 -right-2 w-5 h-5 bg-slate-700 rounded-full flex items-center justify-center text-[9px] text-slate-300 hover:bg-cyan-500 hover:text-slate-900 transition"><i class="fa-solid fa-pen"></i></button></div>
+        </div>
+        <div class="flex items-center gap-6">
+            <div class="flex items-center gap-2"><i class="fa-regular fa-clock text-slate-400"></i><select id="durationSelect" onchange="setDuration()" class="bg-transparent text-slate-300 text-xs border-none outline-none cursor-pointer hover:text-white transition"><option value="60">1 min</option><option value="300" selected>5 min</option><option value="600">10 min</option><option value="0">Endless</option></select></div>
+            <div class="flex items-center gap-2"><button onclick="toggleVoice()" id="btn-voice" class="text-cyan-400 hover:text-white transition" title="Voice Guide"><i class="fa-solid fa-volume-high"></i></button><input type="range" min="0" max="1" step="0.1" value="0.4" id="voiceVolume" class="w-20" oninput="updateVolume()"></div>
+            <div class="flex items-center gap-3 border-l border-slate-700 pl-4"><button onclick="togglePause()" class="text-slate-300 hover:text-cyan-400 transition" title="Pause"><i id="play-icon" class="fa-solid fa-pause text-lg"></i></button><button onclick="resetSession()" class="text-slate-300 hover:text-red-400 transition" title="Reset"><i class="fa-solid fa-rotate-right text-lg"></i></button></div>
+        </div>
+    </div>
+
+    <script>
+        'use strict';
+        // STATE
+        let voiceVolume=0.4, isVoiceOn=true, appState='idle', wakeLock=null, isImmersive=false;
+        let warmupCountdown=5, sessionDuration=300, sessionStartTime=0, phaseStartTime=0, totalPausedTime=0, pauseTime=0, finishingCycle=false;
+        const canvasElement=document.getElementById('output_canvas'), ctx=canvasElement.getContext('2d');
+        let lastPhase='', lastSecond=0;
+        let patterns={balance:{inhale:4000,hold1:0,exhale:4000,hold2:0}, relax:{inhale:5000,hold1:9000,exhale:10000,hold2:0}, nadi:{inhale:4000,hold1:4000,exhale:4000,hold2:4000}};
+        let currentPattern='balance';
+        let clouds=[], particles=[], birds=[], shootingStars=[], stars=[];
+        let dayTime=0.2, daySpeed=0.0002, seasonProgress=0, seasonMode='auto';
+        let pilgrim={active:true, x:0, y:0, progress:0, celebrating:false};
+
+        // COLORS
+        const skyKeyframes = [ { t: 0.0, top: [2, 6, 23], bot: [30, 27, 75] }, { t: 0.25, top: [76, 29, 149], bot: [251, 146, 60] }, { t: 0.5, top: [14, 165, 233], bot: [186, 230, 253] }, { t: 0.75, top: [76, 29, 149], bot: [245, 158, 11] }, { t: 1.0, top: [2, 6, 23], bot: [30, 27, 75] } ];
+        const seasonPalettes = [ { mountain: [71, 85, 105], snow: [253, 164, 175] }, { mountain: [22, 101, 52], snow: [22, 163, 74] }, { mountain: [120, 53, 15], snow: [245, 158, 11] }, { mountain: [100, 116, 139], snow: [255, 255, 255] } ];
+
+        // INIT
+        function init() { resize(); if(window.speechSynthesis) window.speechSynthesis.getVoices(); requestAnimationFrame(animate); }
+        let resizeTimeout; window.addEventListener('resize', () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(resize, 100); });
+        function resize() { canvasElement.width = window.innerWidth; canvasElement.height = window.innerHeight; initSceneElements(); }
+        function initSceneElements() {
+            const w = canvasElement.width, h = canvasElement.height;
+            stars = []; for(let i=0; i<150; i++) stars.push({ x: Math.random()*w, y: Math.random()*(h*0.6), size: Math.random()*1.5, opacity: Math.random() });
+            clouds = []; for(let i=0; i<6; i++) clouds.push({ x: Math.random()*w, y: Math.random()*(h*0.3), speed: Math.random()*0.15+0.05, size: Math.random()*0.5+0.5, opacity: Math.random()*0.4+0.2 });
+        }
+
+        // RENDER
+        function animate() {
+            const w=canvasElement.width, h=canvasElement.height, cx=w/2;
+            dayTime+=daySpeed; if(dayTime>1) dayTime=0;
+            if(seasonMode==='auto'){ seasonProgress+=0.001; if(seasonProgress>=4) seasonProgress=0; }
+            else{ const targets={'spring':0,'summer':1,'autumn':2,'winter':3}; const target=targets[seasonMode]; if(Math.abs(seasonProgress-target)>0.01) seasonProgress+=(target-seasonProgress)*0.05; else seasonProgress=target; }
+
+            const skyCols = getSkyColors(dayTime); let grad = ctx.createLinearGradient(0,0,0,h); grad.addColorStop(0,skyCols.top); grad.addColorStop(1,skyCols.bot); ctx.fillStyle = grad; ctx.fillRect(0,0,w,h);
+            let starOp = 0; if(dayTime<0.25) starOp=1-(dayTime*4); else if(dayTime>0.75) starOp=(dayTime-0.75)*4;
+            if(starOp>0){ ctx.fillStyle=`rgba(255,255,255,${starOp})`; stars.forEach(s=>{ ctx.globalAlpha=s.opacity*starOp; ctx.beginPath(); ctx.arc(s.x,s.y,s.size,0,Math.PI*2); ctx.fill(); }); ctx.globalAlpha=1.0; }
+            
+            if(Math.random()>0.995 && (dayTime>0.8||dayTime<0.2)) shootingStars.push({ x:Math.random()*w, y:Math.random()*(h*0.3), vx:-5-Math.random()*5, vy:2+Math.random()*2, life:40 });
+            for(let i=shootingStars.length-1; i>=0; i--){ let s=shootingStars[i]; s.x+=s.vx; s.y+=s.vy; s.life--; if(s.life<=0||s.x<0){ shootingStars.splice(i,1); continue; } ctx.strokeStyle=`rgba(255,255,255,${s.life/40})`; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(s.x-s.vx*2,s.y-s.vy*2); ctx.stroke(); }
+
+            let celestialX=w*(1-dayTime), horizonY=h*0.6, celY=horizonY-(Math.sin((dayTime-0.25)*Math.PI*2)*(h*0.4));
+            if(dayTime>0.2 && dayTime<0.8){ let sa=1; if(dayTime<0.3)sa=(dayTime-0.2)*10; else if(dayTime>0.7)sa=(0.8-dayTime)*10; ctx.fillStyle=`rgba(251,191,36,${sa})`; ctx.beginPath(); ctx.arc(celestialX,celY,h*0.05,0,Math.PI*2); ctx.fill(); }
+            let ma=0; if(dayTime>0.8||dayTime<0.2){ if(dayTime>0.8)ma=(dayTime-0.8)*5; else ma=1-(dayTime*5); ma=Math.min(ma,1); ctx.fillStyle=`rgba(241,245,249,${ma})`; ctx.beginPath(); ctx.arc(celestialX,celY,h*0.04,0,Math.PI*2); ctx.fill(); }
+
+            clouds.forEach(c=>{ c.x+=c.speed; if(c.x>w+150)c.x=-150; ctx.fillStyle=`rgba(255,255,255,${c.opacity*0.8})`; ctx.beginPath(); let s=c.size*(w*0.001); ctx.arc(c.x,c.y,40*s,0,Math.PI*2); ctx.arc(c.x+30*s,c.y-10*s,50*s,0,Math.PI*2); ctx.arc(c.x+70*s,c.y+5*s,40*s,0,Math.PI*2); ctx.fill(); });
+
+            const peakY = h-(h*0.45); const mtnHeight = h-peakY;
+            ctx.fillStyle = getMountainColor(seasonProgress); ctx.beginPath(); ctx.moveTo(0,h); ctx.lineTo(cx,peakY); ctx.lineTo(w,h); ctx.fill();
+
+            // FIX: Snow Cap Geometry
+            if(seasonProgress>2.5 || seasonProgress<0.5){
+                let snowOp = seasonProgress>3 ? 1 : (seasonProgress-2.5)*2; if(seasonProgress<0.5) snowOp=1-(seasonProgress*2);
+                ctx.fillStyle = `rgba(255,255,255,${snowOp})`;
+                let snowH = mtnHeight * 0.25; // Snow covers top 25% of mountain
+                // Using similar triangles to find width at snow line
+                let snowW = (cx * snowH) / mtnHeight; 
+                ctx.beginPath(); ctx.moveTo(cx, peakY); ctx.lineTo(cx+snowW, peakY+snowH); ctx.lineTo(cx-snowW, peakY+snowH); ctx.fill();
+            }
+
+            if(Math.random()>0.94) particles.push({ x:Math.random()*w, y:-10, vx:Math.random()-0.5, vy:Math.random()+0.5, color:getSeasonParticleColor(seasonProgress), size:Math.random()*3 });
+            for(let i=particles.length-1; i>=0; i--){ let p=particles[i]; p.x+=p.vx; p.y+=p.vy; if(p.y>h){ particles.splice(i,1); continue; } ctx.fillStyle=p.color; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill(); }
+
+            if(Math.random()>0.997) birds.push({ x:-50, y:Math.random()*(h*0.4)+50, speed:Math.random()+1, flapSpeed:0.2, wingY:0 });
+            for(let i=birds.length-1; i>=0; i--){ let b=birds[i]; b.x+=b.speed; b.wingY+=b.flapSpeed; if(b.x>w+50){ birds.splice(i,1); continue; } ctx.strokeStyle='rgba(0,0,0,0.3)'; ctx.lineWidth=2; ctx.beginPath(); let wo=Math.sin(b.wingY)*6; ctx.moveTo(b.x,b.y); ctx.quadraticCurveTo(b.x-6,b.y-6+wo,b.x-12,b.y+wo); ctx.moveTo(b.x,b.y); ctx.quadraticCurveTo(b.x+6,b.y-6+wo,b.x+12,b.y+wo); ctx.stroke(); }
+
+            if(appState==='running'&&pilgrim.active&&sessionDuration>0){ const el=(performance.now()-totalPausedTime-sessionStartTime)/1000; pilgrim.progress=Math.min(el/sessionDuration,1); const sx=w*0.1, sy=h; pilgrim.x=sx+(cx-sx)*pilgrim.progress; pilgrim.y=sy-(sy-peakY)*pilgrim.progress; ctx.fillStyle='#f43f5e'; ctx.fillRect(pilgrim.x-2,pilgrim.y-8,4,8); ctx.beginPath(); ctx.arc(pilgrim.x,pilgrim.y-10,3,0,Math.PI*2); ctx.fill(); if(pilgrim.progress>0.99){ ctx.strokeStyle='#fbbf24'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(cx,peakY-5); ctx.lineTo(cx,peakY-25); ctx.stroke(); ctx.fillStyle='#ef4444'; ctx.beginPath(); ctx.moveTo(cx,peakY-25); ctx.lineTo(cx+10,peakY-20); ctx.lineTo(cx,peakY-15); ctx.fill(); }}
+
+            if(appState==='running'||appState==='finishing'){ const now=performance.now(), et=now-totalPausedTime, p=patterns[currentPattern]; const totalDur=p.inhale+p.hold1+p.exhale+p.hold2, t=(et-phaseStartTime)%totalDur; 
+                if(appState==='running'&&sessionDuration>0){ const rem=Math.max(0,sessionDuration-(et-sessionStartTime)/1000); document.getElementById('sessionTimer').innerText=`${Math.floor(rem/60)}:${String(Math.floor(rem%60)).padStart(2,'0')} left`; if(rem<=0){ appState='finishing'; finishingCycle=true; document.getElementById('finishingText').classList.remove('hidden'); }}
+                if(finishingCycle&&t<50&&(et-phaseStartTime)>1000){ appState='finished'; speak("Journey complete."); document.getElementById('instructionText').innerText="Namaste"; document.getElementById('finishingText').classList.add('hidden'); document.getElementById('timerText').innerText=""; return requestAnimationFrame(animate); }
+                let np='', tl=0, rc='255,255,255'; if(t<p.inhale){ np='Inhale'; tl=p.inhale-t; rc='56,189,248'; } else if(t<p.inhale+p.hold1){ np='Hold'; tl=(p.inhale+p.hold1)-t; rc='192,132,252'; } else if(t<p.inhale+p.hold1+p.exhale){ np='Exhale'; tl=(p.inhale+p.hold1+p.exhale)-t; rc='251,191,36'; } else{ np='Sustain'; tl=totalDur-t; rc='148,163,184'; }
+                if(np!==lastPhase){ lastPhase=np; let txt=np==='Sustain'?'Hold':np; let el=document.getElementById('instructionText'); el.innerText=txt; el.style.color=`rgb(${rc})`; speak(txt==='Hold'?'Hold Empty':txt, false); }
+                let sec=Math.ceil(tl/1000); if(sec<=3&&sec>0&&sec!==lastSecond){ speak(sec.toString(),true); lastSecond=sec; } if(sec>3) lastSecond=0; document.getElementById('timerText').innerText=sec;
+                let ry=peakY-(h*0.1), ar=h*0.08; if(np==='Inhale') ar+=(h*0.1*Math.sin((1-(tl/p.inhale))*Math.PI/2)); else if(np==='Hold') ar+=h*0.1; else if(np==='Exhale') ar+=(h*0.1*Math.sin((1-(tl/p.exhale))*Math.PI/2));
+                let g=ctx.createRadialGradient(cx,ry,ar*0.8,cx,ry,ar*1.5); g.addColorStop(0,`rgba(${rc},0.6)`); g.addColorStop(1,`rgba(${rc},0)`); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,ry,ar*1.5,0,Math.PI*2); ctx.fill(); ctx.strokeStyle=`rgba(${rc},0.8)`; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(cx,ry,ar,0,Math.PI*2); ctx.stroke();
+            }
+            requestAnimationFrame(animate);
+        }
+
+        // HELPER FUNCS
+        function lerpColor(c1,c2,a){ return [Math.round(((1-a)*c1[0])+(a*c2[0])), Math.round(((1-a)*c1[1])+(a*c2[1])), Math.round(((1-a)*c1[2])+(a*c2[2]))]; }
+        function getSkyColors(t){ let i=0; while(i<skyKeyframes.length-1 && t>skyKeyframes[i+1].t) i++; const k1=skyKeyframes[i], k2=skyKeyframes[i+1], lt=(t-k1.t)/(k2.t-k1.t); return { top:`rgb(${lerpColor(k1.top,k2.top,lt).join(',')})`, bot:`rgb(${lerpColor(k1.bot,k2.bot,lt).join(',')})` }; }
+        function getMountainColor(p){ const i1=Math.floor(p)%4, i2=(i1+1)%4, a=p-Math.floor(p); return `rgb(${lerpColor(seasonPalettes[i1].mountain,seasonPalettes[i2].mountain,a).join(',')})`; }
+        function getSeasonParticleColor(p){ const i=Math.round(p)%4; if(i===0)return '#fda4af'; if(i===1)return '#ffffff'; if(i===2)return '#fb923c'; return '#ffffff'; }
+        function speak(t,c=false){ if(!isVoiceOn||voiceVolume<=0)return; if(!c)window.speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); const vs=window.speechSynthesis.getVoices(); const s=vs.find(v=>v.name==='Google US English'||v.name.includes('Samantha')); if(s)u.voice=s; u.rate=0.85; u.volume=voiceVolume; window.speechSynthesis.speak(u); }
+        function updateVolume(){ voiceVolume=parseFloat(document.getElementById('voiceVolume').value); document.querySelector('#btn-voice i').className=voiceVolume===0?"fa-solid fa-volume-xmark":"fa-solid fa-volume-high"; isVoiceOn=voiceVolume>0; }
+        function toggleVoice(){ if(voiceVolume>0){document.getElementById('voiceVolume').value=0;updateVolume();}else{document.getElementById('voiceVolume').value=0.4;updateVolume();speak("Voice on");} }
+        function setDuration(){ sessionDuration=parseInt(document.getElementById('durationSelect').value); }
+        function toggleSettings(){ document.getElementById('settingsPanel').classList.toggle('hidden'); }
+        function closeSettings(){ document.getElementById('settingsPanel').classList.add('hidden'); }
+        function changeSeason(){ const v=document.getElementById('seasonSelect').value; if(v==='auto')seasonMode='auto'; else seasonMode=v; }
+        function changeDaySpeed(){ const v=document.getElementById('dayNightSpeed').value; daySpeed=v==='fast'?0.001:v==='off'?0:0.0002; }
+        function togglePilgrim(){ pilgrim.active=!pilgrim.active; document.getElementById('pilgrimToggle').classList.toggle('active',pilgrim.active); }
+        function openEditModal(t){ const p=patterns[t]; document.getElementById('edit-inhale').value=p.inhale/1000; document.getElementById('edit-hold1').value=p.hold1/1000; document.getElementById('edit-exhale').value=p.exhale/1000; document.getElementById('edit-hold2').value=p.hold2/1000; document.getElementById('editModal').style.display='flex'; window.currentEditPattern=t; }
+        function closeEditModal(){ document.getElementById('editModal').style.display='none'; }
+        function savePattern(){ patterns[window.currentEditPattern]={inhale:parseInt(document.getElementById('edit-inhale').value)*1000, hold1:parseInt(document.getElementById('edit-hold1').value)*1000, exhale:parseInt(document.getElementById('edit-exhale').value)*1000, hold2:parseInt(document.getElementById('edit-hold2').value)*1000}; closeEditModal(); }
+        function enterStudio(){ const ov=document.getElementById('start-overlay'); if(ov){ov.style.opacity=0; setTimeout(()=>ov.remove(),700);} try{speak("Welcome.");}catch(e){} }
+        async function startPractice(){ document.getElementById('idle-ui').classList.add('hidden'); document.getElementById('active-ui').classList.remove('hidden'); document.getElementById('sessionTimer').style.opacity=1; pilgrim.progress=0; pilgrim.celebrating=false; try{wakeLock=await navigator.wakeLock.request('screen');}catch(e){} startWarmupSequence(); }
+        function startWarmupSequence(){ appState='warmup'; warmupCountdown=5; speak("Get ready."); let i=setInterval(()=>{ if(appState!=='warmup'){clearInterval(i);return;} if(warmupCountdown>0){speak(warmupCountdown.toString(),true);document.getElementById('instructionText').innerText=warmupCountdown;warmupCountdown--;}else{clearInterval(i);transitionToRunning();} },1000); }
+        function transitionToRunning(){ appState='running'; const n=performance.now(); phaseStartTime=n; sessionStartTime=n; totalPausedTime=0; lastPhase=''; lastSecond=0; finishingCycle=false; document.getElementById('finishingText').classList.add('hidden'); document.getElementById('play-icon').className="fa-solid fa-pause text-lg"; }
+        function togglePause(){ if(appState==='running'){appState='paused';pauseTime=performance.now();document.getElementById('play-icon').className="fa-solid fa-play text-lg";document.getElementById('instructionText').innerText="PAUSED";speak("Paused");}else if(appState==='paused'){appState='running';totalPausedTime+=(performance.now()-pauseTime);document.getElementById('play-icon').className="fa-solid fa-pause text-lg";speak("Resuming");} }
+        function resetSession(){ appState='idle'; document.getElementById('active-ui').classList.add('hidden'); document.getElementById('idle-ui').classList.remove('hidden'); if(wakeLock)wakeLock.release(); pilgrim.progress=0; }
+        function switchPattern(t){ document.querySelectorAll('.breath-tag').forEach(b=>b.classList.remove('active')); document.getElementById(`btn-${t}`).classList.add('active'); currentPattern=t; if(appState==='running'){phaseStartTime=performance.now()-totalPausedTime;lastPhase='';speak("Pattern changed",true);} }
+        function toggleImmersive(){ isImmersive=!isImmersive; const u=document.querySelectorAll('.ui-element'), b=document.body, t=document.getElementById('toast'); if(isImmersive){u.forEach(e=>e.classList.add('immersive-hidden'));b.classList.add('immersive-mode');if(t){t.style.opacity=1;setTimeout(()=>t.style.opacity=0,3000);}}else{u.forEach(e=>e.classList.remove('immersive-hidden'));b.classList.remove('immersive-mode');} }
+        function exitImmersive(){ if(isImmersive)toggleImmersive(); }
+
+        init();
+    </script>
+</body>
+</html>
